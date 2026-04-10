@@ -323,7 +323,7 @@ export async function transaction<T>(
         timeout?: number;
     }
 ): Promise<T> {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         return await fn(tx);
     }, options);
 }
@@ -335,7 +335,7 @@ export async function transaction<T>(
 export async function interactiveTransaction<T>(
     fn: (tx: Prisma.TransactionClient) => Promise<T>
 ): Promise<T> {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         try {
             const result = await fn(tx);
             return result;
