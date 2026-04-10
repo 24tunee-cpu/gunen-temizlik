@@ -1,0 +1,128 @@
+# ============================================
+# NETLIFY CONFIGURATION
+# ============================================
+# Next.js 14+ deployment configuration for Netlify
+# @see https://docs.netlify.com/configure-builds/file-based-configuration/
+
+# ============================================
+# BUILD SETTINGS
+# ============================================
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+  # Environment variables (set in Netlify dashboard)
+  # NEXT_PUBLIC_SITE_URL = "https://gunentemizlik.com"
+
+# ============================================
+# REDIRECTS
+# ============================================
+# Note: Next.js handles its own routing, these are fallbacks
+
+# API routes (handled by Netlify Functions automatically)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/nextjs/api/:splat"
+  status = 200
+
+# Static files (images, fonts, etc.)
+[[redirects]]
+  from = "/_next/*"
+  to = "/_next/:splat"
+  status = 200
+
+# SPA fallback for client-side routing (Next.js App Router handles this)
+# Only needed for static export, disabled for SSR
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+#   force = false
+
+# ============================================
+# HEADERS
+# ============================================
+
+# Security Headers (Global)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+    # XSS Protection
+    X-XSS-Protection = "1; mode=block"
+    # Strict Transport Security (HTTPS only)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Referrer Policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Permissions Policy
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # Content Security Policy (adjust based on your needs)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self'; connect-src 'self' https://vitals.vercel-insights.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+
+# Static Assets Caching
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Image optimization caching
+[[headers]]
+  for = "/_next/image/*"
+  [headers.values]
+  Cache-Control = "public, max-age=60, stale-while-revalidate=86400"
+
+# Fonts caching
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ============================================
+# FUNCTIONS
+# ============================================
+[functions]
+  # Next.js functions directory
+  directory = "netlify/functions"
+  
+  # Function settings
+  [functions.nextjs]
+    # Include only necessary files
+    included_files = ["node_modules/@next/**", "node_modules/next/**"]
+
+# ============================================
+# PLUGINS
+# ============================================
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# ============================================
+# FORMS (if using Netlify Forms)
+# ============================================
+# [[forms.contact]]
+#   name = "contact"
+#   fields = [
+#     { name = "name", required = true },
+#     { name = "email", required = true },
+#     { name = "message", required = true }
+#   ]
+
+# ============================================
+# DEPLOYMENT CONTEXTS
+# ============================================
+# Production context
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+# Deploy Preview context (PR previews)
+[context.deploy-preview]
+  environment = { NODE_ENV = "production", NEXT_PUBLIC_IS_PREVIEW = "true" }
+
+# Branch deploy context
+[context.branch-deploy]
+  environment = { NODE_ENV = "production" }

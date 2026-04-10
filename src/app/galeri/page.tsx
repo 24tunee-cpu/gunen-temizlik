@@ -1,0 +1,172 @@
+/**
+ * @fileoverview Gallery Page
+ * @description Galeri sayfası - çalışma örnekleri ve before/after görselleri.
+ * SEO optimizasyonu, structured data ve admin-site senkronizasyonu ile.
+ *
+ * @architecture
+ * - Server Component (Server-Side Rendering)
+ * - JSON-LD structured data (ImageGallery schema)
+ * - Lazy loading optimized images
+ * - Admin'den yönetilen dinamik galeri
+ *
+ * @admin-sync
+ * Galeri görselleri admin paneldeki /admin/galeri sayfasından yönetilir.
+ * Before/after karşılaştırmaları admin panelden eklenebilir.
+ */
+
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import Link from 'next/link';
+import SiteLayout from '../site/layout';
+import { GallerySection } from '../../components/site/GallerySection';
+import { ImageIcon, ArrowRight } from 'lucide-react';
+
+// ============================================
+// METADATA (SEO)
+// ============================================
+
+export const metadata: Metadata = {
+  title: 'Galeri | Günen Temizlik - İstanbul',
+  description: 'Temizlik çalışmalarımızdan örnekler, before/after görselleri. İnşaat sonrası, ofis, ev temizliği projelerimizi inceleyin.',
+  keywords: [
+    'temizlik galeri',
+    'before after temizlik',
+    'inşaat sonrası temizlik görselleri',
+    'ofis temizliği örnekleri',
+    'ev temizliği projeleri',
+    'istanbul temizlik çalışmaları',
+  ],
+  alternates: {
+    canonical: 'https://gunentemizlik.com/galeri',
+  },
+  openGraph: {
+    title: 'Galeri | Günen Temizlik',
+    description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri. Profesyonel hizmet kalitemizi keşfedin.',
+    url: 'https://gunentemizlik.com/galeri',
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Günen Temizlik',
+    images: [
+      {
+        url: 'https://gunentemizlik.com/og-gallery.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Günen Temizlik - Galeri',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Galeri | Günen Temizlik',
+    description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri.',
+    images: ['https://gunentemizlik.com/og-gallery.jpg'],
+  },
+};
+
+// ============================================
+// JSON-LD STRUCTURED DATA (ImageGallery)
+// ============================================
+
+const gallerySchema = {
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  "name": "Günen Temizlik Galeri",
+  "description": "Temizlik çalışmalarımızdan örnekler ve before/after görselleri",
+  "url": "https://gunentemizlik.com/galeri",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Günen Temizlik",
+    "url": "https://gunentemizlik.com"
+  },
+  "about": {
+    "@type": "CleaningService",
+    "name": "Günen Temizlik Şirketi"
+  }
+};
+
+// ============================================
+// LOADING FALLBACK
+// ============================================
+
+function GalleryLoading() {
+  return (
+    <div className="py-16 animate-pulse">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-lg"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
+/**
+ * Gallery Page Component
+ * Galeri sayfası - çalışma örnekleri.
+ * 
+ * @admin-sync Görseller /admin/galeri'den yönetilir
+ */
+export default function GalleryPage() {
+  return (
+    <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(gallerySchema) }}
+      />
+
+      <SiteLayout>
+        {/* Hero Section */}
+        <section
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
+          aria-label="Sayfa başlığı"
+        >
+          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+            <ImageIcon
+              className="mx-auto mb-6 h-16 w-16 text-emerald-400"
+              aria-hidden="true"
+            />
+            <h1 className="text-4xl font-bold text-white sm:text-5xl">Galeri</h1>
+            <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300">
+              Çalışmalarımızdan örnekler ve başarı hikayelerimiz.
+              Profesyonel temizlik hizmetlerimizin sonuçlarını görün.
+            </p>
+          </div>
+        </section>
+
+        {/* Gallery Section with Suspense */}
+        <Suspense fallback={<GalleryLoading />}>
+          <GallerySection />
+        </Suspense>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-slate-50 dark:bg-slate-800">
+          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+              Siz de memnun müşterilerimiz arasına katılın
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-2xl mx-auto">
+              Profesyonel temizlik hizmetimizi deneyimleyin ve farkı kendi gözlerinizle görün.
+            </p>
+            <Link
+              href="/iletisim"
+              className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            >
+              Ücretsiz Keşif Talep Edin
+              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+      </SiteLayout>
+    </>
+  );
+}

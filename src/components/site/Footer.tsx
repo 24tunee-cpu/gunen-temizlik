@@ -1,0 +1,299 @@
+/**
+ * @fileoverview Footer Component
+ * @description Site footer bileşeni.
+ * Newsletter form, navigation links, contact info, ve social links ile.
+ *
+ * @example
+ * <Footer />
+ */
+
+'use client';
+
+import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Sparkles, MapPin, Phone, Mail, Send, Globe, Share2, MessageCircle, ArrowUp } from 'lucide-react';
+import { useState, useCallback } from 'react';
+
+// ============================================
+// TYPES
+// ============================================
+
+/** Footer link tipi */
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+/** Footer link grubu tipi */
+interface FooterLinkGroup {
+  hizmetler: FooterLink[];
+  kurumsal: FooterLink[];
+}
+
+/** Social link tipi */
+interface SocialLink {
+  icon: React.ComponentType<{ size: number }>;
+  href: string;
+  label: string;
+  color: string;
+}
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+/** Footer navigasyon linkleri */
+const FOOTER_LINKS: FooterLinkGroup = {
+  hizmetler: [
+    { label: 'İnşaat Sonrası Temizlik', href: '/hizmetler/insaat-sonrasi-temizlik' },
+    { label: 'Ofis Temizliği', href: '/hizmetler/ofis-temizligi' },
+    { label: 'Koltuk Yıkama', href: '/hizmetler/koltuk-yikama' },
+    { label: 'Halı Temizliği', href: '/hizmetler/hali-temizligi' },
+    { label: 'Dış Cephe Temizliği', href: '/hizmetler/dis-cephe-temizligi' },
+  ],
+  kurumsal: [
+    { label: 'Hakkımızda', href: '/hakkimizda' },
+    { label: 'Ekibimiz', href: '/ekibimiz' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Referanslar', href: '/referanslar' },
+    { label: 'İletişim', href: '/iletisim' },
+  ],
+};
+
+/** Sosyal medya linkleri */
+const SOCIAL_LINKS: SocialLink[] = [
+  { icon: Globe, href: '#', label: 'Instagram', color: 'hover:bg-pink-500' },
+  { icon: Share2, href: '#', label: 'Facebook', color: 'hover:bg-blue-600' },
+  { icon: MessageCircle, href: '#', label: 'Twitter', color: 'hover:bg-sky-500' },
+];
+
+/** Telefon numarası */
+const PHONE_NUMBER = '+905551234567';
+const PHONE_DISPLAY = '0555 123 45 67';
+
+/** E-posta adresi */
+const EMAIL_ADDRESS = 'info@gunentemizlik.com';
+
+// ============================================
+// COMPONENT
+// ============================================
+
+/**
+ * Footer Component
+ * Site footer with newsletter, links, and contact info.
+ */
+export function Footer() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const shouldReduceMotion = useReducedMotion();
+
+  // ============================================
+  // HANDLERS
+  // ============================================
+  const handleSubscribe = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setSubscribed(true);
+      setEmail('');
+      // TODO: Implement actual newsletter subscription API call
+    }
+  }, [email]);
+
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-slate-900 text-white relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-900 to-slate-950" aria-hidden="true" />
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" aria-hidden="true" />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        {/* Newsletter Section */}
+        <motion.div
+          className="mb-16 pb-16 border-b border-slate-800"
+          initial={{ opacity: 0, y: shouldReduceMotion ? 10 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: shouldReduceMotion ? 0.2 : 0.6 }}
+        >
+          <div className="grid gap-8 lg:grid-cols-2 items-center">
+            <div>
+              <h3 className="text-2xl font-bold mb-2">E-Bültenimize Katılın</h3>
+              <p className="text-slate-400">
+                Temizlik ipuçları, kampanyalar ve özel fırsatlardan haberdar olun.
+              </p>
+            </div>
+            <div>
+              {subscribed ? (
+                <motion.div
+                  className="flex items-center gap-3 text-emerald-400"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: shouldReduceMotion ? 0.2 : 0.4 }}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <Sparkles className="h-5 w-5" aria-hidden="true" />
+                  <span>Teşekkürler! Başarıyla abone oldunuz.</span>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex gap-3" aria-label="E-bülten aboneliği">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="E-posta adresiniz"
+                    required
+                    className="flex-1 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                    aria-label="E-posta adresi"
+                    aria-required="true"
+                  />
+                  <motion.button
+                    type="submit"
+                    whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
+                    whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+                    aria-label="Abone ol"
+                  >
+                    <Send size={18} aria-hidden="true" />
+                    <span className="hidden sm:inline">Abone Ol</span>
+                  </motion.button>
+                </form>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid gap-12 lg:grid-cols-4">
+          {/* Brand */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center gap-2 group" aria-label="Günen Temizlik - Ana sayfa">
+              <motion.div
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500"
+                whileHover={shouldReduceMotion ? {} : { scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                aria-hidden="true"
+              >
+                <Sparkles className="h-6 w-6 text-white" />
+              </motion.div>
+              <span className="text-xl font-bold group-hover:text-emerald-400 transition-colors">Günen Temizlik</span>
+            </Link>
+            <p className="text-slate-400">
+              İstanbul&apos;un her bölgesinde profesyonel temizlik hizmetleri.
+              Deneyimli ekibimiz ve modern ekipmanlarımızla yanınızdayız.
+            </p>
+            <div className="flex gap-3">
+              {SOCIAL_LINKS.map((social) => (
+                <motion.a
+                  key={social.label}
+                  href={social.href}
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.1, y: -2 }}
+                  whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-all ${social.color} hover:text-white`}
+                  aria-label={social.label}
+                >
+                  <social.icon size={18} />
+                </motion.a>
+              ))}
+            </div>
+          </div>
+
+          {/* Hizmetler */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold text-white">Hizmetlerimiz</h3>
+            <ul className="space-y-3">
+              {FOOTER_LINKS.hizmetler.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-slate-400 transition-all hover:text-emerald-400 hover:translate-x-1 inline-block"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Kurumsal */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold text-white">Kurumsal</h3>
+            <ul className="space-y-3">
+              {FOOTER_LINKS.kurumsal.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-slate-400 transition-all hover:text-emerald-400 hover:translate-x-1 inline-block"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* İletişim */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold text-white">İletişim</h3>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 group">
+                <MapPin className="mt-1 h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-400">
+                  Atatürk Mah. Turgut Özal Bulvarı<br />
+                  No:123 Ataşehir/İstanbul
+                </span>
+              </li>
+              <li className="flex items-center gap-3 group">
+                <Phone className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                <a href={`tel:${PHONE_NUMBER}`} className="text-slate-400 hover:text-emerald-400 transition-colors" aria-label={`Telefon: ${PHONE_DISPLAY}`}>
+                  {PHONE_DISPLAY}
+                </a>
+              </li>
+              <li className="flex items-center gap-3 group">
+                <Mail className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                <a href={`mailto:${EMAIL_ADDRESS}`} className="text-slate-400 hover:text-emerald-400 transition-colors" aria-label={`E-posta: ${EMAIL_ADDRESS}`}>
+                  {EMAIL_ADDRESS}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-12 border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            © {currentYear} Günen Temizlik. Tüm hakları saklıdır.
+          </p>
+          <div className="flex items-center gap-6">
+            <Link href="/gizlilik" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">
+              Gizlilik Politikası
+            </Link>
+            <Link href="/kullanim-kosullari" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">
+              Kullanım Koşulları
+            </Link>
+            <motion.button
+              onClick={scrollToTop}
+              whileHover={shouldReduceMotion ? {} : { scale: 1.1 }}
+              whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+              aria-label="Sayfanın başına dön"
+            >
+              <ArrowUp size={20} />
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;
