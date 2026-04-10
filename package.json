@@ -41,7 +41,7 @@
     "@netlify/plugin-nextjs": "^5.15.9",
     "@next/bundle-analyzer": "^16.2.3",
     "@prisma/client": "^6.19.3",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
