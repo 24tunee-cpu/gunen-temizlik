@@ -22,8 +22,8 @@
  * });
  */
 
-import { PrismaClient, Prisma } from '@prisma/client';
-import { createLogger } from './logger';
+import { PrismaClient, PrismaClientKnownRequestError } from '@prisma/client';
+// import { createLogger } from './logger'; // DISABLED for production
 
 const logger = createLogger('db/prisma');
 
@@ -113,7 +113,7 @@ export function handlePrismaError(error: unknown): {
     field?: string;
     originalError: unknown;
 } {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
         const code = error.code as PrismaErrorCode;
         const defaultMessage = PrismaErrorCodes[code] || 'Database error';
 
@@ -337,7 +337,7 @@ export async function interactiveTransaction<T>(
             const result = await fn(tx);
             return result;
         } catch (error) {
-            logger.error('Transaction failed', { error });
+            // logger.error('Transaction failed', { error }); // DISABLED
             throw error;
         }
     });
@@ -371,7 +371,7 @@ export async function checkDatabaseHealth(): Promise<{
     } catch (error) {
         const latency = Date.now() - start;
 
-        logger.error('Database health check failed', { error });
+        // logger.error('Database health check failed', { error }); // DISABLED
 
         return {
             healthy: false,
@@ -387,7 +387,7 @@ export async function checkDatabaseHealth(): Promise<{
  */
 export async function disconnectPrisma(): Promise<void> {
     await prisma.$disconnect();
-    logger.info('Prisma disconnected');
+    // logger.info('Prisma disconnected'); // DISABLED
 }
 
 // ============================================
