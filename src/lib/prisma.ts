@@ -22,10 +22,8 @@
  * });
  */
 
-import { PrismaClient, PrismaClientKnownRequestError } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 // import { createLogger } from './logger'; // DISABLED for production
-
-const logger = createLogger('db/prisma');
 
 // ============================================
 // PRISMA CLIENT CONFIGURATION
@@ -113,7 +111,7 @@ export function handlePrismaError(error: unknown): {
     field?: string;
     originalError: unknown;
 } {
-    if (error instanceof PrismaClientKnownRequestError) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
         const code = error.code as PrismaErrorCode;
         const defaultMessage = PrismaErrorCodes[code] || 'Database error';
 

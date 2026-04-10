@@ -20,7 +20,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logger, setGlobalCorrelationId, clearGlobalCorrelationId } from '@/lib/logger';
+// import { logger, setGlobalCorrelationId, clearGlobalCorrelationId } from '@/lib/logger'; // DISABLED
 
 // ============================================
 // TYPES & INTERFACES
