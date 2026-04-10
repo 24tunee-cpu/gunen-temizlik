@@ -7,7 +7,7 @@
  */
 
 import type { NextConfig } from "next";
-import withBundleAnalyzer from '@next/bundle-analyzer';
+// import withBundleAnalyzer from '@next/bundle-analyzer'; // DISABLED for production build
 
 // ============================================
 // SECURITY CONFIGURATION
@@ -320,16 +320,4 @@ const nextConfig: NextConfig = {
 };
 
 // ============================================
-// BUNDLE ANALYZER WRAPPER
-// ============================================
-// Usage: 
-//   Mac/Linux: ANALYZE=true npm run build
-//   Windows: $env:ANALYZE="true"; npm run build
-//   Windows (cmd): set ANALYZE=true && npm run build
-
-const withAnalyzer = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true' || process.env.ANALYZE === '1',
-  openAnalyzer: false, // Don't auto-open browser
-});
-
-export default withAnalyzer(nextConfig);
+export default nextConfig;
