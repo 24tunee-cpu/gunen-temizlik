@@ -397,13 +397,5 @@ export async function disconnectPrisma(): Promise<void> {
 // TYPE EXPORTS
 // ============================================
 
-/** Prisma tiplerini dışa aktar */
+/** Prisma namespace (ör. `Prisma.ServiceCreateInput`) */
 export type { Prisma } from '@prisma/client';
-
-/** Model tipleri - Prisma schema'dan otomatik üretilir */
-export type {
-    User,
-    Service,
-    BlogPost,
-    Certificate,
-} from '@prisma/client';
