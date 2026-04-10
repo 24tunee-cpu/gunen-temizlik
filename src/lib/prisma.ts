@@ -23,6 +23,11 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import {
+    PrismaClientKnownRequestError,
+    PrismaClientValidationError,
+    PrismaClientInitializationError,
+} from '@prisma/client/runtime/library';
 // import { createLogger } from './logger'; // DISABLED for production
 
 // ============================================
@@ -111,7 +116,7 @@ export function handlePrismaError(error: unknown): {
     field?: string;
     originalError: unknown;
 } {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
         const code = error.code as PrismaErrorCode;
         const defaultMessage = PrismaErrorCodes[code] || 'Database error';
 
@@ -140,7 +145,7 @@ export function handlePrismaError(error: unknown): {
         };
     }
 
-    if (error instanceof Prisma.PrismaClientValidationError) {
+    if (error instanceof PrismaClientValidationError) {
         return {
             code: 'VALIDATION_ERROR',
             message: 'Geçersiz veri formatı. Lütfen bilgilerinizi kontrol edin.',
@@ -148,7 +153,7 @@ export function handlePrismaError(error: unknown): {
         };
     }
 
-    if (error instanceof Prisma.PrismaClientInitializationError) {
+    if (error instanceof PrismaClientInitializationError) {
         return {
             code: 'INIT_ERROR',
             message: 'Veritabanı bağlantı hatası. Lütfen daha sonra tekrar deneyin.',
