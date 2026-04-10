@@ -178,9 +178,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       onReset();
     }
 
-    logger.info('ErrorBoundary reset', {
-      previousRetryCount: this.state.retryCount,
-    });
+    // logger.info('ErrorBoundary reset', {
+    //   previousRetryCount: this.state.retryCount,
+    // }); // DISABLED
   };
 
   /**
