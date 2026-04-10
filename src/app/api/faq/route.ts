@@ -21,7 +21,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -29,7 +28,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/faq');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -132,7 +130,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET faq', { ip });
+    console.warn('Rate limit exceeded on GET faq', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -140,7 +138,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching all FAQs', { ip });
+    console.log('Fetching all FAQs', { ip });
 
     const faqs = await prisma.faq.findMany({
       where: { isActive: true },
@@ -156,12 +154,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${faqs.length} FAQs`);
+    console.log(`Retrieved ${faqs.length} FAQs`);
 
     return NextResponse.json(faqs, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch FAQs', { error: errorMessage, ip });
+    console.error('Failed to fetch FAQs', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'SSS öğeleri yüklenemedi' },
       { status: 500, headers }
@@ -180,7 +178,7 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized FAQ create attempt');
+    console.warn('Unauthorized FAQ create attempt');
     return authError;
   }
 
@@ -216,7 +214,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info('Creating new FAQ', { question: body.question.slice(0, 50) });
+    console.log('Creating new FAQ', { question: body.question.slice(0, 50) });
 
     const newFaq = await prisma.faq.create({
       data: {
@@ -230,12 +228,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('FAQ created successfully', { id: newFaq.id });
+    console.log('FAQ created successfully', { id: newFaq.id });
 
     return NextResponse.json(newFaq, { status: 201, headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create FAQ', { error: errorMessage });
+    console.error('Failed to create FAQ', { error: errorMessage });
     return NextResponse.json(
       { error: 'SSS öğesi oluşturulamadı' },
       { status: 500, headers }
@@ -254,7 +252,7 @@ export async function PUT(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized FAQ update attempt');
+    console.warn('Unauthorized FAQ update attempt');
     return authError;
   }
 
@@ -348,19 +346,19 @@ export async function PUT(request: NextRequest) {
       updateData.order = data.order;
     }
 
-    logger.info('Updating FAQ', { id });
+    console.log('Updating FAQ', { id });
 
     const faq = await prisma.faq.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('FAQ updated successfully', { id });
+    console.log('FAQ updated successfully', { id });
 
     return NextResponse.json(faq, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update FAQ', { error: errorMessage });
+    console.error('Failed to update FAQ', { error: errorMessage });
     return NextResponse.json(
       { error: 'SSS öğesi güncellenemedi' },
       { status: 500, headers }
@@ -379,7 +377,7 @@ export async function DELETE(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized FAQ delete attempt');
+    console.warn('Unauthorized FAQ delete attempt');
     return authError;
   }
 
@@ -408,13 +406,13 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    logger.info('Deleting FAQ', { id, question: existingFaq.question.slice(0, 50) });
+    console.log('Deleting FAQ', { id, question: existingFaq.question.slice(0, 50) });
 
     await prisma.faq.delete({
       where: { id },
     });
 
-    logger.info('FAQ deleted successfully', { id });
+    console.log('FAQ deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'SSS öğesi başarıyla silindi' },
@@ -422,7 +420,7 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete FAQ', { error: errorMessage });
+    console.error('Failed to delete FAQ', { error: errorMessage });
     return NextResponse.json(
       { error: 'SSS öğesi silinemedi' },
       { status: 500, headers }

@@ -23,7 +23,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -31,7 +30,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/testimonials/[id]');
 
 /** Minimum rating değeri */
 const MIN_RATING = 1;
@@ -172,7 +170,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET testimonial/[id]', { ip });
+    console.warn('Rate limit exceeded on GET testimonial/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -190,7 +188,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching testimonial by ID', { id, ip });
+    console.log('Fetching testimonial by ID', { id, ip });
 
     const testimonial = await prisma.testimonial.findUnique({
       where: { id },
@@ -223,13 +221,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Testimonial retrieved successfully', { id });
+    console.log('Testimonial retrieved successfully', { id });
 
     return NextResponse.json(testimonial, { headers });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch testimonial', { error: errorMessage, ip });
+    console.error('Failed to fetch testimonial', { error: errorMessage, ip });
 
     return NextResponse.json(
       { error: 'Referans yüklenemedi' },
@@ -343,20 +341,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.order = typeof order === 'number' ? order : undefined;
     }
 
-    logger.info('Updating testimonial', { id });
+    console.log('Updating testimonial', { id });
 
     const testimonial = await prisma.testimonial.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Testimonial updated successfully', { id });
+    console.log('Testimonial updated successfully', { id });
 
     return NextResponse.json(testimonial, { headers });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update testimonial', { error: errorMessage });
+    console.error('Failed to update testimonial', { error: errorMessage });
     return NextResponse.json(
       { error: 'Referans güncellenemedi' },
       { status: 500, headers }
@@ -401,13 +399,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting testimonial', { id });
+    console.log('Deleting testimonial', { id });
 
     await prisma.testimonial.delete({
       where: { id },
     });
 
-    logger.info('Testimonial deleted successfully', { id });
+    console.log('Testimonial deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'Referans başarıyla silindi' },
@@ -416,7 +414,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete testimonial', { error: errorMessage });
+    console.error('Failed to delete testimonial', { error: errorMessage });
     return NextResponse.json(
       { error: 'Referans silinemedi' },
       { status: 500, headers }

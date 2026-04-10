@@ -26,7 +26,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -34,7 +33,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/blog/[slug]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -161,7 +159,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET blog/[slug]', { ip });
+    console.warn('Rate limit exceeded on GET blog/[slug]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -179,7 +177,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching blog post by slug', { slug, ip });
+    console.log('Fetching blog post by slug', { slug, ip });
 
     // Fetch post with selective fields
     const post = await prisma.blogPost.findUnique({
@@ -227,12 +225,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Increment the views count in the response
     const postWithUpdatedViews = { ...post, views: post.views + 1 };
 
-    logger.info('Blog post retrieved and view incremented', { slug, views: postWithUpdatedViews.views });
+    console.log('Blog post retrieved and view incremented', { slug, views: postWithUpdatedViews.views });
 
     return NextResponse.json(postWithUpdatedViews, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching blog post', { error: errorMessage, ip });
+    console.error('Error fetching blog post', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Blog yazısı yüklenemedi' },
       { status: 500, headers }
@@ -253,13 +251,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized blog post update attempt', { ip });
+    console.warn('Unauthorized blog post update attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on PUT blog/[slug]', { ip });
+    console.warn('Rate limit exceeded on PUT blog/[slug]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -367,14 +365,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : null;
     }
 
-    logger.info('Updating blog post by slug', { slug });
+    console.log('Updating blog post by slug', { slug });
 
     const post = await prisma.blogPost.update({
       where: { slug },
       data: updateData,
     });
 
-    logger.info('Blog post updated successfully', { slug, id: post.id });
+    console.log('Blog post updated successfully', { slug, id: post.id });
 
     return NextResponse.json(
       {
@@ -386,7 +384,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating blog post', { error: errorMessage, ip });
+    console.error('Error updating blog post', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Blog yazısı güncellenemedi' },
       { status: 500, headers }
@@ -407,13 +405,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized blog post delete attempt', { ip });
+    console.warn('Unauthorized blog post delete attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on DELETE blog/[slug]', { ip });
+    console.warn('Rate limit exceeded on DELETE blog/[slug]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -444,13 +442,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting blog post by slug', { slug, title: existingPost.title, ip });
+    console.log('Deleting blog post by slug', { slug, title: existingPost.title, ip });
 
     await prisma.blogPost.delete({
       where: { slug },
     });
 
-    logger.info('Blog post deleted successfully', { slug, id: existingPost.id });
+    console.log('Blog post deleted successfully', { slug, id: existingPost.id });
 
     return NextResponse.json(
       {
@@ -461,7 +459,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting blog post', { error: errorMessage, ip });
+    console.error('Error deleting blog post', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Blog yazısı silinemedi' },
       { status: 500, headers }

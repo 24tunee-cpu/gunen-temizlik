@@ -23,7 +23,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth } from '@/lib/security';
 
 // ============================================
@@ -31,7 +30,6 @@ import { requireAdminAuth } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/contact/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -148,13 +146,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized contact request update attempt', { ip });
+    console.warn('Unauthorized contact request update attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on PUT contact/[id]', { ip });
+    console.warn('Rate limit exceeded on PUT contact/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -195,14 +193,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Updating contact request read status', { id, read: body.read, ip });
+    console.log('Updating contact request read status', { id, read: body.read, ip });
 
     const contact = await prisma.contactRequest.update({
       where: { id },
       data: { read: body.read },
     });
 
-    logger.info('Contact request read status updated successfully', { id, read: body.read });
+    console.log('Contact request read status updated successfully', { id, read: body.read });
 
     return NextResponse.json(
       {
@@ -214,7 +212,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating contact request', { error: errorMessage, ip });
+    console.error('Error updating contact request', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'İletişim talebi durumu güncellenemedi' },
       { status: 500, headers }
@@ -235,13 +233,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized contact request delete attempt', { ip });
+    console.warn('Unauthorized contact request delete attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on DELETE contact/[id]', { ip });
+    console.warn('Rate limit exceeded on DELETE contact/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -272,13 +270,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting contact request', { id, name: existingContact.name, email: existingContact.email, ip });
+    console.log('Deleting contact request', { id, name: existingContact.name, email: existingContact.email, ip });
 
     await prisma.contactRequest.delete({
       where: { id },
     });
 
-    logger.info('Contact request deleted successfully', { id });
+    console.log('Contact request deleted successfully', { id });
 
     return NextResponse.json(
       {
@@ -289,7 +287,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting contact request', { error: errorMessage, ip });
+    console.error('Error deleting contact request', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'İletişim talebi silinemedi' },
       { status: 500, headers }

@@ -17,7 +17,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth } from '@/lib/security';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
@@ -28,7 +27,6 @@ import path from 'path';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/upload');
 
 /** Allowed MIME types for upload */
 const ALLOWED_TYPES = [
@@ -187,7 +185,7 @@ export async function POST(request: NextRequest) {
 
   // Rate limiting check
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded', { ip });
+    console.warn('Rate limit exceeded', { ip });
     return NextResponse.json(
       { error: 'Cok fazla istek. Lutfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -197,7 +195,7 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized upload attempt', { ip });
+    console.warn('Unauthorized upload attempt', { ip });
     return authError;
   }
 
@@ -215,7 +213,7 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type as typeof ALLOWED_TYPES[number])) {
-      logger.warn('Invalid file type attempted', { type: file.type, ip });
+      console.warn('Invalid file type attempted', { type: file.type, ip });
       return NextResponse.json(
         {
           error: 'Gecersiz dosya turu. Sadece JPEG, PNG, GIF ve WebP dosyalari yuklenebilir.'
@@ -226,7 +224,7 @@ export async function POST(request: NextRequest) {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      logger.warn('File size exceeded', { size: file.size, ip });
+      console.warn('File size exceeded', { size: file.size, ip });
       return NextResponse.json(
         {
           error: 'Dosya boyutu cok buyuk. Maksimum 5MB yukleyebilirsiniz.'
@@ -249,7 +247,7 @@ export async function POST(request: NextRequest) {
     // Ensure uploads directory exists
     if (!existsSync(UPLOADS_DIR)) {
       await mkdir(UPLOADS_DIR, { recursive: true, mode: 0o755 });
-      logger.info('Created uploads directory');
+      console.log('Created uploads directory');
     }
 
     // Write file securely
@@ -258,7 +256,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer, { mode: 0o644 });
 
-    logger.info('File uploaded successfully', {
+    console.log('File uploaded successfully', {
       fileName,
       size: file.size,
       type: file.type,
@@ -278,7 +276,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to upload file', { error: errorMessage, ip });
+    console.error('Failed to upload file', { error: errorMessage, ip });
 
     return NextResponse.json(
       { error: 'Dosya yuklenemedi. Lutfen tekrar deneyin.' },

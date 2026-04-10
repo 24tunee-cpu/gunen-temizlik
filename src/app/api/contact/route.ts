@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import {
   requireAdminAuth,
   sanitizeInput,
@@ -37,7 +36,6 @@ import {
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/contact');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -148,13 +146,13 @@ export async function GET(request: NextRequest) {
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized contact requests list attempt', { ip });
+    console.warn('Unauthorized contact requests list attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip, MAX_REQUESTS_GET, RATE_LIMIT_WINDOW_GET)) {
-    logger.warn('Rate limit exceeded on GET contact', { ip });
+    console.warn('Rate limit exceeded on GET contact', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -162,7 +160,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching contact requests', { ip });
+    console.log('Fetching contact requests', { ip });
 
     const contacts = await prisma.contactRequest.findMany({
       orderBy: { createdAt: 'desc' },
@@ -178,12 +176,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${contacts.length} contact requests`);
+    console.log(`Retrieved ${contacts.length} contact requests`);
 
     return NextResponse.json(contacts, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch contact requests', { error: errorMessage, ip });
+    console.error('Failed to fetch contact requests', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'İletişim talepleri yüklenemedi' },
       { status: 500, headers }
@@ -202,7 +200,7 @@ export async function POST(request: NextRequest) {
 
   // Rate limiting for public endpoint (3 requests per 5 minutes)
   if (checkRateLimit(ip, MAX_REQUESTS_POST, RATE_LIMIT_WINDOW_POST)) {
-    logger.warn('Rate limit exceeded on POST contact', { ip });
+    console.warn('Rate limit exceeded on POST contact', { ip });
     return NextResponse.json(
       { error: 'Çok fazla mesaj gönderdiniz. Lütfen 5 dakika sonra tekrar deneyin.' },
       { status: 429, headers }
@@ -214,7 +212,7 @@ export async function POST(request: NextRequest) {
 
     // Honeypot spam protection
     if (data.website || data.honeypot) {
-      logger.warn('Honeypot triggered - potential spam bot', { ip, email: data.email });
+      console.warn('Honeypot triggered - potential spam bot', { ip, email: data.email });
       return NextResponse.json(
         { error: 'Spam tespit edildi' },
         { status: 400, headers }
@@ -299,7 +297,7 @@ export async function POST(request: NextRequest) {
       message: sanitizeInput(data.message),
     };
 
-    logger.info('Creating new contact request', { email: sanitizedData.email, ip });
+    console.log('Creating new contact request', { email: sanitizedData.email, ip });
 
     const newContact = await prisma.contactRequest.create({
       data: {
@@ -308,7 +306,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Contact request created successfully', { id: newContact.id, email: sanitizedData.email });
+    console.log('Contact request created successfully', { id: newContact.id, email: sanitizedData.email });
 
     return NextResponse.json(
       {
@@ -320,7 +318,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create contact request', { error: errorMessage, ip });
+    console.error('Failed to create contact request', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Mesaj gönderilemedi. Lütfen tekrar deneyin.' },
       { status: 500, headers }

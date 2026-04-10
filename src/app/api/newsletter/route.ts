@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -32,7 +31,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/newsletter');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -194,13 +192,13 @@ export async function GET(request: NextRequest) {
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized newsletter subscribers list attempt', { ip });
+    console.warn('Unauthorized newsletter subscribers list attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip, MAX_REQUESTS_GET)) {
-    logger.warn('Rate limit exceeded on GET newsletter', { ip });
+    console.warn('Rate limit exceeded on GET newsletter', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -208,7 +206,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching newsletter subscribers', { ip });
+    console.log('Fetching newsletter subscribers', { ip });
 
     const subscribers = await prisma.subscriber.findMany({
       orderBy: { createdAt: 'desc' },
@@ -221,12 +219,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${subscribers.length} subscribers`);
+    console.log(`Retrieved ${subscribers.length} subscribers`);
 
     return NextResponse.json(subscribers, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching newsletter subscribers', { error: errorMessage, ip });
+    console.error('Error fetching newsletter subscribers', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Abone listesi yüklenemedi' },
       { status: 500, headers }
@@ -245,7 +243,7 @@ export async function POST(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip, MAX_REQUESTS_POST)) {
-    logger.warn('Rate limit exceeded on POST newsletter', { ip });
+    console.warn('Rate limit exceeded on POST newsletter', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -255,12 +253,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    logger.info('New newsletter subscription attempt', { ip });
+    console.log('New newsletter subscription attempt', { ip });
 
     // Validate and sanitize input
     const validation = validateSubscriberData(body);
     if (!validation.valid) {
-      logger.warn('Invalid newsletter subscription data', { error: validation.error, ip });
+      console.warn('Invalid newsletter subscription data', { error: validation.error, ip });
       return NextResponse.json(
         { error: validation.error },
         { status: 400, headers }
@@ -281,7 +279,7 @@ export async function POST(request: NextRequest) {
           where: { email },
           data: { isActive: true },
         });
-        logger.info('Reactivated existing subscriber', { email, ip });
+        console.log('Reactivated existing subscriber', { email, ip });
         return NextResponse.json(
           {
             success: true,
@@ -293,7 +291,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Already subscribed and active
-      logger.info('Duplicate subscription attempt', { email, ip });
+      console.log('Duplicate subscription attempt', { email, ip });
       return NextResponse.json(
         {
           success: true,
@@ -313,7 +311,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('New subscriber created successfully', { email, ip });
+    console.log('New subscriber created successfully', { email, ip });
 
     return NextResponse.json(
       {
@@ -325,7 +323,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error creating newsletter subscription', { error: errorMessage, ip });
+    console.error('Error creating newsletter subscription', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Abonelik oluşturulamadı. Lütfen tekrar deneyin.' },
       { status: 500, headers }

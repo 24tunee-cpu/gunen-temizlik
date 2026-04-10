@@ -22,7 +22,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -30,7 +29,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/gallery');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -143,7 +141,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET gallery', { ip });
+    console.warn('Rate limit exceeded on GET gallery', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -151,7 +149,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching all gallery items', { ip });
+    console.log('Fetching all gallery items', { ip });
 
     const items = await prisma.gallery.findMany({
       where: { isActive: true },
@@ -168,12 +166,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${items.length} gallery items`);
+    console.log(`Retrieved ${items.length} gallery items`);
 
     return NextResponse.json(items, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch gallery', { error: errorMessage, ip });
+    console.error('Failed to fetch gallery', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Galeri öğeleri yüklenemedi' },
       { status: 500, headers }
@@ -192,7 +190,7 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized gallery item create attempt');
+    console.warn('Unauthorized gallery item create attempt');
     return authError;
   }
 
@@ -221,7 +219,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info('Creating new gallery item', { title: body.title });
+    console.log('Creating new gallery item', { title: body.title });
 
     const item = await prisma.gallery.create({
       data: {
@@ -238,12 +236,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Gallery item created successfully', { id: item.id });
+    console.log('Gallery item created successfully', { id: item.id });
 
     return NextResponse.json(item, { status: 201, headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create gallery item', { error: errorMessage });
+    console.error('Failed to create gallery item', { error: errorMessage });
     return NextResponse.json(
       { error: 'Galeri öğesi oluşturulamadı' },
       { status: 500, headers }
@@ -262,7 +260,7 @@ export async function PUT(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized gallery item update attempt');
+    console.warn('Unauthorized gallery item update attempt');
     return authError;
   }
 
@@ -316,7 +314,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    logger.info('Updating gallery item', { id });
+    console.log('Updating gallery item', { id });
 
     // Build update data dynamically
     const updateData: Record<string, unknown> = {};
@@ -349,12 +347,12 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    logger.info('Gallery item updated successfully', { id });
+    console.log('Gallery item updated successfully', { id });
 
     return NextResponse.json(item, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update gallery item', { error: errorMessage });
+    console.error('Failed to update gallery item', { error: errorMessage });
     return NextResponse.json(
       { error: 'Galeri öğesi güncellenemedi' },
       { status: 500, headers }
@@ -373,7 +371,7 @@ export async function DELETE(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized gallery item delete attempt');
+    console.warn('Unauthorized gallery item delete attempt');
     return authError;
   }
 
@@ -402,13 +400,13 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    logger.info('Deleting gallery item', { id, title: existingItem.title });
+    console.log('Deleting gallery item', { id, title: existingItem.title });
 
     await prisma.gallery.delete({
       where: { id },
     });
 
-    logger.info('Gallery item deleted successfully', { id });
+    console.log('Gallery item deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'Galeri öğesi başarıyla silindi' },
@@ -416,7 +414,7 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete gallery item', { error: errorMessage });
+    console.error('Failed to delete gallery item', { error: errorMessage });
     return NextResponse.json(
       { error: 'Galeri öğesi silinemedi' },
       { status: 500, headers }

@@ -22,7 +22,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -30,7 +29,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/certificates');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -150,7 +148,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET certificates', { ip });
+    console.warn('Rate limit exceeded on GET certificates', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -158,7 +156,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching all certificates', { ip });
+    console.log('Fetching all certificates', { ip });
 
     const certificates = await prisma.certificate.findMany({
       where: { isActive: true },
@@ -176,12 +174,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${certificates.length} certificates`);
+    console.log(`Retrieved ${certificates.length} certificates`);
 
     return NextResponse.json(certificates, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch certificates', { error: errorMessage, ip });
+    console.error('Failed to fetch certificates', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Sertifikalar yüklenemedi' },
       { status: 500, headers }
@@ -200,7 +198,7 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized certificate create attempt');
+    console.warn('Unauthorized certificate create attempt');
     return authError;
   }
 
@@ -239,7 +237,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    logger.info('Creating new certificate', { title: body.title });
+    console.log('Creating new certificate', { title: body.title });
 
     const certificate = await prisma.certificate.create({
       data: {
@@ -257,12 +255,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Certificate created successfully', { id: certificate.id });
+    console.log('Certificate created successfully', { id: certificate.id });
 
     return NextResponse.json(certificate, { status: 201, headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create certificate', { error: errorMessage });
+    console.error('Failed to create certificate', { error: errorMessage });
     return NextResponse.json(
       { error: 'Sertifika oluşturulamadı' },
       { status: 500, headers }
@@ -281,7 +279,7 @@ export async function PUT(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized certificate update attempt');
+    console.warn('Unauthorized certificate update attempt');
     return authError;
   }
 
@@ -389,19 +387,19 @@ export async function PUT(request: NextRequest) {
       updateData.order = data.order;
     }
 
-    logger.info('Updating certificate', { id });
+    console.log('Updating certificate', { id });
 
     const certificate = await prisma.certificate.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Certificate updated successfully', { id });
+    console.log('Certificate updated successfully', { id });
 
     return NextResponse.json(certificate, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update certificate', { error: errorMessage });
+    console.error('Failed to update certificate', { error: errorMessage });
     return NextResponse.json(
       { error: 'Sertifika güncellenemedi' },
       { status: 500, headers }
@@ -420,7 +418,7 @@ export async function DELETE(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized certificate delete attempt');
+    console.warn('Unauthorized certificate delete attempt');
     return authError;
   }
 
@@ -449,13 +447,13 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    logger.info('Deleting certificate', { id, title: existingCertificate.title });
+    console.log('Deleting certificate', { id, title: existingCertificate.title });
 
     await prisma.certificate.delete({
       where: { id },
     });
 
-    logger.info('Certificate deleted successfully', { id });
+    console.log('Certificate deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'Sertifika başarıyla silindi' },
@@ -463,7 +461,7 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete certificate', { error: errorMessage });
+    console.error('Failed to delete certificate', { error: errorMessage });
     return NextResponse.json(
       { error: 'Sertifika silinemedi' },
       { status: 500, headers }

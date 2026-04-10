@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -32,7 +31,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/faq/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -158,7 +156,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET faq/[id]', { ip });
+    console.warn('Rate limit exceeded on GET faq/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -176,7 +174,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching FAQ by ID', { id, ip });
+    console.log('Fetching FAQ by ID', { id, ip });
 
     const faq = await prisma.faq.findUnique({
       where: { id },
@@ -206,12 +204,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('FAQ retrieved successfully', { id });
+    console.log('FAQ retrieved successfully', { id });
 
     return NextResponse.json(faq, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching FAQ', { error: errorMessage, ip });
+    console.error('Error fetching FAQ', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'SSS öğesi yüklenemedi' },
       { status: 500, headers }
@@ -232,13 +230,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized FAQ update attempt', { ip });
+    console.warn('Unauthorized FAQ update attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on PUT faq/[id]', { ip });
+    console.warn('Rate limit exceeded on PUT faq/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -337,14 +335,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.order = body.order;
     }
 
-    logger.info('Updating FAQ', { id });
+    console.log('Updating FAQ', { id });
 
     const faq = await prisma.faq.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('FAQ updated successfully', { id });
+    console.log('FAQ updated successfully', { id });
 
     return NextResponse.json(
       {
@@ -356,7 +354,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating FAQ', { error: errorMessage, ip });
+    console.error('Error updating FAQ', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'SSS öğesi güncellenemedi' },
       { status: 500, headers }
@@ -377,13 +375,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized FAQ delete attempt', { ip });
+    console.warn('Unauthorized FAQ delete attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on DELETE faq/[id]', { ip });
+    console.warn('Rate limit exceeded on DELETE faq/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -414,13 +412,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting FAQ', { id, question: existingFaq.question.slice(0, 50), ip });
+    console.log('Deleting FAQ', { id, question: existingFaq.question.slice(0, 50), ip });
 
     await prisma.faq.delete({
       where: { id },
     });
 
-    logger.info('FAQ deleted successfully', { id });
+    console.log('FAQ deleted successfully', { id });
 
     return NextResponse.json(
       {
@@ -431,7 +429,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting FAQ', { error: errorMessage, ip });
+    console.error('Error deleting FAQ', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'SSS öğesi silinemedi' },
       { status: 500, headers }

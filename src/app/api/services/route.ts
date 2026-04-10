@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { withAPILogging } from '@/lib/api-logger';
 import { withErrorHandler } from '@/lib/error-handler';
 import {
@@ -34,7 +33,6 @@ import {
   addSecurityHeaders,
 } from '@/lib/security';
 
-const logger = createLogger('api/services');
 
 // ============================================
 // CORS HEADERS
@@ -67,11 +65,11 @@ export async function OPTIONS() {
  * @returns Services list JSON
  */
 const getHandler = async (req: NextRequest) => {
-  logger.info('Fetching services list', { method: 'GET', url: req.url });
+  console.log('Fetching services list', { method: 'GET', url: req.url });
 
   const rateLimit = rateLimitMiddleware(req, 100, 60000);
   if (rateLimit) {
-    logger.warn('Rate limit exceeded for services GET', { url: req.url });
+    console.warn('Rate limit exceeded for services GET', { url: req.url });
     return rateLimit;
   }
 
@@ -96,13 +94,13 @@ const getHandler = async (req: NextRequest) => {
         createdAt: true,
       },
     });
-    logger.info('Returning services list', { count: services.length });
+    console.log('Returning services list', { count: services.length });
 
     const response = NextResponse.json(services, { headers: CORS_HEADERS });
     return addSecurityHeaders(response);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch services', { error: errorMessage });
+    console.error('Failed to fetch services', { error: errorMessage });
     return NextResponse.json(
       { error: 'Hizmetler yüklenemedi' },
       { status: 500, headers: CORS_HEADERS }
@@ -123,24 +121,24 @@ export const GET = withErrorHandler(getHandler);
  * @returns Created service JSON
  */
 const postHandler = async (req: NextRequest) => {
-  logger.info('Creating new service', { method: 'POST', url: req.url });
+  console.log('Creating new service', { method: 'POST', url: req.url });
 
   const authError = await requireAdminAuth(req);
   if (authError) {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    logger.warn('Unauthorized service create attempt', { url: req.url, ip });
+    console.warn('Unauthorized service create attempt', { url: req.url, ip });
     return authError;
   }
 
   const rateLimit = rateLimitMiddleware(req, 30, 60000);
   if (rateLimit) {
-    logger.warn('Rate limit exceeded for service POST', { url: req.url });
+    console.warn('Rate limit exceeded for service POST', { url: req.url });
     return rateLimit;
   }
 
   try {
     const data = await req.json();
-    logger.info('Received service data', { title: data.title });
+    console.log('Received service data', { title: data.title });
 
     // Validation
     if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
@@ -185,12 +183,12 @@ const postHandler = async (req: NextRequest) => {
       },
     });
 
-    logger.info('Service created successfully', { id: service.id, title: service.title });
+    console.log('Service created successfully', { id: service.id, title: service.title });
     const response = NextResponse.json(service, { status: 201, headers: CORS_HEADERS });
     return addSecurityHeaders(response);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error creating service', { error: errorMessage });
+    console.error('Error creating service', { error: errorMessage });
     return NextResponse.json({ error: 'Hizmet oluşturulamadı' }, { status: 500, headers: CORS_HEADERS });
   }
 };
@@ -208,11 +206,11 @@ export const POST = withErrorHandler(postHandler);
  * @returns Updated service JSON
  */
 const putHandler = async (req: NextRequest) => {
-  logger.info('Updating service', { method: 'PUT', url: req.url });
+  console.log('Updating service', { method: 'PUT', url: req.url });
 
   const authError = await requireAdminAuth(req);
   if (authError) {
-    logger.warn('Unauthorized service update attempt', { url: req.url });
+    console.warn('Unauthorized service update attempt', { url: req.url });
     return authError;
   }
 
@@ -284,12 +282,12 @@ const putHandler = async (req: NextRequest) => {
       data: updateData,
     });
 
-    logger.info('Service updated successfully', { id: service.id });
+    console.log('Service updated successfully', { id: service.id });
     const response = NextResponse.json(service, { headers: CORS_HEADERS });
     return addSecurityHeaders(response);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating service', { error: errorMessage });
+    console.error('Error updating service', { error: errorMessage });
     return NextResponse.json({ error: 'Hizmet güncellenemedi' }, { status: 500, headers: CORS_HEADERS });
   }
 };
@@ -306,11 +304,11 @@ export const PUT = withErrorHandler(putHandler);
  * @returns Success message JSON
  */
 const deleteHandler = async (req: NextRequest) => {
-  logger.info('Deleting service', { method: 'DELETE', url: req.url });
+  console.log('Deleting service', { method: 'DELETE', url: req.url });
 
   const authError = await requireAdminAuth(req);
   if (authError) {
-    logger.warn('Unauthorized service delete attempt', { url: req.url });
+    console.warn('Unauthorized service delete attempt', { url: req.url });
     return authError;
   }
 
@@ -334,7 +332,7 @@ const deleteHandler = async (req: NextRequest) => {
       where: { id },
     });
 
-    logger.info('Service deleted successfully', { id, title: existingService.title });
+    console.log('Service deleted successfully', { id, title: existingService.title });
     const response = NextResponse.json(
       { success: true, message: 'Hizmet başarıyla silindi' },
       { headers: CORS_HEADERS }
@@ -342,7 +340,7 @@ const deleteHandler = async (req: NextRequest) => {
     return addSecurityHeaders(response);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting service', { error: errorMessage });
+    console.error('Error deleting service', { error: errorMessage });
     return NextResponse.json({ error: 'Hizmet silinemedi' }, { status: 500, headers: CORS_HEADERS });
   }
 };

@@ -23,7 +23,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -31,7 +30,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/site-settings');
 
 /** Default site settings */
 const DEFAULT_SETTINGS = {
@@ -212,7 +210,7 @@ function sanitizeSettingsData(data: Record<string, unknown>): SiteSettingsData {
   for (const [key, value] of Object.entries(data)) {
     // Skip invalid fields (whitelist check)
     if (!VALID_SETTINGS_FIELDS.includes(key as typeof VALID_SETTINGS_FIELDS[number])) {
-      logger.warn('Invalid settings field attempted', { field: key });
+      console.warn('Invalid settings field attempted', { field: key });
       continue;
     }
 
@@ -283,7 +281,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET site-settings', { ip });
+    console.warn('Rate limit exceeded on GET site-settings', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -291,24 +289,24 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching site settings', { ip });
+    console.log('Fetching site settings', { ip });
 
     let settings = await prisma.siteSettings.findFirst();
 
     // Create default settings if none exist
     if (!settings) {
-      logger.info('Creating default site settings');
+      console.log('Creating default site settings');
       settings = await prisma.siteSettings.create({
         data: DEFAULT_SETTINGS,
       });
     }
 
-    logger.info('Site settings retrieved successfully');
+    console.log('Site settings retrieved successfully');
 
     return NextResponse.json(settings, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch site settings', { error: errorMessage, ip });
+    console.error('Failed to fetch site settings', { error: errorMessage, ip });
 
     // Return default settings on error
     return NextResponse.json(DEFAULT_SETTINGS, { status: 200, headers });
@@ -326,14 +324,14 @@ export async function PUT(request: NextRequest) {
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized site settings update attempt');
+    console.warn('Unauthorized site settings update attempt');
     return authError;
   }
 
   try {
     const body = await request.json();
 
-    logger.info('Updating site settings', { fields: Object.keys(body) });
+    console.log('Updating site settings', { fields: Object.keys(body) });
 
     // Validate and sanitize input data
     let sanitizedData: SiteSettingsData;
@@ -341,7 +339,7 @@ export async function PUT(request: NextRequest) {
       sanitizedData = sanitizeSettingsData(body);
     } catch (validationError) {
       const message = validationError instanceof Error ? validationError.message : 'Validation failed';
-      logger.warn('Site settings validation failed', { error: message });
+      console.warn('Site settings validation failed', { error: message });
       return NextResponse.json(
         { error: message },
         { status: 400, headers }
@@ -358,19 +356,19 @@ export async function PUT(request: NextRequest) {
         where: { id: existing.id },
         data: sanitizedData,
       });
-      logger.info('Site settings updated successfully', { id: existing.id });
+      console.log('Site settings updated successfully', { id: existing.id });
     } else {
       // Create new settings with defaults + provided data
       settings = await prisma.siteSettings.create({
         data: { ...DEFAULT_SETTINGS, ...sanitizedData },
       });
-      logger.info('Site settings created successfully', { id: settings.id });
+      console.log('Site settings created successfully', { id: settings.id });
     }
 
     return NextResponse.json(settings, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update site settings', { error: errorMessage });
+    console.error('Failed to update site settings', { error: errorMessage });
     return NextResponse.json(
       { error: 'Site ayarları güncellenemedi' },
       { status: 500, headers }

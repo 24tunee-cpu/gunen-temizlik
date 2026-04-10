@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -32,7 +31,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/newsletter/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -161,13 +159,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized subscriber fetch attempt', { ip });
+    console.warn('Unauthorized subscriber fetch attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET newsletter/[id]', { ip });
+    console.warn('Rate limit exceeded on GET newsletter/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -185,7 +183,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching subscriber by ID', { id, ip });
+    console.log('Fetching subscriber by ID', { id, ip });
 
     const subscriber = await prisma.subscriber.findUnique({
       where: { id },
@@ -205,12 +203,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Subscriber retrieved successfully', { id });
+    console.log('Subscriber retrieved successfully', { id });
 
     return NextResponse.json(subscriber, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching subscriber', { error: errorMessage, ip });
+    console.error('Error fetching subscriber', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Abone bilgileri yüklenemedi' },
       { status: 500, headers }
@@ -231,13 +229,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized subscriber update attempt', { ip });
+    console.warn('Unauthorized subscriber update attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on PUT newsletter/[id]', { ip });
+    console.warn('Rate limit exceeded on PUT newsletter/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -332,14 +330,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.isActive = body.isActive;
     }
 
-    logger.info('Updating subscriber', { id, ip });
+    console.log('Updating subscriber', { id, ip });
 
     const subscriber = await prisma.subscriber.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Subscriber updated successfully', { id });
+    console.log('Subscriber updated successfully', { id });
 
     return NextResponse.json(
       {
@@ -351,7 +349,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating subscriber', { error: errorMessage, ip });
+    console.error('Error updating subscriber', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Abone güncellenemedi' },
       { status: 500, headers }
@@ -372,13 +370,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized subscriber delete attempt', { ip });
+    console.warn('Unauthorized subscriber delete attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on DELETE newsletter/[id]', { ip });
+    console.warn('Rate limit exceeded on DELETE newsletter/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -409,13 +407,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting subscriber', { id, email: existingSubscriber.email, ip });
+    console.log('Deleting subscriber', { id, email: existingSubscriber.email, ip });
 
     await prisma.subscriber.delete({
       where: { id },
     });
 
-    logger.info('Subscriber deleted successfully', { id });
+    console.log('Subscriber deleted successfully', { id });
 
     return NextResponse.json(
       {
@@ -426,7 +424,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting subscriber', { error: errorMessage, ip });
+    console.error('Error deleting subscriber', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Abone silinemedi' },
       { status: 500, headers }

@@ -25,7 +25,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -33,7 +32,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/certificates/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -176,7 +174,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET certificates/[id]', { ip });
+    console.warn('Rate limit exceeded on GET certificates/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -194,7 +192,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching certificate by ID', { id, ip });
+    console.log('Fetching certificate by ID', { id, ip });
 
     const certificate = await prisma.certificate.findUnique({
       where: { id },
@@ -226,12 +224,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Certificate retrieved successfully', { id });
+    console.log('Certificate retrieved successfully', { id });
 
     return NextResponse.json(certificate, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching certificate', { error: errorMessage, ip });
+    console.error('Error fetching certificate', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Sertifika bilgileri yüklenemedi' },
       { status: 500, headers }
@@ -252,13 +250,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized certificate update attempt', { ip });
+    console.warn('Unauthorized certificate update attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on PUT certificates/[id]', { ip });
+    console.warn('Rate limit exceeded on PUT certificates/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -371,14 +369,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.order = body.order;
     }
 
-    logger.info('Updating certificate', { id });
+    console.log('Updating certificate', { id });
 
     const certificate = await prisma.certificate.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Certificate updated successfully', { id });
+    console.log('Certificate updated successfully', { id });
 
     return NextResponse.json(
       {
@@ -390,7 +388,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating certificate', { error: errorMessage, ip });
+    console.error('Error updating certificate', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Sertifika güncellenemedi' },
       { status: 500, headers }
@@ -411,13 +409,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized certificate delete attempt', { ip });
+    console.warn('Unauthorized certificate delete attempt', { ip });
     return authError;
   }
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on DELETE certificates/[id]', { ip });
+    console.warn('Rate limit exceeded on DELETE certificates/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -448,13 +446,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting certificate', { id, title: existingCertificate.title, ip });
+    console.log('Deleting certificate', { id, title: existingCertificate.title, ip });
 
     await prisma.certificate.delete({
       where: { id },
     });
 
-    logger.info('Certificate deleted successfully', { id });
+    console.log('Certificate deleted successfully', { id });
 
     return NextResponse.json(
       {
@@ -465,7 +463,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting certificate', { error: errorMessage, ip });
+    console.error('Error deleting certificate', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Sertifika silinemedi' },
       { status: 500, headers }

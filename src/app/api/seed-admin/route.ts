@@ -29,14 +29,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { createLogger } from '@/lib/logger';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/seed-admin');
 
 /** Default admin credentials - DEVELOPMENT ONLY! */
 const DEFAULT_ADMIN = {
@@ -136,7 +134,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on seed-admin endpoint', { ip });
+    console.warn('Rate limit exceeded on seed-admin endpoint', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 10 dakika bekleyin.' },
       { status: 429, headers }
@@ -146,12 +144,12 @@ export async function GET(request: NextRequest) {
   // Production environment check
   const isProduction = process.env.NODE_ENV === 'production';
   if (isProduction) {
-    logger.warn('Seed endpoint accessed in production environment', { ip });
+    console.warn('Seed endpoint accessed in production environment', { ip });
     // Allow but warn - in real production this should be disabled entirely
   }
 
   try {
-    logger.info('Starting seed data creation', { ip, isProduction });
+    console.log('Starting seed data creation', { ip, isProduction });
 
     // Check if admin exists, create if not
     const existingAdmin = await prisma.user.findUnique({
@@ -162,7 +160,7 @@ export async function GET(request: NextRequest) {
     let adminCreated = false;
     if (existingAdmin) {
       admin = existingAdmin;
-      logger.info('Admin user already exists', { email: admin.email });
+      console.log('Admin user already exists', { email: admin.email });
     } else {
       const hashedPassword = await bcrypt.hash(DEFAULT_ADMIN.password, 10);
       admin = await prisma.user.create({
@@ -174,7 +172,7 @@ export async function GET(request: NextRequest) {
         },
       });
       adminCreated = true;
-      logger.info('Admin user created successfully', { email: admin.email });
+      console.log('Admin user created successfully', { email: admin.email });
     }
 
     // Check and seed Services
@@ -545,7 +543,7 @@ export async function GET(request: NextRequest) {
         : [],
     };
 
-    logger.info('Seed data operation completed', {
+    console.log('Seed data operation completed', {
       adminCreated,
       isProduction,
       createdCounts: responseData.created
@@ -554,7 +552,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(responseData, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error creating seed data', { error: errorMessage });
+    console.error('Error creating seed data', { error: errorMessage });
     return NextResponse.json(
       {
         error: 'Seed verileri oluşturulamadı',

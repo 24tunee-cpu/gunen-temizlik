@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -32,7 +31,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/services/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -157,7 +155,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET service/[id]', { ip });
+    console.warn('Rate limit exceeded on GET service/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -175,7 +173,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching service by ID', { id, ip });
+    console.log('Fetching service by ID', { id, ip });
 
     const service = await prisma.service.findUnique({
       where: { id },
@@ -213,12 +211,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Service retrieved successfully', { id });
+    console.log('Service retrieved successfully', { id });
 
     return NextResponse.json(service, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching service', { error: errorMessage, ip });
+    console.error('Error fetching service', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Hizmet yüklenemedi' },
       { status: 500, headers }
@@ -239,7 +237,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const authError = await requireAdminAuth(request);
   if (authError) {
     const ip = getClientIp(request);
-    logger.warn('Unauthorized service update attempt', { ip });
+    console.warn('Unauthorized service update attempt', { ip });
     return authError;
   }
 
@@ -320,11 +318,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data: updateData,
     });
 
-    logger.info('Service updated successfully', { id });
+    console.log('Service updated successfully', { id });
     return NextResponse.json(service, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating service', { error: errorMessage });
+    console.error('Error updating service', { error: errorMessage });
     return NextResponse.json(
       { error: 'Hizmet güncellenemedi' },
       { status: 500, headers }
@@ -345,7 +343,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const authError = await requireAdminAuth(request);
   if (authError) {
     const ip = getClientIp(request);
-    logger.warn('Unauthorized service delete attempt', { ip });
+    console.warn('Unauthorized service delete attempt', { ip });
     return authError;
   }
 
@@ -377,14 +375,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
     });
 
-    logger.info('Service deleted successfully', { id, title: existingService.title });
+    console.log('Service deleted successfully', { id, title: existingService.title });
     return NextResponse.json(
       { success: true, message: 'Hizmet başarıyla silindi' },
       { headers }
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting service', { error: errorMessage });
+    console.error('Error deleting service', { error: errorMessage });
     return NextResponse.json(
       { error: 'Hizmet silinemedi' },
       { status: 500, headers }

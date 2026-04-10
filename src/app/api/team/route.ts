@@ -21,7 +21,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -29,7 +28,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/team');
 
 /** Maximum string lengths */
 const MAX_LENGTHS = {
@@ -155,7 +153,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET team', { ip });
+    console.warn('Rate limit exceeded on GET team', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -163,7 +161,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching all team members', { ip });
+    console.log('Fetching all team members', { ip });
 
     const members = await prisma.teamMember.findMany({
       where: { isActive: true },
@@ -183,12 +181,12 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${members.length} team members`);
+    console.log(`Retrieved ${members.length} team members`);
 
     return NextResponse.json(members, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch team members', { error: errorMessage, ip });
+    console.error('Failed to fetch team members', { error: errorMessage, ip });
 
     return NextResponse.json(
       { error: 'Ekip üyeleri yüklenemedi' },
@@ -223,7 +221,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: roleValidation.error || 'Pozisyon zorunludur' }, { status: 400, headers });
     }
 
-    logger.info('Creating new team member', { name: body.name });
+    console.log('Creating new team member', { name: body.name });
 
     // Sanitize inputs
     const sanitizedName = sanitizeInput(body.name as string);
@@ -247,12 +245,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Team member created successfully', { id: member.id });
+    console.log('Team member created successfully', { id: member.id });
 
     return NextResponse.json(member, { status: 201, headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create team member', { error: errorMessage });
+    console.error('Failed to create team member', { error: errorMessage });
     return NextResponse.json({ error: 'Ekip üyesi oluşturulamadı' }, { status: 500, headers });
   }
 }
@@ -334,19 +332,19 @@ export async function PUT(request: NextRequest) {
       updateData.order = typeof data.order === 'number' ? data.order : undefined;
     }
 
-    logger.info('Updating team member', { id });
+    console.log('Updating team member', { id });
 
     const member = await prisma.teamMember.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Team member updated successfully', { id });
+    console.log('Team member updated successfully', { id });
 
     return NextResponse.json(member, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update team member', { error: errorMessage });
+    console.error('Failed to update team member', { error: errorMessage });
     return NextResponse.json({ error: 'Ekip üyesi güncellenemedi' }, { status: 500, headers });
   }
 }
@@ -382,13 +380,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Ekip üyesi bulunamadı' }, { status: 404, headers });
     }
 
-    logger.info('Deleting team member', { id });
+    console.log('Deleting team member', { id });
 
     await prisma.teamMember.delete({
       where: { id },
     });
 
-    logger.info('Team member deleted successfully', { id });
+    console.log('Team member deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'Ekip üyesi başarıyla silindi' },
@@ -396,7 +394,7 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete team member', { error: errorMessage });
+    console.error('Failed to delete team member', { error: errorMessage });
     return NextResponse.json({ error: 'Ekip üyesi silinemedi' }, { status: 500, headers });
   }
 }

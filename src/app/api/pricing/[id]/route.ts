@@ -24,7 +24,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -32,7 +31,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/pricing/[id]');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -148,7 +146,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET pricing/[id]', { ip });
+    console.warn('Rate limit exceeded on GET pricing/[id]', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -166,7 +164,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Fetching pricing item by ID', { id, ip });
+    console.log('Fetching pricing item by ID', { id, ip });
 
     const item = await prisma.pricing.findUnique({
       where: { id },
@@ -200,12 +198,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Pricing item retrieved successfully', { id });
+    console.log('Pricing item retrieved successfully', { id });
 
     return NextResponse.json(item, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching pricing item', { error: errorMessage, ip });
+    console.error('Error fetching pricing item', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Fiyatlandırma bilgileri yüklenemedi' },
       { status: 500, headers }
@@ -226,7 +224,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const authError = await requireAdminAuth(request);
   if (authError) {
     const ip = getClientIp(request);
-    logger.warn('Unauthorized pricing update attempt', { ip });
+    console.warn('Unauthorized pricing update attempt', { ip });
     return authError;
   }
 
@@ -315,19 +313,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.order = typeof body.order === 'number' ? body.order : 0;
     }
 
-    logger.info('Updating pricing item', { id });
+    console.log('Updating pricing item', { id });
 
     const item = await prisma.pricing.update({
       where: { id },
       data: updateData,
     });
 
-    logger.info('Pricing item updated successfully', { id });
+    console.log('Pricing item updated successfully', { id });
 
     return NextResponse.json(item, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating pricing item', { error: errorMessage });
+    console.error('Error updating pricing item', { error: errorMessage });
     return NextResponse.json(
       { error: 'Fiyatlandırma güncellenemedi' },
       { status: 500, headers }
@@ -348,7 +346,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const authError = await requireAdminAuth(request);
   if (authError) {
     const ip = getClientIp(request);
-    logger.warn('Unauthorized pricing delete attempt', { ip });
+    console.warn('Unauthorized pricing delete attempt', { ip });
     return authError;
   }
 
@@ -376,13 +374,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    logger.info('Deleting pricing item', { id, serviceName: existingItem.serviceName });
+    console.log('Deleting pricing item', { id, serviceName: existingItem.serviceName });
 
     await prisma.pricing.delete({
       where: { id },
     });
 
-    logger.info('Pricing item deleted successfully', { id });
+    console.log('Pricing item deleted successfully', { id });
 
     return NextResponse.json(
       { success: true, message: 'Fiyatlandırma başarıyla silindi' },
@@ -390,7 +388,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error deleting pricing item', { error: errorMessage });
+    console.error('Error deleting pricing item', { error: errorMessage });
     return NextResponse.json(
       { error: 'Fiyatlandırma silinemedi' },
       { status: 500, headers }

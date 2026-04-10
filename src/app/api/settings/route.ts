@@ -29,14 +29,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
-import { createLogger } from '@/lib/logger';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/settings');
 
 /** Default settings for first-time initialization */
 const DEFAULT_SETTINGS = {
@@ -169,7 +167,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET settings', { ip });
+    console.warn('Rate limit exceeded on GET settings', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -177,7 +175,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching site settings', { ip });
+    console.log('Fetching site settings', { ip });
 
     // Get or create settings
     let settings = await prisma.siteSettings.findFirst();
@@ -187,7 +185,7 @@ export async function GET(request: NextRequest) {
       settings = await prisma.siteSettings.create({
         data: DEFAULT_SETTINGS,
       });
-      logger.info('Created default site settings');
+      console.log('Created default site settings');
     }
 
     // Check maintenance mode
@@ -230,7 +228,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(publicSettings, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error fetching settings', { error: errorMessage, ip });
+    console.error('Error fetching settings', { error: errorMessage, ip });
     return NextResponse.json({ error: 'Ayarlar yüklenemedi' }, { status: 500, headers });
   }
 }
@@ -246,13 +244,13 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized site settings update attempt');
+    console.warn('Unauthorized site settings update attempt');
     return authError;
   }
 
   try {
     const body = await request.json();
-    logger.info('Updating site settings', { updatedFields: Object.keys(body) });
+    console.log('Updating site settings', { updatedFields: Object.keys(body) });
 
     // Validate color fields if provided
     if (body.primaryColor && !isValidHexColor(body.primaryColor)) {
@@ -279,14 +277,14 @@ export async function POST(request: NextRequest) {
           ...sanitizeSettings(body),
         },
       });
-      logger.info('Created new site settings', { id: settings.id });
+      console.log('Created new site settings', { id: settings.id });
     } else {
       // Update existing settings
       settings = await prisma.siteSettings.update({
         where: { id: settings.id },
         data: sanitizeSettings(body),
       });
-      logger.info('Updated site settings', { id: settings.id });
+      console.log('Updated site settings', { id: settings.id });
     }
 
     return NextResponse.json({
@@ -296,7 +294,7 @@ export async function POST(request: NextRequest) {
     }, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error updating settings', { error: errorMessage });
+    console.error('Error updating settings', { error: errorMessage });
     return NextResponse.json(
       { error: 'Ayarlar güncellenemedi' },
       { status: 500, headers }
@@ -315,13 +313,13 @@ export async function PUT(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized site settings replacement attempt');
+    console.warn('Unauthorized site settings replacement attempt');
     return authError;
   }
 
   try {
     const body = await request.json();
-    logger.info('Replacing all site settings');
+    console.log('Replacing all site settings');
 
     // Validate color fields if provided
     if (body.primaryColor && !isValidHexColor(body.primaryColor)) {
@@ -346,13 +344,13 @@ export async function PUT(request: NextRequest) {
           ...sanitizeSettings(body),
         },
       });
-      logger.info('Created new site settings via PUT', { id: settings.id });
+      console.log('Created new site settings via PUT', { id: settings.id });
     } else {
       settings = await prisma.siteSettings.update({
         where: { id: settings.id },
         data: sanitizeSettings(body),
       });
-      logger.info('Replaced site settings', { id: settings.id });
+      console.log('Replaced site settings', { id: settings.id });
     }
 
     return NextResponse.json({
@@ -362,7 +360,7 @@ export async function PUT(request: NextRequest) {
     }, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Error replacing settings', { error: errorMessage });
+    console.error('Error replacing settings', { error: errorMessage });
     return NextResponse.json(
       { error: 'Ayarlar güncellenemedi' },
       { status: 500, headers }

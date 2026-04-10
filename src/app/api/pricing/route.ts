@@ -22,7 +22,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createLogger } from '@/lib/logger';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -30,7 +29,6 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 // ============================================
 
 /** Logger instance */
-const logger = createLogger('api/pricing');
 
 /** Rate limiting map (IP -> timestamp array) */
 const rateLimitMap = new Map<string, number[]>();
@@ -123,7 +121,7 @@ export async function GET(request: NextRequest) {
 
   // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    logger.warn('Rate limit exceeded on GET pricing', { ip });
+    console.warn('Rate limit exceeded on GET pricing', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
       { status: 429, headers }
@@ -131,7 +129,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    logger.info('Fetching all pricing items', { ip });
+    console.log('Fetching all pricing items', { ip });
 
     const pricing = await prisma.pricing.findMany({
       where: { isActive: true },
@@ -151,11 +149,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    logger.info(`Retrieved ${pricing.length} pricing items`);
+    console.log(`Retrieved ${pricing.length} pricing items`);
     return NextResponse.json(pricing, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to fetch pricing', { error: errorMessage, ip });
+    console.error('Failed to fetch pricing', { error: errorMessage, ip });
     return NextResponse.json(
       { error: 'Fiyatlandırma bilgileri yüklenemedi' },
       { status: 500, headers }
@@ -174,7 +172,7 @@ export async function POST(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized pricing create attempt');
+    console.warn('Unauthorized pricing create attempt');
     return authError;
   }
 
@@ -203,7 +201,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info('Creating new pricing item', { serviceName: body.serviceName });
+    console.log('Creating new pricing item', { serviceName: body.serviceName });
 
     const item = await prisma.pricing.create({
       data: {
@@ -221,11 +219,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info('Pricing item created successfully', { id: item.id });
+    console.log('Pricing item created successfully', { id: item.id });
     return NextResponse.json(item, { status: 201, headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to create pricing', { error: errorMessage });
+    console.error('Failed to create pricing', { error: errorMessage });
     return NextResponse.json(
       { error: 'Fiyatlandırma oluşturulamadı' },
       { status: 500, headers }
@@ -244,7 +242,7 @@ export async function PUT(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized pricing update attempt');
+    console.warn('Unauthorized pricing update attempt');
     return authError;
   }
 
@@ -298,7 +296,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    logger.info('Updating pricing item', { id });
+    console.log('Updating pricing item', { id });
 
     // Build update data dynamically
     const updateData: Record<string, unknown> = {};
@@ -338,11 +336,11 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    logger.info('Pricing item updated successfully', { id });
+    console.log('Pricing item updated successfully', { id });
     return NextResponse.json(item, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to update pricing', { error: errorMessage });
+    console.error('Failed to update pricing', { error: errorMessage });
     return NextResponse.json(
       { error: 'Fiyatlandırma güncellenemedi' },
       { status: 500, headers }
@@ -361,7 +359,7 @@ export async function DELETE(request: NextRequest) {
   // Admin authentication
   const authError = await requireAdminAuth(request);
   if (authError) {
-    logger.warn('Unauthorized pricing delete attempt');
+    console.warn('Unauthorized pricing delete attempt');
     return authError;
   }
 
@@ -390,20 +388,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    logger.info('Deleting pricing item', { id, serviceName: existingItem.serviceName });
+    console.log('Deleting pricing item', { id, serviceName: existingItem.serviceName });
 
     await prisma.pricing.delete({
       where: { id },
     });
 
-    logger.info('Pricing item deleted successfully', { id });
+    console.log('Pricing item deleted successfully', { id });
     return NextResponse.json(
       { success: true, message: 'Fiyatlandırma başarıyla silindi' },
       { headers }
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Failed to delete pricing', { error: errorMessage });
+    console.error('Failed to delete pricing', { error: errorMessage });
     return NextResponse.json(
       { error: 'Fiyatlandırma silinemedi' },
       { status: 500, headers }
