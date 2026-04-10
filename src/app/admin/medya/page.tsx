@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/store/toastStore';
-import logger from '@/lib/logger';
 import {
   Upload,
   Image,
@@ -68,7 +67,7 @@ export default function MediaLibraryPage() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Yukleme hatasi';
       setError(errorMsg);
-      logger.error('Error fetching media', {}, err instanceof Error ? err : undefined);
+      console.error('Error fetching media', {}, err instanceof Error ? err : undefined);
     } finally {
       setLoading(false);
     }
@@ -113,7 +112,7 @@ export default function MediaLibraryPage() {
       toast.success('Yukleme Basarili', `${files.length} dosya basariyla yuklendi.`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Dosya yuklenirken hata olustu.';
-      logger.error('Error uploading files', {}, err instanceof Error ? err : undefined);
+      console.error('Error uploading files', {}, err instanceof Error ? err : undefined);
       toast.error('Yukleme Hatasi', errorMsg);
     } finally {
       setUploading(false);
@@ -155,7 +154,7 @@ export default function MediaLibraryPage() {
       toast.success('Silindi', `${selectedItems.length} dosya basariyla silindi.`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Dosyalar silinirken hata olustu.';
-      logger.error('Error deleting media', {}, err instanceof Error ? err : undefined);
+      console.error('Error deleting media', {}, err instanceof Error ? err : undefined);
       toast.error('Silme Hatasi', errorMsg);
     }
   };
@@ -165,7 +164,7 @@ export default function MediaLibraryPage() {
       await navigator.clipboard.writeText(url);
       toast.success('Kopyalandi', 'URL panoya kopyalandi.');
     } catch (err) {
-      logger.error('Error copying to clipboard', {}, err instanceof Error ? err : undefined);
+      console.error('Error copying to clipboard', {}, err instanceof Error ? err : undefined);
       toast.error('Kopyalama Hatasi', 'URL kopyalanirken hata olustu.');
     }
   };

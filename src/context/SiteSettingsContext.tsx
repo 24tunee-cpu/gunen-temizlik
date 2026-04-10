@@ -33,9 +33,6 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('site/settings');
 
 // ============================================
 // TYPES
@@ -242,7 +239,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
     const loadSettings = async () => {
       try {
         setIsLoading(true);
-        logger.info('Loading site settings from API...');
+        console.log('Loading site settings from API...');
 
         // Load from API
         const response = await fetch('/api/settings');
@@ -251,12 +248,12 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
           const merged = { ...defaultSettings, ...data };
           setSettings(merged);
           setSavedSettings(merged);
-          logger.info('Settings loaded from API');
+          console.log('Settings loaded from API');
         } else {
           throw new Error('Failed to fetch settings');
         }
       } catch (error) {
-        logger.error('Failed to load settings from API, falling back to localStorage', {
+        console.error('Failed to load settings from API, falling back to localStorage', {
           error: String(error),
         });
 
@@ -269,7 +266,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
             setSettings(merged);
             setSavedSettings(merged);
           } catch {
-            logger.error('Failed to parse localStorage settings');
+            console.error('Failed to parse localStorage settings');
           }
         }
       } finally {
@@ -288,7 +285,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
 
     autoSaveTimeoutRef.current = setTimeout(() => {
       localStorage.setItem('site-settings-v2', JSON.stringify(settings));
-      logger.debug('Settings auto-saved to localStorage');
+      console.debug('Settings auto-saved to localStorage');
     }, 1000);
 
     return () => {
@@ -304,7 +301,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
   const updateSettings = useCallback((newSettings: Partial<SiteSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
-      logger.info('Settings updated', { keys: Object.keys(newSettings) });
+      console.log('Settings updated', { keys: Object.keys(newSettings) });
       return updated;
     });
   }, []);
@@ -314,13 +311,13 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
    */
   const saveSettings = useCallback(async () => {
     if (!isValid) {
-      logger.warn('Cannot save invalid settings', { errors: validationErrors });
+      console.warn('Cannot save invalid settings', { errors: validationErrors });
       throw new Error('Settings validation failed');
     }
 
     try {
       setIsSaving(true);
-      logger.info('Saving settings to server...');
+      console.log('Saving settings to server...');
 
       // Save to API
       const response = await fetch('/api/settings', {
@@ -340,9 +337,9 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       // Also save to localStorage as backup
       localStorage.setItem('site-settings-v2', JSON.stringify(settings));
 
-      logger.info('Settings saved successfully');
+      console.log('Settings saved successfully');
     } catch (error) {
-      logger.error('Failed to save settings', {
+      console.error('Failed to save settings', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -356,7 +353,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
    */
   const resetSettings = useCallback(() => {
     setSettings(defaultSettings);
-    logger.info('Settings reset to defaults');
+    console.log('Settings reset to defaults');
   }, []);
 
   // Context value (memoized)

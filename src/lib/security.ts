@@ -12,7 +12,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { randomBytes } from 'crypto';
-import logger from './logger';
 
 // ============================================
 // CONFIGURATION & TYPES
@@ -105,7 +104,7 @@ export async function requireAdminAuth(
 
   // Production'da secret zorunlu
   if (!secret && process.env.NODE_ENV === 'production') {
-    logger.error('[SECURITY] NEXTAUTH_SECRET not configured in production');
+    console.error('[SECURITY] NEXTAUTH_SECRET not configured in production');
     return NextResponse.json(
       { error: 'Server configuration error' },
       { status: 500 }
@@ -173,7 +172,7 @@ export function requireApiKey(req: NextRequest): NextResponse | null {
   const ip = getClientIp(req);
 
   if (!validKey) {
-    logger.error('[SECURITY] INTERNAL_API_KEY not configured');
+    console.error('[SECURITY] INTERNAL_API_KEY not configured');
     return NextResponse.json(
       { error: 'Server configuration error' },
       { status: 500 }
@@ -468,7 +467,7 @@ function cleanupRateLimitStore(): void {
   }
 
   if (cleaned > 0) {
-    logger.debug(`[SECURITY] Rate limit store cleanup: ${cleaned} entries removed`);
+    console.debug(`[SECURITY] Rate limit store cleanup: ${cleaned} entries removed`);
   }
 
   lastCleanup = now;
@@ -547,7 +546,7 @@ export function checkRateLimit(
 export function clearRateLimitStore(): void {
   rateLimitStore.clear();
   lastCleanup = Date.now();
-  logger.info('[SECURITY] Rate limit store cleared');
+  console.log('[SECURITY] Rate limit store cleared');
 }
 
 /**
@@ -780,11 +779,11 @@ export function logSecurityEvent(
 
   // Hata seviyesine göre log level seç
   if (logEntry.severity === 'HIGH') {
-    logger.error(`[SECURITY] ${event}`, logEntry);
+    console.error(`[SECURITY] ${event}`, logEntry);
   } else if (logEntry.severity === 'MEDIUM') {
-    logger.warn(`[SECURITY] ${event}`, logEntry);
+    console.warn(`[SECURITY] ${event}`, logEntry);
   } else {
-    logger.info(`[SECURITY] ${event}`, logEntry);
+    console.log(`[SECURITY] ${event}`, logEntry);
   }
 }
 

@@ -22,7 +22,6 @@ import {
   Square,
   AlertCircle
 } from 'lucide-react';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface Testimonial {
@@ -81,7 +80,7 @@ export default function TestimonialsPage() {
       const data = await res.json();
       setTestimonials(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching testimonials', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching testimonials', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Referanslar yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -119,7 +118,7 @@ export default function TestimonialsPage() {
       fetchTestimonials();
       toast.success('Basarili', editingTestimonial ? 'Referans guncellendi.' : 'Yeni referans eklendi.');
     } catch (error) {
-      logger.error('Error saving testimonial', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving testimonial', {}, error instanceof Error ? error : undefined);
       toast.error('Kaydetme Hatasi', 'Referans kaydedilirken bir hata olustu.');
     } finally {
       setIsSubmitting(false);
@@ -134,7 +133,7 @@ export default function TestimonialsPage() {
       fetchTestimonials();
       toast.success('Silindi', 'Referans basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting testimonial', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting testimonial', {}, error instanceof Error ? error : undefined);
       toast.error('Silme Hatasi', 'Referans silinirken bir hata olustu.');
     }
   };
@@ -148,7 +147,7 @@ export default function TestimonialsPage() {
       setShowBulkDeleteConfirm(false);
       fetchTestimonials();
     } catch (error) {
-      logger.error('Error bulk deleting', {}, error instanceof Error ? error : undefined);
+      console.error('Error bulk deleting', {}, error instanceof Error ? error : undefined);
     }
   };
 
@@ -163,7 +162,7 @@ export default function TestimonialsPage() {
       if (!res.ok) throw new Error('Failed to update testimonial');
       fetchTestimonials();
     } catch (error) {
-      logger.error('Error updating testimonial', {}, error instanceof Error ? error : undefined);
+      console.error('Error updating testimonial', {}, error instanceof Error ? error : undefined);
     }
   };
 
@@ -184,7 +183,7 @@ export default function TestimonialsPage() {
       setSelectedItems([]);
       fetchTestimonials();
     } catch (error) {
-      logger.error('Error bulk updating', {}, error instanceof Error ? error : undefined);
+      console.error('Error bulk updating', {}, error instanceof Error ? error : undefined);
     }
   };
 

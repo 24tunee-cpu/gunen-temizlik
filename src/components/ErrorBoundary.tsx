@@ -25,8 +25,6 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-// import { logger } from '@/lib/logger'; // DISABLED
-// import { handleReactError } from '@/lib/client-error-handler'; // DISABLED
 
 // ============================================
 // TYPES
@@ -136,11 +134,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     const { onError, errorReporter } = this.props;
     const { retryCount } = this.state;
 
-    // Loglama - DISABLED to prevent infinite error loop
-    // logger.error('React Error Boundary caught an error', ...);
-
-    // Client error handler - DISABLED
-    // handleReactError(error, { componentStack: errorInfo.componentStack });
+    console.error('React Error Boundary caught an error', error, errorInfo);
 
     // Error reporter servisi (Sentry, vb.)
     if (errorReporter) {
@@ -166,6 +160,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
    */
   private reset = () => {
     const { onReset } = this.props;
+    const previousRetryCount = this.state.retryCount;
 
     this.setState((prev) => ({
       hasError: false,
@@ -178,9 +173,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       onReset();
     }
 
-    // logger.info('ErrorBoundary reset', {
-    //   previousRetryCount: this.state.retryCount,
-    // }); // DISABLED
+    console.log('ErrorBoundary reset', { previousRetryCount });
   };
 
   /**

@@ -185,7 +185,7 @@ export class APILogger {
     }
 
     const correlationId = this.getCorrelationId(request);
-    setGlobalCorrelationId(correlationId);
+    // setGlobalCorrelationId(correlationId); // DISABLED
 
     const loggedRequest: LoggedRequest = {
       method: request.method,
@@ -207,10 +207,10 @@ export class APILogger {
       }
     }
 
-    logger.info(`API Request: ${request.method} ${request.url}`, {
-      ...loggedRequest,
-      source: 'api',
-    });
+    // logger.info(`API Request: ${request.method} ${request.url}`, {
+    //   ...loggedRequest,
+    //   source: 'api',
+    // }); // DISABLED
 
     return loggedRequest;
   }
@@ -261,26 +261,26 @@ export class APILogger {
     const logMessage = `${loggedRequest.method} ${loggedRequest.url} | ${response.status} | ${duration}ms`;
 
     if (response.status >= 500) {
-      logger.error(`API Error: ${logMessage}`, {
-        request: loggedRequest,
-        response: loggedResponse,
-        source: 'api',
-      });
+      // logger.error(`API Error: ${logMessage}`, {
+      //   request: loggedRequest,
+      //   response: loggedResponse,
+      //   source: 'api',
+      // }); // DISABLED
     } else if (response.status >= 400) {
-      logger.warn(`API Warning: ${logMessage}`, {
-        request: loggedRequest,
-        response: loggedResponse,
-        source: 'api',
-      });
+      // logger.warn(`API Warning: ${logMessage}`, {
+      //   request: loggedRequest,
+      //   response: loggedResponse,
+      //   source: 'api',
+      // }); // DISABLED
     } else {
-      logger.info(`API Success: ${logMessage}`, {
-        request: loggedRequest,
-        response: loggedResponse,
-        source: 'api',
-      });
+      // logger.info(`API Success: ${logMessage}`, {
+      //   request: loggedRequest,
+      //   response: loggedResponse,
+      //   source: 'api',
+      // }); // DISABLED
     }
 
-    clearGlobalCorrelationId();
+    // clearGlobalCorrelationId(); // DISABLED
     return loggedResponse;
   }
 
@@ -310,13 +310,13 @@ export class APILogger {
       context.request = loggedRequest;
     }
 
-    logger.error(
-      `API Exception: ${error.message} | ${request.method} ${request.url}`,
-      context,
-      error
-    );
+    // logger.error(
+    //   `API Exception: ${error.message} | ${request.method} ${request.url}`,
+    //   context,
+    //   error
+    // ); // DISABLED
 
-    clearGlobalCorrelationId();
+    // clearGlobalCorrelationId(); // DISABLED
   }
 }
 
@@ -350,7 +350,8 @@ export function withAPILogging(
     const startTime = Date.now();
 
     // Request logla
-    const loggedRequest = await apiLogger.logRequest(request);
+    // const loggedRequest = await apiLogger.logRequest(request); // DISABLED
+    const loggedRequest: LoggedRequest | null = null; // DISABLED
 
     try {
       // Handler'ı çalıştır
@@ -358,14 +359,14 @@ export function withAPILogging(
 
       // Response logla (fire-and-forget, response'u block etme)
       const duration = Date.now() - startTime;
-      apiLogger.logResponse(response, loggedRequest, duration).catch(() => {
-        // Log hatası response'u etkilemez
-      });
+      // apiLogger.logResponse(response, loggedRequest, duration).catch(() => {
+      //   // Log hatası response'u etkilemez
+      // }); // DISABLED
 
       return response;
     } catch (error) {
       // Error logla
-      apiLogger.logError(error as Error, request, loggedRequest);
+      // apiLogger.logError(error as Error, request, loggedRequest); // DISABLED
 
       // Error response dön
       return NextResponse.json(

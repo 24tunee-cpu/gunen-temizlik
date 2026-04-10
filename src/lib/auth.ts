@@ -21,7 +21,6 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
-// import { logger } from './logger'; // DISABLED - removed all logger calls
 
 // ============================================
 // TYPE DECLARATIONS (Module Augmentation)
@@ -82,7 +81,7 @@ async function verifyPassword(
   if (process.env.NODE_ENV !== 'production') {
     const testPassword = process.env.TEST_ADMIN_PASSWORD;
     if (testPassword && inputPassword === testPassword) {
-      // logger.warn('Test password used in development', { env: process.env.NODE_ENV }); // DISABLED
+      console.warn('Test password used in development', { env: process.env.NODE_ENV });
       return true;
     }
   }
@@ -96,17 +95,12 @@ async function verifyPassword(
  * @param success Başarılı mı
  * @param reason Başarısızsa neden
  */
-function logAuthEvent(
-  _email: string,
-  _success: boolean,
-  _reason?: string
-): void {
-  // DISABLED - logger removed to prevent issues
-  // if (success) {
-  //   logger.info('Admin login successful', { email });
-  // } else {
-  //   logger.warn('Admin login failed', { email, reason });
-  // }
+function logAuthEvent(email: string, success: boolean, reason?: string): void {
+  if (success) {
+    console.log('Admin login successful', { email });
+  } else {
+    console.warn('Admin login failed', { email, reason });
+  }
 }
 
 // ============================================
@@ -189,7 +183,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials): Promise<AuthUser | null> {
         // Validasyon
         if (!credentials?.email || !credentials?.password) {
-          // logAuthEvent(credentials?.email || 'unknown', false, 'Missing credentials'); // DISABLED
+          logAuthEvent(credentials?.email || 'unknown', false, 'Missing credentials');
           return null;
         }
 
@@ -201,12 +195,12 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) {
-          // logAuthEvent(email, false, 'User not found'); // DISABLED
+          logAuthEvent(email, false, 'User not found');
           return null;
         }
 
         if (!user.password) {
-          // logAuthEvent(email, false, 'No password set'); // DISABLED
+          logAuthEvent(email, false, 'No password set');
           return null;
         }
 
@@ -214,18 +208,18 @@ export const authOptions: NextAuthOptions = {
         const isPasswordValid = await verifyPassword(password, user.password);
 
         if (!isPasswordValid) {
-          // logAuthEvent(email, false, 'Invalid password'); // DISABLED
+          logAuthEvent(email, false, 'Invalid password');
           return null;
         }
 
         // Sadece admin kullanıcılar
         if (user.role !== 'ADMIN') {
-          // logAuthEvent(email, false, 'Not an admin user'); // DISABLED
+          logAuthEvent(email, false, 'Not an admin user');
           return null;
         }
 
         // Başarılı login
-        // logAuthEvent(email, true); // DISABLED
+        logAuthEvent(email, true);
 
         return {
           id: user.id,
@@ -250,13 +244,12 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
 
-        // logger.debug('JWT token created', { ... }); // DISABLED
+        console.debug('JWT token created', { userId: user.id });
       }
 
       // Session update trigger'ı
       if (trigger === 'update' && token.id) {
-        // Token refresh veya update işlemleri
-        // logger.debug('JWT token updated', { userId: token.id }); // DISABLED
+        console.debug('JWT token updated', { userId: token.id });
       }
 
       return token;
@@ -272,7 +265,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
 
-        // logger.debug('Session created', { ... }); // DISABLED
+        console.debug('Session created', { userId: token.id });
       }
 
       return session;
@@ -284,7 +277,10 @@ export const authOptions: NextAuthOptions = {
      * @returns boolean (true = allow sign in)
      */
     async signIn({ user, account, credentials }) {
-      // logger.info('Sign in attempt', { ... }); // DISABLED
+      console.log('Sign in attempt', {
+        userId: user?.id,
+        provider: account?.provider,
+      });
 
       return true;
     },
@@ -312,26 +308,25 @@ export const authOptions: NextAuthOptions = {
      * SignIn event'i
      */
     async signIn({ user, account, isNewUser }) {
-      // logger.info('User signed in', { ... }); // DISABLED
+      console.log('User signed in', {
+        userId: user?.id,
+        isNewUser,
+        provider: account?.provider,
+      });
     },
 
     /**
      * SignOut event'i
      */
     async signOut({ token, session }) {
-      // logger.info('User signed out', { ... }); // DISABLED
+      console.log('User signed out', { tokenSub: token?.sub });
     },
 
     /**
      * Session oluşturulduğunda
      */
     async session({ session, token }) {
-      // logger.debug('Session event', { ... }); // DISABLED
+      console.debug('Session event', { userId: token?.sub });
     },
   },
-
-  /**
-   * Hata yönetimi - DISABLED to prevent logger errors
-   */
-  // logger: { ... } // DISABLED
 };

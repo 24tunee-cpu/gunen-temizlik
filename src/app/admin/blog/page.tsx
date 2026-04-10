@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createLogger } from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import {
@@ -17,8 +16,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-
-const logger = createLogger('admin/blog');
 
 interface BlogPost {
   id: string;
@@ -52,7 +49,7 @@ export default function BlogPage() {
     try {
       setLoading(true);
       setError(null);
-      logger.info('Fetching blog posts');
+      console.log('Fetching blog posts');
 
       const res = await fetch('/api/blog');
 
@@ -61,11 +58,11 @@ export default function BlogPage() {
       }
 
       const data = await res.json();
-      logger.info('Blog posts fetched successfully', { count: data.length });
+      console.log('Blog posts fetched successfully', { count: data.length });
       setPosts(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Blog yazıları yüklenirken hata oluştu';
-      logger.error('Failed to fetch blog posts', { error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to fetch blog posts', { error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'blog' });
       setError(errorMessage);
       toast.error('Blog yazıları yüklenemedi', errorMessage);
@@ -76,7 +73,7 @@ export default function BlogPage() {
 
   const handleDelete = async (slug: string) => {
     try {
-      logger.info('Deleting blog post', { slug });
+      console.log('Deleting blog post', { slug });
       const res = await fetch(`/api/blog/${slug}`, { method: 'DELETE' });
 
       if (!res.ok) {
@@ -85,11 +82,11 @@ export default function BlogPage() {
 
       setPosts(posts.filter((p) => p.slug !== slug));
       setDeleteModal(null);
-      logger.info('Blog post deleted successfully', { slug });
+      console.log('Blog post deleted successfully', { slug });
       toast.success('Yazı silindi', 'Blog yazısı başarıyla silindi');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Silme işlemi başarısız';
-      logger.error('Failed to delete blog post', { slug, error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to delete blog post', { slug, error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'delete-blog', slug });
       toast.error('Silme başarısız', errorMessage);
     }
@@ -97,7 +94,7 @@ export default function BlogPage() {
 
   const togglePublish = async (slug: string, published: boolean) => {
     try {
-      logger.info('Toggling publish status', { slug, published: !published });
+      console.log('Toggling publish status', { slug, published: !published });
       const res = await fetch(`/api/blog/${slug}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -109,11 +106,11 @@ export default function BlogPage() {
       }
 
       setPosts(posts.map((p) => (p.slug === slug ? { ...p, published: !published } : p)));
-      logger.info('Publish status updated', { slug, published: !published });
+      console.log('Publish status updated', { slug, published: !published });
       toast.success('Durum güncellendi', published ? 'Yazı taslak olarak kaydedildi' : 'Yazı yayınlandı');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Güncelleme başarısız';
-      logger.error('Failed to toggle publish status', { slug, error: errorMessage }, error instanceof Error ? error : undefined);
+      console.error('Failed to toggle publish status', { slug, error: errorMessage }, error instanceof Error ? error : undefined);
       toast.error('Güncelleme başarısız', errorMessage);
     }
   };

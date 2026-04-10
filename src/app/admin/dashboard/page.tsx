@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { createLogger } from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import {
@@ -146,8 +145,6 @@ function ActivityFeed({ activities }: { activities: ActivityItem[] }) {
   );
 }
 
-const logger = createLogger('admin/dashboard');
-
 export default function AdminDashboardPage() {
   useAuth();
   const [stats, setStats] = useState<Stats>({
@@ -166,14 +163,14 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    logger.info('Dashboard mounted, fetching stats');
+    console.log('Dashboard mounted, fetching stats');
 
     const fetchStats = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        logger.debug('Fetching dashboard data from APIs');
+        console.debug('Fetching dashboard data from APIs');
 
         const [servicesRes, blogRes, contactRes] = await Promise.all([
           fetch('/api/services'),
@@ -196,7 +193,7 @@ export default function AdminDashboardPage() {
         const blogPosts = await blogRes.json();
         const contacts = await contactRes.json();
 
-        logger.info('Dashboard data fetched successfully', {
+        console.log('Dashboard data fetched successfully', {
           servicesCount: services.length,
           blogCount: blogPosts.length,
           contactsCount: contacts.length,
@@ -224,7 +221,7 @@ export default function AdminDashboardPage() {
         toast.success('Dashboard yüklendi', 'Veriler başarıyla güncellendi', 3000);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata';
-        logger.error('Failed to fetch dashboard stats', { error: errorMessage }, err instanceof Error ? err : undefined);
+        console.error('Failed to fetch dashboard stats', { error: errorMessage }, err instanceof Error ? err : undefined);
         trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'dashboard' });
         setError(errorMessage);
         toast.error('Veri yüklenemedi', errorMessage, 5000);

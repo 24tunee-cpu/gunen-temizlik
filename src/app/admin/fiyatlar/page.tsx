@@ -15,7 +15,6 @@ import {
   Tag,
   Calculator
 } from 'lucide-react';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface Pricing {
@@ -62,7 +61,7 @@ export default function PricingPage() {
       const data = await res.json();
       setPricing(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching pricing', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching pricing', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Fiyat listesi yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -113,7 +112,7 @@ export default function PricingPage() {
       fetchPricing();
       toast.success('Basarili', editingItem ? 'Fiyat guncellendi.' : 'Yeni fiyat eklendi.');
     } catch (error) {
-      logger.error('Error saving pricing', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving pricing', {}, error instanceof Error ? error : undefined);
 
       let errorMessage = 'Fiyat kaydedilirken bir hata olustu.';
       if (error instanceof Error) {
@@ -144,7 +143,7 @@ export default function PricingPage() {
       fetchPricing();
       toast.success('Silindi', 'Fiyat basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting pricing', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting pricing', {}, error instanceof Error ? error : undefined);
       toast.error('Silme Hatasi', 'Fiyat silinirken bir hata olustu.');
     }
   };

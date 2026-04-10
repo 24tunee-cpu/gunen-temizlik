@@ -22,7 +22,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import Image from 'next/image';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface SiteSettings {
@@ -90,7 +89,7 @@ export default function SiteSettingsPage() {
         setSettings({ ...defaultSettings, ...data });
       }
     } catch (error) {
-      logger.error('Error fetching settings', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching settings', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Ayarlar yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -123,7 +122,7 @@ export default function SiteSettingsPage() {
         toast.success('Kaydedildi', 'Ayarlar basariyla kaydedildi.');
       }
     } catch (error) {
-      logger.error('Error saving settings', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving settings', {}, error instanceof Error ? error : undefined);
       toast.error('Kaydetme Hatasi', 'Ayarlar kaydedilirken bir hata olustu.');
     } finally {
       setSaving(false);
@@ -147,7 +146,7 @@ export default function SiteSettingsPage() {
         setSettings(prev => ({ ...prev, [type]: url }));
       }
     } catch (error) {
-      logger.error('Upload error', {}, error instanceof Error ? error : undefined);
+      console.error('Upload error', {}, error instanceof Error ? error : undefined);
     } finally {
       setUploadingImage(null);
     }

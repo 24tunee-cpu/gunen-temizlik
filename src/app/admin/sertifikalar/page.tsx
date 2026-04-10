@@ -17,7 +17,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import Image from 'next/image';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface Certificate {
@@ -65,7 +64,7 @@ export default function CertificatesPage() {
       const data = await res.json();
       setCertificates(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching certificates', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching certificates', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Sertifikalar yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -83,7 +82,7 @@ export default function CertificatesPage() {
         setFormData(prev => ({ ...prev, image: url }));
       }
     } catch (error) {
-      logger.error('Upload error', {}, error instanceof Error ? error : undefined);
+      console.error('Upload error', {}, error instanceof Error ? error : undefined);
     } finally {
       setUploading(false);
     }
@@ -109,7 +108,7 @@ export default function CertificatesPage() {
       fetchCertificates();
       toast.success('Basarili', editingItem ? 'Sertifika guncellendi.' : 'Yeni sertifika eklendi.');
     } catch (error) {
-      logger.error('Error saving certificate', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving certificate', {}, error instanceof Error ? error : undefined);
       toast.error('Kaydetme Hatasi', 'Sertifika kaydedilirken bir hata olustu.');
     } finally {
       setIsSubmitting(false);
@@ -124,7 +123,7 @@ export default function CertificatesPage() {
       fetchCertificates();
       toast.success('Silindi', 'Sertifika basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting certificate', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting certificate', {}, error instanceof Error ? error : undefined);
       toast.error('Silme Hatasi', 'Sertifika silinirken bir hata olustu.');
     }
   };

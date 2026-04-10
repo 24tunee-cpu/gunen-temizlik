@@ -7,10 +7,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createLogger } from '@/lib/logger';
 import Link from 'next/link';
-
-const logger = createLogger('auth/login');
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,10 +42,10 @@ function LoginForm() {
 
   // Eğer kullanıcı zaten giriş yapmışsa, dashboard'a yönlendir
   useEffect(() => {
-    logger.info('Login page mounted', { status, callbackUrl });
+    console.log('Login page mounted', { status, callbackUrl });
 
     if (status === 'authenticated') {
-      logger.info('User already authenticated, redirecting to dashboard');
+      console.log('User already authenticated, redirecting to dashboard');
       router.push(callbackUrl);
       return;
     }
@@ -91,7 +88,7 @@ function LoginForm() {
     setLoading(true);
     setError('');
 
-    logger.info('Login attempt', { email });
+    console.log('Login attempt', { email });
 
     try {
       const result = await signIn('credentials', {
@@ -102,7 +99,7 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        logger.warn('Login failed', { email, error: result.error });
+        console.warn('Login failed', { email, error: result.error });
 
         // Map NextAuth error codes to user-friendly messages
         const errorMessages: Record<string, string> = {
@@ -114,11 +111,11 @@ function LoginForm() {
 
         setError(errorMessages[result.error] || errorMessages['Default']);
       } else if (result?.ok) {
-        logger.info('Login successful', { email, callbackUrl });
+        console.log('Login successful', { email, callbackUrl });
         router.push(callbackUrl);
       }
     } catch (error) {
-      logger.error('Login error', { error: error instanceof Error ? error.message : 'Unknown' });
+      console.error('Login error', { error: error instanceof Error ? error.message : 'Unknown' });
       setError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.');
     } finally {
       setLoading(false);

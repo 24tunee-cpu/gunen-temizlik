@@ -18,7 +18,6 @@ import {
   Folder
 } from 'lucide-react';
 import Image from 'next/image';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface GalleryItem {
@@ -64,7 +63,7 @@ export default function GalleryPage() {
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching gallery', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching gallery', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Galeri yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -87,7 +86,7 @@ export default function GalleryPage() {
         toast.error('Yukleme Hatasi', errorMessage);
       }
     } catch (error) {
-      logger.error('Upload error', {}, error instanceof Error ? error : undefined);
+      console.error('Upload error', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Gorsel yuklenirken bir hata olustu. Lutfen tekrar deneyin.');
     } finally {
       setUploading(false);
@@ -142,7 +141,7 @@ export default function GalleryPage() {
       fetchItems();
       toast.success('Basarili', editingItem ? 'Gorsel guncellendi.' : 'Yeni gorsel eklendi.');
     } catch (error) {
-      logger.error('Error saving gallery item', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving gallery item', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'Gorsel kaydedilirken bir hata olustu.';
       toast.error('Kaydetme Hatasi', errorMsg);
     } finally {
@@ -173,7 +172,7 @@ export default function GalleryPage() {
       fetchItems();
       toast.success('Silindi', 'Gorsel basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting gallery item', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting gallery item', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'Gorsel silinirken bir hata olustu.';
       toast.error('Silme Hatasi', errorMsg);
     }

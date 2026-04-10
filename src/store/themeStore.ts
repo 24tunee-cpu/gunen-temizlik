@@ -19,9 +19,6 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('ui/theme');
 
 /** Kullanıcı seçebileceği tema tipleri */
 export type Theme = 'light' | 'dark' | 'system';
@@ -119,7 +116,7 @@ export const useThemeStore = create<ThemeState>()(
         set({ theme, resolvedTheme: resolved });
         applyTheme(theme);
 
-        logger.info('Theme changed', { from: prevTheme, to: theme, resolved });
+        console.log('Theme changed', { from: prevTheme, to: theme, resolved });
       },
 
       toggleTheme: () => {
@@ -130,7 +127,7 @@ export const useThemeStore = create<ThemeState>()(
         set({ theme: newTheme, resolvedTheme: newTheme });
         applyTheme(newTheme);
 
-        logger.info('Theme toggled', { from: prevTheme, to: newTheme });
+        console.log('Theme toggled', { from: prevTheme, to: newTheme });
       },
     }),
     {
@@ -182,7 +179,7 @@ export function initTheme(): () => void {
         const newResolved = e.matches ? 'dark' : 'light';
         useThemeStore.setState({ resolvedTheme: newResolved });
         applyTheme('system');
-        logger.debug('System theme changed', { resolved: newResolved });
+        console.debug('System theme changed', { resolved: newResolved });
       }
     };
 
@@ -194,7 +191,7 @@ export function initTheme(): () => void {
 
     return mediaQueryCleanup;
   } catch (error) {
-    logger.error('Theme initialization failed', { error });
+    console.error('Theme initialization failed', { error });
     applyTheme('system');
     return () => { };
   }

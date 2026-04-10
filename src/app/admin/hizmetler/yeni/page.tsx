@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { generateSlug } from '@/lib/utils';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 export default function NewServicePage() {
@@ -80,7 +79,7 @@ export default function NewServicePage() {
         throw new Error(errorMessage);
       }
     } catch (error) {
-      logger.error('Error creating service', {}, error instanceof Error ? error : undefined);
+      console.error('Error creating service', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'Hizmet olusturulurken bir hata olustu.';
       toast.error('Kaydetme Hatasi', errorMsg);
     } finally {

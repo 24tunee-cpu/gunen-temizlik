@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createLogger } from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import {
@@ -18,8 +17,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-
-const logger = createLogger('admin/contact');
 
 interface ContactRequest {
   id: string;
@@ -48,7 +45,7 @@ export default function ContactRequestsPage() {
     try {
       setLoading(true);
       setError(null);
-      logger.info('Fetching contact requests');
+      console.log('Fetching contact requests');
 
       const res = await fetch('/api/contact');
 
@@ -68,14 +65,14 @@ export default function ContactRequestsPage() {
       }
 
       const data = await res.json();
-      logger.info('Contact requests fetched successfully', {
+      console.log('Contact requests fetched successfully', {
         count: data.length,
         unread: data.filter((r: ContactRequest) => !r.read).length
       });
       setRequests(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Talepler yuklenirken hata olustu.';
-      logger.error('Failed to fetch contact requests', { error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to fetch contact requests', { error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'contact-requests' });
       setError(errorMessage);
       toast.error('Talepler yuklenemedi', errorMessage);
@@ -86,7 +83,7 @@ export default function ContactRequestsPage() {
 
   const markAsRead = async (id: string) => {
     try {
-      logger.info('Marking request as read', { requestId: id });
+      console.log('Marking request as read', { requestId: id });
       const res = await fetch(`/api/contact/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -114,18 +111,18 @@ export default function ContactRequestsPage() {
       if (selectedRequest?.id === id) {
         setSelectedRequest({ ...selectedRequest, read: true });
       }
-      logger.info('Request marked as read', { requestId: id });
+      console.log('Request marked as read', { requestId: id });
       toast.success('Okundu olarak isaretlendi');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Islem basarisiz';
-      logger.error('Failed to mark request as read', { requestId: id, error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to mark request as read', { requestId: id, error: errorMessage }, err instanceof Error ? err : undefined);
       toast.error('Islem basarisiz', errorMessage);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      logger.info('Deleting contact request', { requestId: id });
+      console.log('Deleting contact request', { requestId: id });
       const res = await fetch(`/api/contact/${id}`, { method: 'DELETE' });
 
       if (!res.ok) {
@@ -149,11 +146,11 @@ export default function ContactRequestsPage() {
       if (selectedRequest?.id === id) {
         setSelectedRequest(null);
       }
-      logger.info('Contact request deleted successfully', { requestId: id });
+      console.log('Contact request deleted successfully', { requestId: id });
       toast.success('Talep silindi', 'Iletisim talebi basariyla silindi');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Silme islemi basarisiz';
-      logger.error('Failed to delete contact request', { requestId: id, error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to delete contact request', { requestId: id, error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'delete-contact', requestId: id });
       toast.error('Silme basarisiz', errorMessage);
     }

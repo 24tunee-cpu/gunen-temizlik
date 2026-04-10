@@ -16,7 +16,6 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { createLogger } from '@/lib/logger';
 import {
   LayoutDashboard,
   Sparkles,
@@ -61,8 +60,6 @@ interface SidebarProps {
 // CONSTANTS
 // ============================================
 
-const logger = createLogger('admin/sidebar');
-
 const MENU_ITEMS: MenuItem[] = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, ariaLabel: 'Yönetim paneli' },
   { href: '/admin/hizmetler', label: 'Hizmetler', icon: Sparkles, ariaLabel: 'Hizmetler yönetimi' },
@@ -100,7 +97,7 @@ export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
   // HANDLERS
   // ============================================
   const handleLogout = useCallback(async () => {
-    logger.info('Logout initiated from sidebar');
+    console.log('Logout initiated from sidebar');
     await logout();
   }, [logout]);
 

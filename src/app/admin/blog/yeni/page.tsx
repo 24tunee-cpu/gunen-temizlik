@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import Link from 'next/link';
 import { generateSlug } from '@/lib/utils';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 export default function NewBlogPage() {
@@ -67,7 +66,7 @@ export default function NewBlogPage() {
         toast.error('Kaydetme Hatasi', errorData.error || 'Blog yazisi olusturulurken bir hata olustu.');
       }
     } catch (error) {
-      logger.error('Error creating blog post', {}, error instanceof Error ? error : undefined);
+      console.error('Error creating blog post', {}, error instanceof Error ? error : undefined);
       toast.error('Kaydetme Hatasi', 'Blog yazisi olusturulurken bir hata olustu.');
     } finally {
       setLoading(false);

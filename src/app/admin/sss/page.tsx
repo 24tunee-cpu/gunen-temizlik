@@ -16,7 +16,6 @@ import {
   ChevronUp,
   AlertCircle
 } from 'lucide-react';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface FAQ {
@@ -61,7 +60,7 @@ export default function FAQPage() {
       const data = await res.json();
       setFaqs(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching FAQs', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching FAQs', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'SSS listesi yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -112,7 +111,7 @@ export default function FAQPage() {
       fetchFAQs();
       toast.success('Basarili', editingFAQ ? 'SSS guncellendi.' : 'Yeni SSS eklendi.');
     } catch (error) {
-      logger.error('Error saving FAQ', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving FAQ', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'SSS kaydedilirken bir hata olustu.';
       toast.error('Kaydetme Hatasi', errorMsg);
     } finally {
@@ -143,7 +142,7 @@ export default function FAQPage() {
       fetchFAQs();
       toast.success('Silindi', 'SSS basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting FAQ', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting FAQ', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'SSS silinirken bir hata olustu.';
       toast.error('Silme Hatasi', errorMsg);
     }
@@ -159,7 +158,7 @@ export default function FAQPage() {
       if (!res.ok) throw new Error('Failed to update FAQ');
       fetchFAQs();
     } catch (error) {
-      logger.error('Error updating FAQ', {}, error instanceof Error ? error : undefined);
+      console.error('Error updating FAQ', {}, error instanceof Error ? error : undefined);
     }
   };
 

@@ -20,7 +20,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-// import { logger, setGlobalCorrelationId, clearGlobalCorrelationId } from '@/lib/logger'; // DISABLED
 
 // ============================================
 // TYPES & INTERFACES
@@ -276,12 +275,9 @@ export function handleError(error: unknown, request?: NextRequest): NextResponse
   const appError = normalizeError(error);
 
   // Correlation ID al (request'ten veya global'den)
-  const correlationId = request?.headers.get('x-correlation-id') ||
-    logger.getCorrelationId?.();
+  const correlationId = request?.headers.get('x-correlation-id') ?? undefined;
 
-  // Log seviyesi belirle
   const isServerError = appError.statusCode >= 500;
-  const logLevel = isServerError ? 'error' : 'warn';
 
   // Log context
   const logContext = {
@@ -301,11 +297,10 @@ export function handleError(error: unknown, request?: NextRequest): NextResponse
     }),
   };
 
-  // Logla
   if (isServerError) {
-    logger.error(`[${appError.code}] ${appError.message}`, logContext, appError);
+    console.error(`[${appError.code}] ${appError.message}`, logContext, appError);
   } else {
-    logger.warn(`[${appError.code}] ${appError.message}`, logContext);
+    console.warn(`[${appError.code}] ${appError.message}`, logContext);
   }
 
   // Error response oluştur
@@ -378,14 +373,10 @@ export function withErrorHandler<T extends (request: NextRequest) => Promise<Nex
     const correlationId = request.headers.get('x-correlation-id') ||
       `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    setGlobalCorrelationId(correlationId);
-
     try {
       return await handler(request);
     } catch (error) {
       return handleError(error, request);
-    } finally {
-      clearGlobalCorrelationId();
     }
   };
 }

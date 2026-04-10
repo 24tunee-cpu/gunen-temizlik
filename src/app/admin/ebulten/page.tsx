@@ -23,7 +23,6 @@ import {
   FileSpreadsheet,
   MoreHorizontal
 } from 'lucide-react';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface Subscriber {
@@ -69,7 +68,7 @@ export default function NewsletterPage() {
       const data = await res.json();
       setSubscribers(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching subscribers', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching subscribers', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Aboneler yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -83,7 +82,7 @@ export default function NewsletterPage() {
       fetchSubscribers();
       toast.success('Silindi', 'Abone basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting subscriber', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting subscriber', {}, error instanceof Error ? error : undefined);
       toast.error('Silme Hatasi', 'Abone silinirken bir hata olustu.');
     }
   };
@@ -97,7 +96,7 @@ export default function NewsletterPage() {
       setShowBulkDeleteConfirm(false);
       fetchSubscribers();
     } catch (error) {
-      logger.error('Error bulk deleting subscribers', {}, error instanceof Error ? error : undefined);
+      console.error('Error bulk deleting subscribers', {}, error instanceof Error ? error : undefined);
     }
   };
 
@@ -133,7 +132,7 @@ export default function NewsletterPage() {
         link.click();
       }
     } catch (error) {
-      logger.error('Export error', {}, error instanceof Error ? error : undefined);
+      console.error('Export error', {}, error instanceof Error ? error : undefined);
     } finally {
       setIsExporting(false);
     }
@@ -149,7 +148,7 @@ export default function NewsletterPage() {
       setEmailData({ subject: '', content: '' });
       alert('E-posta gönderildi!');
     } catch (error) {
-      logger.error('Error sending email', {}, error instanceof Error ? error : undefined);
+      console.error('Error sending email', {}, error instanceof Error ? error : undefined);
     } finally {
       setIsSending(false);
     }

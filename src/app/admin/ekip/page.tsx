@@ -18,7 +18,6 @@ import {
   User
 } from 'lucide-react';
 import Image from 'next/image';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface TeamMember {
@@ -66,7 +65,7 @@ export default function TeamPage() {
       const data = await res.json();
       setMembers(Array.isArray(data) ? data : []);
     } catch (error) {
-      logger.error('Error fetching team', {}, error instanceof Error ? error : undefined);
+      console.error('Error fetching team', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Ekip uyeleri yuklenirken bir hata olustu.');
     } finally {
       setLoading(false);
@@ -84,7 +83,7 @@ export default function TeamPage() {
         setFormData(prev => ({ ...prev, image: url }));
       }
     } catch (error) {
-      logger.error('Upload error', {}, error instanceof Error ? error : undefined);
+      console.error('Upload error', {}, error instanceof Error ? error : undefined);
     } finally {
       setUploading(false);
     }
@@ -108,7 +107,7 @@ export default function TeamPage() {
       fetchMembers();
       toast.success('Basarili', editingMember ? 'Ekip uyesi guncellendi.' : 'Yeni ekip uyesi eklendi.');
     } catch (error) {
-      logger.error('Error saving team member', {}, error instanceof Error ? error : undefined);
+      console.error('Error saving team member', {}, error instanceof Error ? error : undefined);
       toast.error('Kaydetme Hatasi', 'Ekip uyesi kaydedilirken bir hata olustu.');
     } finally {
       setIsSubmitting(false);
@@ -123,7 +122,7 @@ export default function TeamPage() {
       fetchMembers();
       toast.success('Silindi', 'Ekip uyesi basariyla silindi.');
     } catch (error) {
-      logger.error('Error deleting team member', {}, error instanceof Error ? error : undefined);
+      console.error('Error deleting team member', {}, error instanceof Error ? error : undefined);
       toast.error('Silme Hatasi', 'Ekip uyesi silinirken bir hata olustu.');
     }
   };

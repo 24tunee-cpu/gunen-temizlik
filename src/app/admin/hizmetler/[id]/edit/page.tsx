@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { generateSlug } from '@/lib/utils';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface Service {
@@ -66,7 +65,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         });
         setFeatures(service.features || []);
       } catch (error) {
-        logger.error('Error fetching service', {}, error instanceof Error ? error : undefined);
+        console.error('Error fetching service', {}, error instanceof Error ? error : undefined);
         toast.error('Yukleme Hatasi', 'Hizmet bilgileri yuklenirken bir hata olustu.');
       } finally {
         setLoading(false);
@@ -127,7 +126,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         throw new Error(errorMessage);
       }
     } catch (error) {
-      logger.error('Error updating service', {}, error instanceof Error ? error : undefined);
+      console.error('Error updating service', {}, error instanceof Error ? error : undefined);
       const errorMsg = error instanceof Error ? error.message : 'Hizmet guncellenirken bir hata olustu.';
       toast.error('Guncelleme Hatasi', errorMsg);
     } finally {

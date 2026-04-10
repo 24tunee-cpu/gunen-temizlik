@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createLogger } from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import {
@@ -19,8 +18,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
-
-const logger = createLogger('admin/services');
 
 interface Service {
   id: string;
@@ -47,7 +44,7 @@ export default function ServicesPage() {
     try {
       setLoading(true);
       setError(null);
-      logger.info('Fetching services list');
+      console.log('Fetching services list');
 
       const res = await fetch('/api/services');
 
@@ -56,11 +53,11 @@ export default function ServicesPage() {
       }
 
       const data = await res.json();
-      logger.info('Services fetched successfully', { count: data.length });
+      console.log('Services fetched successfully', { count: data.length });
       setServices(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Hizmetler yüklenirken hata oluştu';
-      logger.error('Failed to fetch services', { error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to fetch services', { error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'services' });
       setError(errorMessage);
       toast.error('Hizmetler yüklenemedi', errorMessage);
@@ -71,7 +68,7 @@ export default function ServicesPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      logger.info('Deleting service', { serviceId: id });
+      console.log('Deleting service', { serviceId: id });
       const res = await fetch(`/api/services/${id}`, { method: 'DELETE' });
 
       if (!res.ok) {
@@ -95,11 +92,11 @@ export default function ServicesPage() {
 
       setServices(services.filter((s) => s.id !== id));
       setDeleteModal(null);
-      logger.info('Service deleted successfully', { serviceId: id });
+      console.log('Service deleted successfully', { serviceId: id });
       toast.success('Hizmet silindi', 'Hizmet başarıyla silindi');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Silme işlemi başarısız';
-      logger.error('Failed to delete service', { serviceId: id, error: errorMessage }, err instanceof Error ? err : undefined);
+      console.error('Failed to delete service', { serviceId: id, error: errorMessage }, err instanceof Error ? err : undefined);
       trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'delete-service', serviceId: id });
       toast.error('Silme başarısız', errorMessage);
     }

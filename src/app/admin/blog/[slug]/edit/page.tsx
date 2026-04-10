@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import Link from 'next/link';
-import logger from '@/lib/logger';
 import { toast } from '@/store/toastStore';
 
 interface BlogPost {
@@ -64,7 +63,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
         });
         setTags(post.tags || []);
       } catch (error) {
-        logger.error('Error fetching blog post', {}, error instanceof Error ? error : undefined);
+        console.error('Error fetching blog post', {}, error instanceof Error ? error : undefined);
         toast.error('Yukleme Hatasi', 'Blog yazisi bilgileri yuklenirken bir hata olustu.');
       } finally {
         setLoading(false);
@@ -111,7 +110,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
         toast.error('Guncelleme Hatasi', errorData.error || 'Blog yazisi guncellenirken bir hata olustu.');
       }
     } catch (error) {
-      logger.error('Error updating blog post', {}, error instanceof Error ? error : undefined);
+      console.error('Error updating blog post', {}, error instanceof Error ? error : undefined);
       toast.error('Guncelleme Hatasi', 'Blog yazisi guncellenirken bir hata olustu.');
     } finally {
       setSaving(false);

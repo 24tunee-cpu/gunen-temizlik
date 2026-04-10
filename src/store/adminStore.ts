@@ -18,9 +18,6 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('ui/admin');
 
 /** Mobil breakpoint (px) - lg tailwind breakpoint */
 const MOBILE_BREAKPOINT = 1024;
@@ -71,20 +68,20 @@ export const useAdminStore = create<AdminState>()(
       toggleSidebar: () => {
         set((state) => {
           const newState = !state.sidebarOpen;
-          logger.debug('Sidebar toggled', { from: state.sidebarOpen, to: newState });
+          console.debug('Sidebar toggled', { from: state.sidebarOpen, to: newState });
           return { sidebarOpen: newState };
         });
       },
 
       setSidebarOpen: (open) => {
-        logger.debug('Sidebar state set', { open });
+        console.debug('Sidebar state set', { open });
         set({ sidebarOpen: open });
       },
 
       setIsMobile: (isMobile) => {
         const prevMobile = get().isMobile;
         if (prevMobile !== isMobile) {
-          logger.debug('Mobile mode changed', { isMobile });
+          console.debug('Mobile mode changed', { isMobile });
           set({ isMobile });
 
           // Mobil'e geçişte sidebar'ı kapat
@@ -99,7 +96,7 @@ export const useAdminStore = create<AdminState>()(
 
       closeSidebarOnMobile: () => {
         if (get().isMobile) {
-          logger.debug('Sidebar closed on mobile');
+          console.debug('Sidebar closed on mobile');
           set({ sidebarOpen: false });
         }
       },

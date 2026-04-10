@@ -21,9 +21,6 @@
 'use client';
 
 import { create } from 'zustand';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('ui/toast');
 
 /** Toast tipi - görsel hiyerarşi ve ikon belirler */
 export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'loading';
@@ -133,9 +130,9 @@ export const useToastStore = create<ToastState>((set) => ({
 
     // Log level seçimi
     if (toast.type === 'error') {
-      logger.error('Toast: Error displayed', { title: toast.title, message: toast.message });
+      console.error('Toast: Error displayed', { title: toast.title, message: toast.message });
     } else {
-      logger.debug('Toast added', { type: toast.type, title: toast.title, id });
+      console.debug('Toast added', { type: toast.type, title: toast.title, id });
     }
 
     set((state) => {
@@ -177,14 +174,14 @@ export const useToastStore = create<ToastState>((set) => ({
       activeTimeouts.delete(id);
     }
 
-    logger.debug('Toast removed', { id });
+    console.debug('Toast removed', { id });
     set((state) => ({
       toasts: state.toasts.filter((t) => t.id !== id),
     }));
   },
 
   updateToast: (id, updates) => {
-    logger.debug('Toast updated', { id, updates: Object.keys(updates) });
+    console.debug('Toast updated', { id, updates: Object.keys(updates) });
     set((state) => ({
       toasts: state.toasts.map((t) =>
         t.id === id ? { ...t, ...updates } : t
@@ -197,7 +194,7 @@ export const useToastStore = create<ToastState>((set) => ({
     activeTimeouts.forEach((timeout) => clearTimeout(timeout));
     activeTimeouts.clear();
 
-    logger.info('All toasts cleared');
+    console.log('All toasts cleared');
     set({ toasts: [] });
   },
 }));
