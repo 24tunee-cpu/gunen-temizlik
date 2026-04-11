@@ -20,7 +20,7 @@ import SiteLayout from './site/layout';
 // ============================================
 
 const Hero = dynamic(() => import('@/components/site/Hero').then(mod => mod.Hero), {
-  loading: () => <div className="h-screen bg-slate-100 animate-pulse" />,
+  loading: () => <div className="min-h-[100dvh] min-h-screen bg-slate-100 animate-pulse" />,
 });
 
 const Services = dynamic(() => import('@/components/site/Services').then(mod => mod.Services), {

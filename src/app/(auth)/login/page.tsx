@@ -15,7 +15,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4">
+      <div className="flex min-h-[100dvh] min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-emerald-500 mx-auto mb-4" />
           <p className="text-white font-medium">Yükleniyor...</p>
@@ -125,7 +125,7 @@ function LoginForm() {
   // Auth durumu kontrol edilirken göster
   if (isChecking || status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4">
+      <div className="flex min-h-[100dvh] min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -139,7 +139,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4">
+    <div className="flex min-h-[100dvh] min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -164,7 +164,7 @@ function LoginForm() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-white p-8 shadow-2xl"
+          className="rounded-2xl bg-white p-5 shadow-2xl sm:p-8"
         >
           <h2 className="text-xl font-semibold text-slate-900 mb-6 text-center">
             Giriş Yap

@@ -155,26 +155,30 @@ export function Footer() {
                   <span>Teşekkürler! Başarıyla abone oldunuz.</span>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubscribe} className="flex gap-3" aria-label="E-bülten aboneliği">
+                <form
+                  onSubmit={handleSubscribe}
+                  className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-stretch"
+                  aria-label="E-bülten aboneliği"
+                >
                   <input
                     type="email"
                     value={email}
                     onChange={handleEmailChange}
                     placeholder="E-posta adresiniz"
                     required
-                    className="flex-1 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none transition-colors"
+                    className="min-h-11 min-w-0 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white placeholder:text-slate-500 transition-colors focus:border-emerald-500 focus:outline-none"
                     aria-label="E-posta adresi"
                     aria-required="true"
                   />
                   <motion.button
                     type="submit"
-                    whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
-                    whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-600"
+                    whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
+                    whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
+                    className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-emerald-600 sm:w-auto"
                     aria-label="Abone ol"
                   >
                     <Send size={18} aria-hidden="true" />
-                    <span className="hidden sm:inline">Abone Ol</span>
+                    Abone Ol
                   </motion.button>
                 </form>
               )}

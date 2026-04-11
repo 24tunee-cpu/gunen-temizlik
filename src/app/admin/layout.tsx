@@ -30,11 +30,12 @@ export default function AdminLayout({
           <AdminHeader />
           <main
             className={cn(
-              'min-h-screen pt-16 transition-all duration-300',
-              sidebarOpen ? 'ml-64' : 'ml-20'
+              'min-h-screen w-full min-w-0 max-w-full pt-14 transition-all duration-300 sm:pt-16',
+              'ml-0 lg:transition-[margin]',
+              sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'
             )}
           >
-            <div className="p-6">{children}</div>
+            <div className="max-w-full overflow-x-auto p-4 sm:p-6">{children}</div>
           </main>
         </div>
       </ProtectedRoute>

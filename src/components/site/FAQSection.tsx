@@ -160,7 +160,7 @@ export function FAQSection({
   if (!isMounted || loading) {
     return (
       <section
-        className="relative flex-1 bg-slate-900 py-24"
+        className="relative flex-1 bg-slate-900 py-16 sm:py-20 md:py-24"
         aria-label="SSS yükleniyor"
       >
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -168,7 +168,7 @@ export function FAQSection({
             <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600">
               <HelpCircle className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-4xl font-bold text-white sm:text-5xl">{title}</h2>
+            <h2 className="text-3xl font-bold text-white sm:text-4xl md:text-5xl">{title}</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">{description}</p>
           </div>
 
@@ -189,7 +189,7 @@ export function FAQSection({
   if (faqs.length === 0) {
     return (
       <section
-        className="relative flex-1 bg-slate-900 py-24"
+        className="relative flex-1 bg-slate-900 py-16 sm:py-20 md:py-24"
         aria-label="Sıkça sorulan sorular"
       >
         <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
@@ -212,10 +212,10 @@ export function FAQSection({
   // ============================================
   return (
     <section
-      className="relative flex-1 bg-slate-900 py-24"
+      className="relative flex-1 bg-slate-900 py-16 sm:py-20 md:py-24"
       aria-label="Sıkça sorulan sorular"
     >
-      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-4xl px-3 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.header
           initial={{ opacity: 0, y: shouldReduceMotion ? 15 : 30 }}
@@ -235,7 +235,7 @@ export function FAQSection({
             <HelpCircle className="h-8 w-8 text-white" />
           </motion.div>
 
-          <h2 className="text-4xl font-bold text-white sm:text-5xl">
+          <h2 className="text-3xl font-bold text-white sm:text-4xl md:text-5xl">
             {title}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
@@ -318,24 +318,24 @@ export function FAQSection({
                 <button
                   onClick={() => toggleFAQ(faq.id)}
                   onKeyDown={(e) => handleKeyDown(e, faq.id)}
-                  className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-inset"
+                  className="flex w-full items-start justify-between gap-3 p-4 text-left transition-colors hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-inset sm:items-center sm:p-6"
                   aria-expanded={expandedId === faq.id}
                   aria-controls={`faq-answer-${faq.id}`}
                   id={`faq-question-${faq.id}`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
                     <span
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold text-emerald-400"
+                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold text-emerald-400 sm:mt-0"
                       aria-hidden="true"
                     >
                       {index + 1}
                     </span>
-                    <span className="pr-8 font-semibold text-white">{faq.question}</span>
+                    <span className="min-w-0 break-words font-semibold text-white">{faq.question}</span>
                   </div>
                   <motion.div
                     animate={{ rotate: expandedId === faq.id ? 180 : 0 }}
                     transition={{ duration: shouldReduceMotion ? 0 : 0.3 }}
-                    className="flex-shrink-0"
+                    className="mt-1 shrink-0 sm:mt-0"
                     aria-hidden="true"
                   >
                     {expandedId === faq.id ? (
@@ -357,9 +357,9 @@ export function FAQSection({
                       role="region"
                       aria-labelledby={`faq-question-${faq.id}`}
                     >
-                      <div className="px-6 pb-6 pl-[4.5rem]">
+                      <div className="px-4 pb-4 pl-14 sm:px-6 sm:pb-6 sm:pl-[4.5rem]">
                         <div className="mb-4 h-px w-full bg-gradient-to-r from-emerald-500/40 to-transparent" aria-hidden="true" />
-                        <p className="leading-relaxed text-slate-300">
+                        <p className="break-words leading-relaxed text-slate-300">
                           {faq.answer}
                         </p>
                       </div>

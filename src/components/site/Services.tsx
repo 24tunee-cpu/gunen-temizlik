@@ -77,7 +77,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
             className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl opacity-0 blur transition duration-500 group-hover:opacity-30 group-focus-visible:opacity-30"
             aria-hidden="true"
           />
-          <div className="relative h-full rounded-2xl bg-white/80 backdrop-blur-xl p-6 shadow-lg transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-1 group-focus-visible:shadow-2xl group-focus-visible:-translate-y-1 border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+          <div className="relative h-full rounded-2xl border border-white/20 bg-white/80 p-5 shadow-lg backdrop-blur-xl transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 group-hover:-translate-y-1 group-hover:shadow-2xl group-focus-visible:-translate-y-1 group-focus-visible:shadow-2xl sm:p-6">
             <motion.div
               className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 shadow-inner"
               whileHover={shouldReduceMotion ? {} : { rotateY: 15, rotateX: -15 }}

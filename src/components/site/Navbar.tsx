@@ -167,11 +167,11 @@ export function Navbar() {
         role="navigation"
         aria-label="Ana navigasyon"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between gap-2 sm:h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3">
-              <div className="relative h-12 w-12 overflow-hidden rounded-xl">
+            <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl sm:h-12 sm:w-12">
                 <Image
                   src="/logo.png"
                   alt="Günen Temizlik"
@@ -179,6 +179,14 @@ export function Navbar() {
                   className="object-contain"
                   priority
                 />
+              </div>
+              <div className="min-w-0 sm:hidden">
+                <span
+                  className={`block truncate text-[0.95rem] font-bold leading-tight transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}
+                >
+                  Günen{' '}
+                  <span className={scrolled ? 'text-emerald-600' : 'text-emerald-400'}>Temizlik</span>
+                </span>
               </div>
               <div className="hidden sm:block">
                 <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : 'text-white'
@@ -273,10 +281,10 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: shouldReduceMotion ? 0 : '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 h-full w-80 max-w-full bg-white shadow-xl"
+              className="absolute right-0 top-0 flex h-[100dvh] max-h-screen w-[min(100vw,20rem)] flex-col bg-white shadow-xl"
             >
-              <div className="flex h-20 items-center justify-between border-b px-6">
-                <span className="text-xl font-bold text-slate-900">Menü</span>
+              <div className="flex h-16 shrink-0 items-center justify-between border-b px-4 sm:h-20 sm:px-6">
+                <span className="text-lg font-bold text-slate-900 sm:text-xl">Menü</span>
                 <button
                   onClick={closeMenu}
                   className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
@@ -285,21 +293,29 @@ export function Navbar() {
                   <X size={24} aria-hidden="true" />
                 </button>
               </div>
-              <div className="p-6">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-6">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={closeMenu}
-                    className="block border-b border-slate-100 py-4 text-lg font-medium text-slate-700 transition-colors hover:text-emerald-500"
+                    className="block border-b border-slate-100 py-3.5 text-base font-medium text-slate-700 transition-colors hover:text-emerald-500 sm:py-4 sm:text-lg"
                   >
                     {link.label}
                   </Link>
                 ))}
+                <a
+                  href={`tel:${PHONE_NUMBER}`}
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 border-b border-slate-100 py-3.5 text-base font-medium text-slate-800 sm:py-4 sm:text-lg"
+                >
+                  <Phone size={20} className="shrink-0 text-emerald-600" aria-hidden />
+                  {PHONE_DISPLAY}
+                </a>
                 <Link
                   href="/iletisim"
                   onClick={closeMenu}
-                  className="mt-6 block rounded-lg bg-emerald-500 py-3 text-center font-medium text-white hover:bg-emerald-600"
+                  className="mt-5 block rounded-lg bg-emerald-500 py-3.5 text-center text-base font-medium text-white hover:bg-emerald-600 sm:py-3"
                 >
                   Hemen Fiyat Al
                 </Link>

@@ -26,6 +26,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -275,10 +276,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check if post exists
     const existingPost = await prisma.blogPost.findUnique({
       where: { slug },
-      select: { id: true, slug: true },
     });
 
     if (!existingPost) {
@@ -364,6 +363,28 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ? sanitizeInput(data.metaDesc).slice(0, MAX_LENGTHS.metaDesc)
         : null;
     }
+
+    const mergedTitle =
+      typeof updateData.title === 'string' ? updateData.title : existingPost.title;
+    const mergedExcerpt =
+      typeof updateData.excerpt === 'string' ? updateData.excerpt : existingPost.excerpt;
+    const mergedMetaTitle =
+      updateData.metaTitle !== undefined
+        ? (updateData.metaTitle as string | null)
+        : existingPost.metaTitle;
+    const mergedMetaDesc =
+      updateData.metaDesc !== undefined
+        ? (updateData.metaDesc as string | null)
+        : existingPost.metaDesc;
+
+    updateData.metaTitle = resolveBlogMetaTitle(mergedTitle, mergedMetaTitle).slice(
+      0,
+      MAX_LENGTHS.metaTitle
+    );
+    updateData.metaDesc = resolveBlogMetaDesc(mergedExcerpt, mergedMetaDesc).slice(
+      0,
+      MAX_LENGTHS.metaDesc
+    );
 
     console.log('Updating blog post by slug', { slug });
 

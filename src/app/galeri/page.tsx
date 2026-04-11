@@ -128,16 +128,16 @@ export default function GalleryPage() {
         <div className="flex min-h-full flex-1 flex-col bg-slate-900">
         {/* Hero Section */}
         <section
-          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
           aria-label="Sayfa başlığı"
         >
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
             <ImageIcon
-              className="mx-auto mb-6 h-16 w-16 text-emerald-400"
+              className="mx-auto mb-6 h-14 w-14 text-emerald-400 sm:h-16 sm:w-16"
               aria-hidden="true"
             />
-            <h1 className="text-4xl font-bold text-white sm:text-5xl">Galeri</h1>
-            <p className="mx-auto mt-6 max-w-3xl text-lg text-slate-300">
+            <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">Galeri</h1>
+            <p className="mx-auto mt-6 max-w-3xl text-base text-slate-300 sm:text-lg">
               Çalışmalarımızdan örnekler ve başarı hikayelerimiz.
               Profesyonel temizlik hizmetlerimizin sonuçlarını görün.
             </p>

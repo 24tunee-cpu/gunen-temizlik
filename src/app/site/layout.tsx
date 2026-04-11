@@ -45,7 +45,7 @@ interface SiteLayoutProps {
  */
 export default function SiteLayout({ children }: SiteLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-900 transition-colors">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-hidden bg-white transition-colors dark:bg-slate-900">
       {/* Skip to Content Link - Accessibility */}
       <a
         href="#main-content"
@@ -62,7 +62,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       {/* Main Content */}
       <main
         id="main-content"
-        className="flex min-h-0 flex-1 flex-col"
+        className="flex min-h-0 min-w-0 flex-1 flex-col"
         role="main"
         aria-label="Sayfa içeriği"
       >

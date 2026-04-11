@@ -15,7 +15,8 @@
  */
 
 import type { Metadata } from 'next';
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
+import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { Testimonials } from '@/components/site/Testimonials';
 import { Star, Users, Award } from 'lucide-react';
@@ -117,17 +118,14 @@ const ratingStructuredData = {
  * @admin-sync Bu istatistikler admin panelden dinamik olarak güncellenebilir
  */
 function StatsSection() {
-  // Memoize stats to prevent unnecessary re-renders
-  const stats = useMemo(() => STATS_CONFIG, []);
-
   return (
     <section
-      className="bg-slate-50 dark:bg-slate-800 py-16"
+      className="bg-slate-50 py-16 dark:bg-slate-800"
       aria-label="İstatistikler"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-3">
-          {stats.map((stat) => {
+          {STATS_CONFIG.map((stat) => {
             const Icon = stat.icon;
             return (
               <div
@@ -196,11 +194,11 @@ export default function ReferencesPage() {
       <SiteLayout>
         {/* Hero Section */}
         <section
-          className="bg-slate-900 pt-32 pb-16"
+          className="bg-slate-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
           aria-label="Sayfa başlığı"
         >
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold text-white sm:text-5xl">
+            <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">
               Referanslar
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
@@ -227,12 +225,12 @@ export default function ReferencesPage() {
             <p className="text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
               Profesyonel temizlik hizmetimizi deneyimleyin ve farkı görün.
             </p>
-            <a
+            <Link
               href="/iletisim"
-              className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg bg-emerald-500 px-6 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 sm:text-base"
             >
               Ücretsiz Keşif Talep Edin
-            </a>
+            </Link>
           </div>
         </section>
       </SiteLayout>

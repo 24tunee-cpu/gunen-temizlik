@@ -4,6 +4,7 @@
  * İçerik HTML (dangerouslySetInnerHTML ile uyumlu).
  */
 import type { PrismaClient } from '@prisma/client';
+import { resolveBlogMetaDesc, resolveBlogMetaTitle } from './blog-meta';
 
 const IMG_HOME = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200';
 const IMG_OFFICE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200';
@@ -604,6 +605,8 @@ export const BLOG_SEED_POSTS: BlogSeedPost[] = [...TRAFFIC_POSTS, ...CLEANING_PO
 export async function upsertCanonicalBlogPosts(prisma: PrismaClient): Promise<number> {
   for (const post of BLOG_SEED_POSTS) {
     const { slug, metaTitle, metaDesc, ...rest } = post;
+    const resolvedTitle = resolveBlogMetaTitle(rest.title, metaTitle ?? null);
+    const resolvedDesc = resolveBlogMetaDesc(rest.excerpt, metaDesc ?? null);
     await prisma.blogPost.upsert({
       where: { slug },
       create: {
@@ -617,8 +620,8 @@ export async function upsertCanonicalBlogPosts(prisma: PrismaClient): Promise<nu
         author: 'Günen Temizlik',
         published: true,
         views: 0,
-        metaTitle: metaTitle ?? null,
-        metaDesc: metaDesc ?? null,
+        metaTitle: resolvedTitle,
+        metaDesc: resolvedDesc,
       },
       update: {
         title: rest.title,
@@ -628,8 +631,8 @@ export async function upsertCanonicalBlogPosts(prisma: PrismaClient): Promise<nu
         category: rest.category,
         tags: rest.tags,
         published: true,
-        metaTitle: metaTitle ?? null,
-        metaDesc: metaDesc ?? null,
+        metaTitle: resolvedTitle,
+        metaDesc: resolvedDesc,
       },
     });
   }

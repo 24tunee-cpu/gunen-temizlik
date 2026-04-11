@@ -171,14 +171,14 @@ export default function ContactPage() {
       <SiteLayout>
         {/* Hero Section */}
         <section
-          className="bg-slate-900 pt-32 pb-16"
+          className="bg-slate-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
           aria-label="Sayfa başlığı"
         >
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-bold text-white sm:text-5xl">
+            <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">
               İletişim
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300 sm:text-lg">
               Bize ulaşın, size en uygun temizlik çözümlerini sunalım.
               Ücretsiz keşif için hemen form doldurun.
             </p>

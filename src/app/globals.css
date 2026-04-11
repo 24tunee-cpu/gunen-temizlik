@@ -6,6 +6,12 @@
 
 @import "tailwindcss";
 
+/* Mobil: iOS metin ölçeklenmesi ve yatay kaydırma taşması */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 /* ============================================
    CSS CUSTOM PROPERTIES (Design Tokens)
    ============================================ */

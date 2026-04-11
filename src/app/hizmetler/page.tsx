@@ -66,7 +66,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
     >
       <Link
         href={`/hizmetler/${service.slug}`}
-        className="group block rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-lg transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        className="group block rounded-2xl bg-white p-6 shadow-lg transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-800 sm:p-8"
         aria-label={`${service.title} hizmeti hakkında detaylı bilgi`}
       >
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
@@ -199,11 +199,11 @@ export default function ServicesPage() {
       <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section
-        className="bg-slate-900 pt-32 pb-16"
+        className="bg-slate-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
         aria-label="Sayfa başlığı"
       >
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-white sm:text-5xl">
+          <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">
             Hizmetlerimiz
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">

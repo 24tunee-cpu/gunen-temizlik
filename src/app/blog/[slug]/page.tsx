@@ -24,6 +24,7 @@ import { formatDate } from '@/lib/utils';
 import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { BlogShareButton } from '@/components/site/BlogShareButton';
+import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 
 // ============================================
 // TYPES
@@ -47,6 +48,8 @@ interface BlogPostData {
   author: string;
   published: boolean;
   views: number;
+  metaTitle: string | null;
+  metaDesc: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,16 +78,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       };
     }
 
+    const metaTitle = resolveBlogMetaTitle(post.title, post.metaTitle);
+    const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
+
     return {
-      title: `${post.title} | Günen Temizlik Blog`,
-      description: post.excerpt,
+      title: metaTitle,
+      description: metaDesc,
       keywords: post.tags,
       alternates: {
         canonical: `https://gunentemizlik.com/blog/${post.slug}`,
       },
       openGraph: {
-        title: post.title,
-        description: post.excerpt,
+        title: metaTitle,
+        description: metaDesc,
         type: 'article',
         publishedTime: post.createdAt.toISOString(),
         modifiedTime: post.updatedAt.toISOString(),
@@ -102,8 +108,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
       twitter: {
         card: 'summary_large_image',
-        title: post.title,
-        description: post.excerpt,
+        title: metaTitle,
+        description: metaDesc,
         images: post.image ? [post.image] : undefined,
       },
     };
@@ -125,11 +131,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * @returns JSON-LD object
  */
 function generateArticleSchema(post: BlogPostData) {
+  const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": post.title,
-    "description": post.excerpt,
+    "description": metaDesc,
     "image": post.image || undefined,
     "datePublished": post.createdAt.toISOString(),
     "dateModified": post.updatedAt.toISOString(),
@@ -206,7 +213,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="flex min-h-full flex-1 flex-col bg-slate-900">
         {/* Article Header */}
         <header
-          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
           aria-label="Yazı başlığı"
         >
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -222,7 +229,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               {post.category}
             </span>
 
-            <h1 className="mt-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+            <h1 className="mt-4 break-words text-balance text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
               {post.title}
             </h1>
 

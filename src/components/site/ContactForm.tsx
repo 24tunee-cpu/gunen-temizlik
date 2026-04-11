@@ -182,7 +182,7 @@ function FloatingLabelInput({
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={cn(
-          'w-full rounded-xl border-2 px-4 pt-6 pb-2 transition-all duration-300 outline-none',
+          'w-full rounded-xl border-2 px-4 pb-2 pt-6 text-base transition-all duration-300 outline-none',
           error
             ? isDark
               ? 'border-red-500/60 focus:border-red-400 bg-red-950/30 text-white'
@@ -338,7 +338,7 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
   return (
     <section
       className={cn(
-        'relative py-24 overflow-hidden',
+        'relative overflow-hidden py-16 sm:py-20 md:py-24',
         isDark ? 'bg-slate-900' : 'bg-slate-50',
       )}
       aria-label="İletişim formu"
@@ -360,8 +360,8 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2">
+      <div className="relative mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
           {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -30 }}
@@ -383,13 +383,13 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
             </motion.span>
             <h2
               className={cn(
-                'mt-4 text-3xl font-bold sm:text-4xl',
+                'mt-4 text-balance text-2xl font-bold sm:text-3xl md:text-4xl',
                 isDark ? 'text-white' : 'text-slate-900',
               )}
             >
               Bize Ulaşın
             </h2>
-            <p className={cn('mt-4 text-lg', isDark ? 'text-slate-300' : 'text-slate-600')}>
+            <p className={cn('mt-4 text-base sm:text-lg', isDark ? 'text-slate-300' : 'text-slate-600')}>
               Temizlik hizmetleri hakkında bilgi almak veya randevu oluşturmak için bize ulaşabilirsiniz.
             </p>
 
@@ -407,19 +407,19 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
                   href={item.href}
                   whileHover={shouldReduceMotion ? {} : { scale: 1.02, x: 4 }}
                   className={cn(
-                    'flex items-center gap-4 group p-3 rounded-xl transition-colors',
+                    'group flex min-w-0 items-center gap-3 rounded-xl p-3 transition-colors sm:gap-4',
                     isDark ? 'hover:bg-slate-800/80' : 'hover:bg-white',
                   )}
                   aria-label={item.ariaLabel}
                 >
-                  <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg', gradient)} aria-hidden="true">
+                  <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg sm:h-12 sm:w-12', gradient)} aria-hidden="true">
                     <item.icon size={20} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className={cn('text-sm', isDark ? 'text-slate-400' : 'text-slate-500')}>{item.label}</p>
                     <p
                       className={cn(
-                        'font-semibold transition-colors',
+                        'break-words font-semibold transition-colors',
                         isDark
                           ? 'text-white group-hover:text-emerald-400'
                           : 'text-slate-900 group-hover:text-emerald-600',
@@ -446,7 +446,7 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
 
             <div
               className={cn(
-                'relative rounded-2xl p-8 shadow-xl border',
+                'relative rounded-2xl border p-5 shadow-xl sm:p-8',
                 isDark
                   ? 'bg-slate-800 border-slate-700'
                   : 'bg-white border-slate-100',

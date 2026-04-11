@@ -23,6 +23,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 // ============================================
@@ -280,13 +281,24 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating new blog post', { title: data.title, slug: data.slug });
 
+    const title = sanitizeInput(data.title);
+    const excerpt = data.excerpt && typeof data.excerpt === 'string'
+      ? sanitizeInput(data.excerpt).slice(0, MAX_LENGTHS.excerpt)
+      : '';
+    const metaTitleRaw =
+      data.metaTitle && typeof data.metaTitle === 'string'
+        ? sanitizeInput(data.metaTitle).slice(0, MAX_LENGTHS.metaTitle)
+        : null;
+    const metaDescRaw =
+      data.metaDesc && typeof data.metaDesc === 'string'
+        ? sanitizeInput(data.metaDesc).slice(0, MAX_LENGTHS.metaDesc)
+        : null;
+
     const post = await prisma.blogPost.create({
       data: {
-        title: sanitizeInput(data.title),
+        title,
         slug: sanitizeInput(data.slug.toLowerCase().trim()),
-        excerpt: data.excerpt && typeof data.excerpt === 'string'
-          ? sanitizeInput(data.excerpt).slice(0, MAX_LENGTHS.excerpt)
-          : '',
+        excerpt,
         content: typeof data.content === 'string' ? data.content : '',
         image: data.image && typeof data.image === 'string' ? data.image : null,
         category: data.category && typeof data.category === 'string'
@@ -297,12 +309,8 @@ export async function POST(request: NextRequest) {
           ? sanitizeInput(data.author).slice(0, MAX_LENGTHS.author)
           : 'Günen Temizlik',
         published: typeof data.published === 'boolean' ? data.published : false,
-        metaTitle: data.metaTitle && typeof data.metaTitle === 'string'
-          ? sanitizeInput(data.metaTitle).slice(0, MAX_LENGTHS.metaTitle)
-          : null,
-        metaDesc: data.metaDesc && typeof data.metaDesc === 'string'
-          ? sanitizeInput(data.metaDesc).slice(0, MAX_LENGTHS.metaDesc)
-          : null,
+        metaTitle: resolveBlogMetaTitle(title, metaTitleRaw).slice(0, MAX_LENGTHS.metaTitle),
+        metaDesc: resolveBlogMetaDesc(excerpt, metaDescRaw).slice(0, MAX_LENGTHS.metaDesc),
       },
     });
 
@@ -354,10 +362,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Check if post exists
     const existingPost = await prisma.blogPost.findUnique({
       where: { id: data.id },
-      select: { id: true, slug: true },
     });
 
     if (!existingPost) {
@@ -393,7 +399,7 @@ export async function PUT(request: NextRequest) {
         where: { slug: data.slug },
         select: { id: true },
       });
-      if (slugCheck && slugCheck.id !== data.id) {
+      if (slugCheck && slugCheck.id !== existingPost.id) {
         return NextResponse.json(
           { error: 'Bu slug zaten kullanılıyor' },
           { status: 400, headers }
@@ -469,6 +475,28 @@ export async function PUT(request: NextRequest) {
         ? sanitizeInput(data.metaDesc).slice(0, MAX_LENGTHS.metaDesc)
         : null;
     }
+
+    const mergedTitle =
+      typeof updateData.title === 'string' ? updateData.title : existingPost.title;
+    const mergedExcerpt =
+      typeof updateData.excerpt === 'string' ? updateData.excerpt : existingPost.excerpt;
+    const mergedMetaTitle =
+      updateData.metaTitle !== undefined
+        ? (updateData.metaTitle as string | null)
+        : existingPost.metaTitle;
+    const mergedMetaDesc =
+      updateData.metaDesc !== undefined
+        ? (updateData.metaDesc as string | null)
+        : existingPost.metaDesc;
+
+    updateData.metaTitle = resolveBlogMetaTitle(mergedTitle, mergedMetaTitle).slice(
+      0,
+      MAX_LENGTHS.metaTitle
+    );
+    updateData.metaDesc = resolveBlogMetaDesc(mergedExcerpt, mergedMetaDesc).slice(
+      0,
+      MAX_LENGTHS.metaDesc
+    );
 
     console.log('Updating blog post', { id: data.id });
 

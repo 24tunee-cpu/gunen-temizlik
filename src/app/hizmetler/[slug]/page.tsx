@@ -185,14 +185,14 @@ export default async function ServiceDetailPage({ params }: PageProps) {
       <SiteLayout>
         {/* Hero Section */}
         <section
-          className="bg-slate-900 pt-32 pb-16"
+          className="bg-slate-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
           aria-label="Hizmet başlığı"
         >
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/20">
-              <Sparkles className="h-10 w-10 text-emerald-400" aria-hidden="true" />
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/20 sm:h-20 sm:w-20">
+              <Sparkles className="h-8 w-8 text-emerald-400 sm:h-10 sm:w-10" aria-hidden="true" />
             </div>
-            <h1 className="text-4xl font-bold text-white sm:text-5xl">
+            <h1 className="text-balance break-words text-3xl font-bold text-white sm:text-4xl md:text-5xl">
               {service.title}
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">

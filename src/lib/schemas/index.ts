@@ -103,8 +103,8 @@ export const blogPostSchema = z.object({
   category: z.string().min(1, 'Kategori seçilmeli').max(50, 'Kategori adı çok uzun'),
   tags: z.array(z.string().min(1).max(30)).max(10, 'En fazla 10 etiket ekleyebilirsiniz'),
   published: z.coerce.boolean().default(false),
-  metaTitle: z.string().max(60).optional(),
-  metaDesc: z.string().max(160).optional(),
+  metaTitle: z.string().max(200).optional(),
+  metaDesc: z.string().max(300).optional(),
 });
 
 /**

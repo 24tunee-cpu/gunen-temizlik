@@ -91,7 +91,7 @@ export default function TermsPage() {
       <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section
-        className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 py-32"
+        className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 py-16 sm:py-24 md:py-32"
         aria-label="Sayfa başlığı"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent" aria-hidden="true" />
@@ -101,10 +101,10 @@ export default function TermsPage() {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-2xl shadow-emerald-500/30">
               <FileText className="h-10 w-10 text-white" aria-hidden="true" />
             </div>
-            <h1 className="text-4xl font-bold text-white md:text-5xl">
+            <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">
               Kullanım Koşulları
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300 sm:text-lg">
               Hizmetlerimizi kullanmadan önce lütfen kullanım koşullarımızı okuyun
             </p>
           </div>
@@ -112,14 +112,14 @@ export default function TermsPage() {
       </section>
 
       {/* Content — flex-1: footer öncesi boşlukta beyaz layout zemini görünmez */}
-      <section className="flex-1 bg-slate-900 py-20">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <section className="flex-1 bg-slate-900 py-12 sm:py-16 md:py-20">
+        <div className="mx-auto max-w-4xl px-3 sm:px-6 lg:px-8">
           <article className="space-y-8">
             {TERMS_ITEMS.map((item) => (
               <article
                 key={item.id}
                 id={item.id}
-                className="rounded-2xl border border-slate-800 bg-slate-800/50 dark:bg-slate-800/30 p-6 backdrop-blur-sm scroll-mt-24"
+                className="scroll-mt-24 rounded-2xl border border-slate-800 bg-slate-800/50 p-4 backdrop-blur-sm dark:bg-slate-800/30 sm:p-6"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20">

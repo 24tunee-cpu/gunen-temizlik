@@ -130,7 +130,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-slate-900">
+    <section className="relative min-h-[100dvh] min-h-screen overflow-hidden bg-slate-900">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-900/40 via-slate-900 to-slate-950" />
 
@@ -168,8 +168,8 @@ export function Hero() {
       <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" aria-hidden="true" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl animate-pulse delay-1000" aria-hidden="true" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 lg:px-8 lg:pt-40">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 items-center">
+      <div className="relative mx-auto max-w-7xl px-3 pt-24 pb-14 sm:px-6 sm:pt-28 sm:pb-16 md:pt-32 md:pb-20 lg:px-8 lg:pt-40">
+        <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-8">
           {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -198,7 +198,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-6 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl"
+              className="mt-6 text-balance text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl"
             >
               <motion.span
                 initial={{ opacity: 0 }}
@@ -232,7 +232,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="mt-6 text-lg text-slate-300 max-w-xl"
+              className="mt-6 max-w-xl text-base text-slate-300 sm:text-lg"
             >
               İnşaat sonrası, ofis, koltuk yıkama ve daha fazlası.
               Deneyimli ekibimiz ve modern ekipmanlarımızla evinizi ve iş yerinizi
@@ -244,16 +244,16 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              className="mt-8 flex flex-wrap gap-4"
+              className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4"
             >
-              <motion.div whileHover={shouldReduceMotion ? {} : { scale: 1.05 }} whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}>
+              <motion.div whileHover={shouldReduceMotion ? {} : { scale: 1.05 }} whileTap={shouldReduceMotion ? {} : { scale: 0.95 }} className="w-full min-w-0 sm:w-auto">
                 <Link
                   href="/iletisim"
-                  className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-8 py-4 text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-emerald-500/50 overflow-hidden"
+                  className="group relative inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-emerald-500/50 overflow-hidden sm:inline-flex sm:w-auto sm:px-8 sm:py-4 sm:text-base"
                   aria-label="Hemen fiyat teklifi al"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="relative font-semibold">Hemen Fiyat Al</span>
+                  <span className="relative">Hemen Fiyat Al</span>
                   <motion.span
                     className="relative"
                     animate={shouldReduceMotion ? {} : { x: [0, 4, 0] }}
@@ -265,10 +265,10 @@ export function Hero() {
                 </Link>
               </motion.div>
 
-              <motion.div whileHover={shouldReduceMotion ? {} : { scale: 1.05 }} whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}>
+              <motion.div whileHover={shouldReduceMotion ? {} : { scale: 1.05 }} whileTap={shouldReduceMotion ? {} : { scale: 0.95 }} className="w-full min-w-0 sm:w-auto">
                 <Link
                   href="/hizmetler"
-                  className="group inline-flex items-center gap-2 rounded-xl border border-white/20 px-8 py-4 text-white transition-all hover:bg-white/10 hover:border-white/40 backdrop-blur-sm"
+                  className="group inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 py-3.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10 sm:inline-flex sm:w-auto sm:px-8 sm:py-4 sm:text-base"
                   aria-label="Tüm hizmetleri görüntüle"
                 >
                   <span className="font-medium">Hizmetlerimiz</span>
