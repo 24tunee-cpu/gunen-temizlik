@@ -78,7 +78,16 @@ export function TeamSection({ limit, department }: TeamSectionProps = {}) {
         const res = await fetch('/api/team');
         if (!res.ok) throw new Error('Failed to fetch team');
         const data = await res.json();
-        setMembers(Array.isArray(data) ? data.filter((m: TeamMember) => m.isActive) : []);
+        setMembers(
+          Array.isArray(data)
+            ? data
+                .filter((m: TeamMember & { role?: string }) => m.isActive)
+                .map((m: TeamMember & { role?: string }) => ({
+                  ...m,
+                  position: m.position ?? m.role ?? '',
+                }))
+            : []
+        );
       } catch (error) {
         logger.error('Error fetching team', {}, error instanceof Error ? error : undefined);
       } finally {

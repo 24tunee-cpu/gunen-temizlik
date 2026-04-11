@@ -24,6 +24,7 @@ interface TeamMember {
   id: string;
   name: string;
   position: string;
+  role?: string;
   bio?: string;
   image?: string;
   phone?: string;
@@ -63,7 +64,14 @@ export default function TeamPage() {
       const res = await fetch('/api/team');
       if (!res.ok) throw new Error('Failed to fetch team');
       const data = await res.json();
-      setMembers(Array.isArray(data) ? data : []);
+      setMembers(
+        Array.isArray(data)
+          ? data.map((m: TeamMember) => ({
+              ...m,
+              position: m.position ?? m.role ?? '',
+            }))
+          : []
+      );
     } catch (error) {
       console.error('Error fetching team', {}, error instanceof Error ? error : undefined);
       toast.error('Yukleme Hatasi', 'Ekip uyeleri yuklenirken bir hata olustu.');

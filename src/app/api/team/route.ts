@@ -216,7 +216,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: nameValidation.error || 'İsim zorunludur' }, { status: 400, headers });
     }
 
-    const roleValidation = validateRequiredString(body.role, 'Pozisyon', MAX_LENGTHS.role);
+    const roleRaw = body.role ?? body.position;
+    const roleValidation = validateRequiredString(roleRaw, 'Pozisyon', MAX_LENGTHS.role);
     if (!roleValidation.valid) {
       return NextResponse.json({ error: roleValidation.error || 'Pozisyon zorunludur' }, { status: 400, headers });
     }
@@ -225,7 +226,7 @@ export async function POST(request: NextRequest) {
 
     // Sanitize inputs
     const sanitizedName = sanitizeInput(body.name as string);
-    const sanitizedRole = sanitizeInput(body.role as string);
+    const sanitizedRole = sanitizeInput(roleRaw as string);
     const sanitizedBio = body.bio && typeof body.bio === 'string' ? sanitizeInput(body.bio) : null;
     const sanitizedPhone = body.phone && typeof body.phone === 'string' ? body.phone.slice(0, MAX_LENGTHS.phone) : null;
     const sanitizedEmail = body.email && typeof body.email === 'string' ? body.email.slice(0, MAX_LENGTHS.email) : null;
@@ -296,12 +297,13 @@ export async function PUT(request: NextRequest) {
       updateData.name = sanitizeInput(data.name as string);
     }
 
-    if (data.role !== undefined) {
-      const roleValidation = validateRequiredString(data.role, 'Pozisyon', MAX_LENGTHS.role);
+    const roleUpdate = data.role !== undefined ? data.role : data.position;
+    if (roleUpdate !== undefined) {
+      const roleValidation = validateRequiredString(roleUpdate, 'Pozisyon', MAX_LENGTHS.role);
       if (!roleValidation.valid) {
         return NextResponse.json({ error: roleValidation.error || 'Pozisyon zorunludur' }, { status: 400, headers });
       }
-      updateData.role = sanitizeInput(data.role as string);
+      updateData.role = sanitizeInput(roleUpdate as string);
     }
 
     if (data.bio !== undefined) {

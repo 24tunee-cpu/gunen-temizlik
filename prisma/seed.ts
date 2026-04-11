@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { upsertCanonicalServices } from '../src/lib/seed-services';
 import { upsertCanonicalTestimonials } from '../src/lib/seed-testimonials';
 import { upsertCanonicalBlogPosts } from '../src/lib/seed-blog';
+import { upsertCanonicalTeamMembers } from '../src/lib/seed-team';
 
 const prisma = new PrismaClient();
 
@@ -166,6 +167,9 @@ async function seed() {
     // Müşteri yorumları — seedKey ile upsert (22 SEO uyumlu kanonik yorum)
     const tn = await upsertCanonicalTestimonials(prisma);
     console.log(`${tn} müşteri yorumu upsert edildi (kanonik referanslar)`);
+
+    const teamN = await upsertCanonicalTeamMembers(prisma);
+    console.log(`${teamN} ekip üyesi upsert edildi (10 kişi)`);
 
     // FAQ ekle
     const existingFAQs = await prisma.faq.count();

@@ -31,6 +31,7 @@ import { prisma } from '@/lib/prisma';
 import { upsertCanonicalServices } from '@/lib/seed-services';
 import { upsertCanonicalTestimonials } from '@/lib/seed-testimonials';
 import { upsertCanonicalBlogPosts } from '@/lib/seed-blog';
+import { upsertCanonicalTeamMembers } from '@/lib/seed-team';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -185,40 +186,8 @@ export async function GET(request: NextRequest) {
     const existingBlogs = await prisma.blogPost.count();
     const blogPostsUpserted = await upsertCanonicalBlogPosts(prisma);
 
-    // Check and seed Team Members
     const existingTeam = await prisma.teamMember.count();
-    let teamMembers = [];
-    if (existingTeam === 0) {
-      teamMembers = await Promise.all([
-        prisma.teamMember.create({
-          data: {
-            name: 'Ahmet Yilmaz',
-            role: 'Genel Mudur',
-            bio: '20 yillik temizlik sektoru deneyimi ile Gunen Temizlik\'in kurucusu.',
-            isActive: true,
-            order: 1,
-          },
-        }),
-        prisma.teamMember.create({
-          data: {
-            name: 'Ayse Kaya',
-            role: 'Operasyon Muduru',
-            bio: 'Profesyonel temizlik ekiplerini yonetmektedir.',
-            isActive: true,
-            order: 2,
-          },
-        }),
-        prisma.teamMember.create({
-          data: {
-            name: 'Mehmet Demir',
-            role: 'Teknik Sorumlu',
-            bio: 'Ozel temizlik ekipmanlari ve teknikleri konusunda uzman.',
-            isActive: true,
-            order: 3,
-          },
-        }),
-      ]);
-    }
+    const teamMembersUpserted = await upsertCanonicalTeamMembers(prisma);
 
     const existingTestimonials = await prisma.testimonial.count();
     const testimonialsUpserted = await upsertCanonicalTestimonials(prisma);
@@ -363,7 +332,7 @@ export async function GET(request: NextRequest) {
       created: {
         services: servicesUpserted,
         blogPosts: blogPostsUpserted,
-        teamMembers: teamMembers.length,
+        teamMembers: teamMembersUpserted,
         testimonials: testimonialsUpserted,
         faqs: faqs.length,
         pricing: pricingItems.length,

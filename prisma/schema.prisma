@@ -244,11 +244,14 @@ model TeamMember {
   phone       String?
   email       String?
   linkedin    String?
+  /// Kanonik seed satırları için anahtar (upsert); panelden eklenenlerde boş.
+  seedKey     String?
   order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([seedKey])
   @@map("team_members")
 }
 
