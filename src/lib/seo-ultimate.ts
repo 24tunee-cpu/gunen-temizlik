@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { FAQ_SEED_DATA } from './seed-faq';
 
 // ============================================
 // GÜNEN TEMİZLİK - ULTIMATE SEO STRATEGY
@@ -537,32 +538,10 @@ export const PAGE_SEO = {
 // RICH RESULTS & FEATURED SNIPPETS OPTIMIZATION
 // ============================================
 
-export const FAQ_CONTENT = [
-  {
-    question: 'İstanbul temizlik şirketi fiyatları ne kadar?',
-    answer: 'İstanbul\'da temizlik şirketi fiyatları hizmet türüne göre değişir. Ofis temizliği 300-800₺, ev temizliği 400-1000₺, inşaat sonrası temizlik 500-1500₺ arasında değişmektedir. Detaylı fiyat için ücretsiz keşif hizmetimizden yararlanabilirsiniz.',
-  },
-  {
-    question: 'Günen Temizlik hangi bölgelerde hizmet veriyor?',
-    answer: 'Tüm İstanbul\'da hizmet vermekteyiz. Ataşehir, Kadıköy, Üsküdar, Beşiktaş, Şişli, Maltepe, Pendik ve tüm ilçelerde 7/24 profesyonel temizlik hizmeti sunuyoruz.',
-  },
-  {
-    question: 'İnşaat sonrası temizlik ne kadar sürer?',
-    answer: 'İnşaat sonrası temizlik süresi alanın büyüklüğüne göre değişir. 100m² bir daire ortalama 4-6 saat, 200m² bir ofis 6-8 saat sürmektedir. Detaylı temizlik garantisiyle çalışıyoruz.',
-  },
-  {
-    question: 'Koltuk yıkama hizmeti evde mi yapılıyor?',
-    answer: 'Evet, koltuk yıkama hizmetimiz yerinde yapılmaktadır. Profesyonel ekipmanlarımızla koltuklarınızı evinizde veya ofisinizde temizliyor, kurutma işlemini aynı gün tamamlıyoruz.',
-  },
-  {
-    question: 'Ofis temizliği için sözleşme yapıyor musunuz?',
-    answer: 'Evet, kurumsal ofis temizliği için aylık ve yıllık sözleşmeler yapıyoruz. Düzenli temizlik programı, aynı ekip garantisi ve özel fiyat avantajları sunuyoruz.',
-  },
-  {
-    question: 'Temizlik hizmetinizde garanti var mı?',
-    answer: 'Tüm temizlik hizmetlerimizde %100 memnuniyet garantisi veriyoruz. Memnun kalmazsanız ücretsiz tekrar temizlik yapıyoruz. 15+ yıllık deneyimimizle 5000+ mutlu müşteriye hizmet verdik.',
-  },
-];
+export const FAQ_CONTENT = [...FAQ_SEED_DATA]
+  .filter((f) => f.isActive)
+  .sort((a, b) => a.order - b.order)
+  .map((f) => ({ question: f.question, answer: f.answer }));
 
 // ============================================
 // SITEMAP & ROBOTS HELPERS

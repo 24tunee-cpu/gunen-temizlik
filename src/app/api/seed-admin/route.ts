@@ -32,6 +32,7 @@ import { upsertCanonicalServices } from '@/lib/seed-services';
 import { upsertCanonicalTestimonials } from '@/lib/seed-testimonials';
 import { upsertCanonicalBlogPosts } from '@/lib/seed-blog';
 import { upsertCanonicalTeamMembers } from '@/lib/seed-team';
+import { upsertCanonicalFaqs } from '@/lib/seed-faq';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -192,40 +193,8 @@ export async function GET(request: NextRequest) {
     const existingTestimonials = await prisma.testimonial.count();
     const testimonialsUpserted = await upsertCanonicalTestimonials(prisma);
 
-    // Check and seed FAQs
     const existingFaqs = await prisma.faq.count();
-    let faqs = [];
-    if (existingFaqs === 0) {
-      faqs = await Promise.all([
-        prisma.faq.create({
-          data: {
-            question: 'Temizlik hizmetleri hangi saatlerde verilmektedir?',
-            answer: 'Temizlik hizmetlerimiz 7 gun 24 saat esasina gore verilmektedir. Size uygun saatte randevu alabilirsiniz.',
-            category: 'Genel',
-            isActive: true,
-            order: 1,
-          },
-        }),
-        prisma.faq.create({
-          data: {
-            question: 'Hangi temizlik malzemelerini kullaniyorsunuz?',
-            answer: 'Cevre dostu ve saglik acisindan guvenli temizlik malzemeleri kullaniyoruz. Isterseniz ozel malzeme talebinde bulunabilirsiniz.',
-            category: 'Genel',
-            isActive: true,
-            order: 2,
-          },
-        }),
-        prisma.faq.create({
-          data: {
-            question: 'Fiyatlar nasil belirleniyor?',
-            answer: 'Fiyatlar temizlik yapilacak alanin buyuklugu, temizlik turu ve zorluk derecesine gore belirlenmektedir. Ucretsiz kestirim icin bize ulasin.',
-            category: 'Fiyat',
-            isActive: true,
-            order: 3,
-          },
-        }),
-      ]);
-    }
+    const faqsUpserted = await upsertCanonicalFaqs(prisma);
 
     // Check and seed Pricing
     const existingPricing = await prisma.pricing.count();
@@ -334,7 +303,7 @@ export async function GET(request: NextRequest) {
         blogPosts: blogPostsUpserted,
         teamMembers: teamMembersUpserted,
         testimonials: testimonialsUpserted,
-        faqs: faqs.length,
+        faqs: faqsUpserted,
         pricing: pricingItems.length,
         gallery: galleryItems.length,
         certificates: certificates.length,

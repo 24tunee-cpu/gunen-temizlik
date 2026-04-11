@@ -19,6 +19,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { FAQSection } from '../../components/site/FAQSection';
+import { faqPageJsonLdObject } from '@/lib/seed-faq';
 import { HelpCircle } from 'lucide-react';
 
 // ============================================
@@ -27,22 +28,25 @@ import { HelpCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Sıkça Sorulan Sorular | Günen Temizlik - İstanbul',
-  description: 'İstanbul temizlik hizmetlerimiz hakkında sıkça sorulan sorular ve detaylı cevapları. Fiyatlar, hizmet bölgeleri, randevu ve daha fazlası.',
+  description:
+    'İstanbul profesyonel temizlik: fiyatlandırma, ofis ve ev temizliği, inşaat sonrası, koltuk yıkama, randevu ve bölgeler hakkında yanıtlar. Günen Temizlik SSS.',
   keywords: [
-    'temizlik fiyatları',
-    'istanbul temizlik ücretleri',
-    'ofis temizliği ne kadar',
-    'inşaat sonrası temizlik fiyatları',
+    'istanbul temizlik şirketi',
+    'profesyonel temizlik istanbul',
+    'ofis temizliği fiyat',
+    'inşaat sonrası temizlik süresi',
+    'koltuk yıkama yerinde',
     'temizlik şirketi nasıl seçilir',
-    'günen temizlik ssb',
-    'temizlik hizmetleri istanbul',
+    'günen temizlik sss',
+    'ücretsiz keşif temizlik',
   ],
   alternates: {
     canonical: 'https://gunentemizlik.com/sss',
   },
   openGraph: {
     title: 'Sıkça Sorulan Sorular | Günen Temizlik',
-    description: 'Temizlik hizmetlerimiz hakkında merak edilen tüm soruların cevapları burada.',
+    description:
+      'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
     url: 'https://gunentemizlik.com/sss',
     type: 'website',
     locale: 'tr_TR',
@@ -59,62 +63,13 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Sıkça Sorulan Sorular | Günen Temizlik',
-    description: 'Temizlik hizmetlerimiz hakkında merak edilen tüm soruların cevapları.',
+    description:
+      'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
     images: ['https://gunentemizlik.com/og-faq.jpg'],
   },
 };
 
-// ============================================
-// JSON-LD STRUCTURED DATA (FAQPage Schema)
-// ============================================
-
-// Bu veriler admin panelden dinamik olarak çekilebilir
-const faqStructuredData = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "İstanbul temizlik şirketi fiyatları ne kadar?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "İstanbul'da temizlik şirketi fiyatları hizmet türüne göre değişir. Ofis temizliği 300-800₺, ev temizliği 400-1000₺, inşaat sonrası temizlik 500-1500₺ arasında değişmektedir. Detaylı fiyat için ücretsiz keşif hizmetimizden yararlanabilirsiniz."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Günen Temizlik hangi bölgelerde hizmet veriyor?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Tüm İstanbul'da hizmet vermekteyiz. Ataşehir, Kadıköy, Üsküdar, Beşiktaş, Şişli, Maltepe, Pendik ve tüm ilçelerde 7/24 profesyonel temizlik hizmeti sunuyoruz."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "İnşaat sonrası temizlik ne kadar sürer?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "İnşaat sonrası temizlik süresi alanın büyüklüğüne göre değişir. 100m² bir daire ortalama 4-6 saat, 200m² bir ofis 6-8 saat sürmektedir."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Randevu almak için ne yapmalıyım?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Web sitemizdeki iletişim formunu doldurabilir, 0850 123 45 67 numaralı telefondan bizi arayabilir veya WhatsApp üzerinden yazabilirsiniz. 7/24 hizmet vermekteyiz."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Kullandığınız temizlik malzemeleri güvenli mi?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Evet, kullandığımız tüm temizlik malzemeleri insan sağlığına ve çevreye zararsız, sertifikalı ürünlerdir. Özellikle hassas alerjisi olan kişiler için de güvenlidir."
-      }
-    }
-  ]
-};
+const faqStructuredData = faqPageJsonLdObject();
 
 // ============================================
 // LOADING FALLBACK

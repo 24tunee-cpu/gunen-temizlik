@@ -3,46 +3,9 @@ import { upsertCanonicalServices } from '../src/lib/seed-services';
 import { upsertCanonicalTestimonials } from '../src/lib/seed-testimonials';
 import { upsertCanonicalBlogPosts } from '../src/lib/seed-blog';
 import { upsertCanonicalTeamMembers } from '../src/lib/seed-team';
+import { upsertCanonicalFaqs } from '../src/lib/seed-faq';
 
 const prisma = new PrismaClient();
-
-const defaultFAQs = [
-  {
-    question: 'Hizmetleriniz nelerdir?',
-    answer: 'İnşaat sonrası temizlik, ofis temizliği, koltuk yıkama, halı temizliği, cam temizliği ve daha fazlasını sunuyoruz.',
-    category: 'Genel',
-    isActive: true,
-    order: 1,
-  },
-  {
-    question: 'Fiyatlarınız nedir?',
-    answer: 'Fiyatlar hizmet tipine ve metrekareye göre değişiklik gösterir. Detaylı bilgi için iletişime geçin.',
-    category: 'Fiyat',
-    isActive: true,
-    order: 2,
-  },
-  {
-    question: 'Hangi bölgelerde hizmet veriyorsunuz?',
-    answer: 'İstanbul\'un tüm ilçelerinde hizmet vermekteyiz.',
-    category: 'Genel',
-    isActive: true,
-    order: 3,
-  },
-  {
-    question: 'Randevu almak için ne yapmalıyım?',
-    answer: 'Web sitemizden, telefonla veya WhatsApp üzerinden randevu alabilirsiniz.',
-    category: 'Randevu',
-    isActive: true,
-    order: 4,
-  },
-  {
-    question: 'Temizlik ne kadar sürer?',
-    answer: 'Hizmet tipine göre 2-8 saat arasında değişmektedir.',
-    category: 'Hizmet',
-    isActive: true,
-    order: 5,
-  },
-];
 
 const defaultGallery = [
   {
@@ -171,14 +134,8 @@ async function seed() {
     const teamN = await upsertCanonicalTeamMembers(prisma);
     console.log(`${teamN} ekip üyesi upsert edildi (10 kişi)`);
 
-    // FAQ ekle
-    const existingFAQs = await prisma.faq.count();
-    if (existingFAQs === 0) {
-      await prisma.faq.createMany({ data: defaultFAQs });
-      console.log(`${defaultFAQs.length} FAQ eklendi`);
-    } else {
-      console.log(`Zaten ${existingFAQs} FAQ var, atlanıyor`);
-    }
+    const faqN = await upsertCanonicalFaqs(prisma);
+    console.log(`${faqN} SSS kaydı upsert edildi (SEO odaklı)`);
 
     // Gallery ekle
     const existingGallery = await prisma.gallery.count();

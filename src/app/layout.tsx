@@ -16,6 +16,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
+import { faqPageJsonLdObject } from "@/lib/seed-faq";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
@@ -186,36 +187,7 @@ const LOCAL_BUSINESS_SCHEMA = {
   "hasMap": "https://www.google.com/maps?q=41.0082,28.9784",
 } as const;
 
-const FAQ_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "İstanbul temizlik şirketi fiyatları ne kadar?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "İstanbul'da temizlik şirketi fiyatları hizmet türüne göre değişir. Ofis temizliği 300-800₺, ev temizliği 400-1000₺, inşaat sonrası temizlik 500-1500₺ arasında değişmektedir. Detaylı fiyat için ücretsiz keşif hizmetimizden yararlanabilirsiniz.",
-      },
-    },
-    {
-      "@type": "Question",
-      "name": "Günen Temizlik hangi bölgelerde hizmet veriyor?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Tüm İstanbul'da hizmet vermekteyiz. Ataşehir, Kadıköy, Üsküdar, Beşiktaş, Şişli, Maltepe, Pendik ve tüm ilçelerde 7/24 profesyonel temizlik hizmeti sunuyoruz.",
-      },
-    },
-    {
-      "@type": "Question",
-      "name": "İnşaat sonrası temizlik ne kadar sürer?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "İnşaat sonrası temizlik süresi alanın büyüklüğüne göre değişir. 100m² bir daire ortalama 4-6 saat, 200m² bir ofis 6-8 saat sürmektedir.",
-      },
-    },
-  ],
-} as const;
+const FAQ_SCHEMA = faqPageJsonLdObject();
 
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
