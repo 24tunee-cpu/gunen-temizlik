@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import {
-  TrendingUp,
   Users,
-  Eye,
-  Clock,
   ArrowUpRight,
   ArrowDownRight,
   Activity,
@@ -19,426 +16,654 @@ import {
   FileText,
   MessageSquare,
   Sparkles,
-  Globe,
-  Smartphone,
-  Monitor,
+  Eye,
+  HelpCircle,
+  Image as ImageIcon,
+  Mail,
+  Award,
+  Quote,
+  BarChart3,
+  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface Stats {
-  services: number;
-  blogPosts: number;
-  contactRequests: number;
-  unreadMessages: number;
-  pageViews: number;
-  uniqueVisitors: number;
-  conversionRate: number;
-  avgSessionTime: string;
+// ============================================
+// TYPES (API /api/admin/dashboard ile uyumlu)
+// ============================================
+
+interface DashboardPayload {
+  generatedAt: string;
+  counts: {
+    servicesTotal: number;
+    servicesActive: number;
+    servicesInactive: number;
+    blogTotal: number;
+    blogPublished: number;
+    blogDrafts: number;
+    blogViewsTotal: number;
+    contactsTotal: number;
+    contactsUnread: number;
+    teamActive: number;
+    faqActive: number;
+    testimonialsActive: number;
+    galleryActive: number;
+    subscribersActive: number;
+    certificatesActive: number;
+    contactsThisWeek: number;
+    contactsPrevWeek: number;
+  };
+  contactsWeekHint: string;
+  chart: { labels: string[]; values: number[]; title: string };
+  recentContacts: Array<{
+    id: string;
+    name: string;
+    email: string;
+    service?: string | null;
+    read: boolean;
+    createdAt: string;
+  }>;
+  recentBlog: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    published: boolean;
+    updatedAt: string;
+  }>;
+  activity: Array<{
+    id: string;
+    kind: 'contact' | 'blog';
+    title: string;
+    subtitle: string;
+    at: string;
+  }>;
 }
 
-interface ActivityItem {
-  id: string;
-  type: 'create' | 'update' | 'delete' | 'view' | 'contact';
-  title: string;
-  user: string;
-  timestamp: string;
-  entity: string;
+// ============================================
+// HELPERS
+// ============================================
+
+function formatRelativeTr(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  if (diffMs < 0) return new Date(iso).toLocaleString('tr-TR');
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'Az önce';
+  if (diffMin < 60) return `${diffMin} dk önce`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH} sa. önce`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 14) return `${diffD} gün önce`;
+  return new Date(iso).toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
+
+function formatNumber(n: number): string {
+  return new Intl.NumberFormat('tr-TR').format(n);
+}
+
+// ============================================
+// UI PARTS
+// ============================================
 
 function StatsCard({
   title,
   value,
+  hint,
   icon: Icon,
   trend,
-  trendValue,
+  trendLabel,
   color,
   delay = 0,
 }: {
   title: string;
   value: string | number;
+  hint?: string;
   icon: React.ElementType;
   trend?: 'up' | 'down' | 'neutral';
-  trendValue?: string;
+  trendLabel?: string;
   color: string;
   delay?: number;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="rounded-xl bg-white dark:bg-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow"
+      transition={{ delay, duration: 0.35 }}
+      className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800/80 dark:shadow-none sm:p-6"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
-          {trendValue && (
-            <p className={`mt-1 flex items-center gap-1 text-xs ${trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' :
-              trend === 'down' ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'
-              }`}>
-              {trend === 'up' ? <ArrowUpRight size={14} /> :
-                trend === 'down' ? <ArrowDownRight size={14} /> : null}
-              {trendValue}
+      <div
+        className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-[0.07] dark:opacity-[0.12]"
+        style={{ background: 'currentColor' }}
+        aria-hidden
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            {title}
+          </p>
+          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+            {typeof value === 'number' ? formatNumber(value) : value}
+          </p>
+          {hint ? (
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{hint}</p>
+          ) : null}
+          {trendLabel ? (
+            <p
+              className={`mt-2 flex items-center gap-1 text-xs font-medium ${
+                trend === 'up'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : trend === 'down'
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              {trend === 'up' ? (
+                <ArrowUpRight size={14} aria-hidden />
+              ) : trend === 'down' ? (
+                <ArrowDownRight size={14} aria-hidden />
+              ) : null}
+              {trendLabel}
             </p>
-          )}
+          ) : null}
         </div>
-        <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${color}`}>
-          <Icon className="h-7 w-7 text-white" />
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-inner ${color}`}
+        >
+          <Icon className="h-6 w-6 text-white" aria-hidden />
         </div>
       </div>
     </motion.div>
   );
 }
 
-function MiniChart({ data, color = 'bg-emerald-500' }: { data: number[]; color?: string }) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
+const CHART_MAX_PX = 112;
+
+function MiniBarChart({ values, labels }: { values: number[]; labels: string[] }) {
+  const max = Math.max(...values, 1);
+  const safeValues = values.length ? values : [0];
+  const safeLabels = labels.length === safeValues.length ? labels : safeValues.map(() => '');
 
   return (
-    <div className="flex items-end gap-1 h-16">
-      {data.map((value, i) => (
-        <motion.div
-          key={i}
-          initial={{ height: 0 }}
-          animate={{ height: `${((value - min) / range) * 100}%` }}
-          transition={{ delay: i * 0.1 }}
-          className={`flex-1 rounded-t ${color} opacity-80 dark:opacity-60 hover:opacity-100 dark:hover:opacity-80 transition-opacity`}
-        />
-      ))}
+    <div>
+      <div className="flex h-[7.5rem] items-end gap-1.5 sm:gap-2">
+        {safeValues.map((value, i) => {
+          const barPx = Math.max(6, Math.round((value / max) * CHART_MAX_PX));
+          return (
+            <div key={i} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: barPx }}
+                transition={{ delay: i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-[2.75rem] rounded-t-md bg-gradient-to-t from-emerald-600 to-emerald-400 dark:from-emerald-700 dark:to-emerald-500"
+                title={`${formatNumber(value)} talep`}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex justify-between gap-1 text-[10px] text-slate-400 dark:text-slate-500 sm:text-xs">
+        {safeLabels.map((lab, i) => (
+          <span key={i} className="min-w-0 flex-1 truncate text-center">
+            {lab}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function ActivityFeed({ activities }: { activities: ActivityItem[] }) {
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'create': return <Sparkles size={14} className="text-emerald-600" />;
-      case 'update': return <Activity size={14} className="text-blue-600" />;
-      case 'delete': return <ArrowDownRight size={14} className="text-red-600" />;
-      case 'contact': return <MessageSquare size={14} className="text-purple-600" />;
-      default: return <Eye size={14} className="text-slate-600" />;
+function ActivityFeed({
+  items,
+}: {
+  items: DashboardPayload['activity'];
+}) {
+  const icon = (kind: string) => {
+    switch (kind) {
+      case 'contact':
+        return <MessageSquare size={14} className="text-violet-600 dark:text-violet-400" />;
+      case 'blog':
+        return <FileText size={14} className="text-sky-600 dark:text-sky-400" />;
+      default:
+        return <Activity size={14} className="text-slate-600" />;
     }
   };
 
+  if (items.length === 0) {
+    return (
+      <p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+        Henüz kayıtlı aktivite yok. İletişim veya blog güncellemeleri burada görünecek.
+      </p>
+    );
+  }
+
   return (
-    <div className="space-y-3">
-      {activities.map((activity) => (
-        <motion.div
-          key={activity.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-start gap-3 rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100">
-            {getIcon(activity.type)}
+    <ul className="space-y-1">
+      {items.map((row) => (
+        <li key={row.id}>
+          <div className="flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40">
+            <div
+              className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700/80"
+              aria-hidden
+            >
+              {icon(row.kind)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-snug text-slate-900 dark:text-white">
+                {row.title}
+              </p>
+              <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+                {row.subtitle}
+              </p>
+            </div>
+            <time
+              className="shrink-0 text-xs text-slate-400 dark:text-slate-500"
+              dateTime={row.at}
+            >
+              {formatRelativeTr(row.at)}
+            </time>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 dark:text-white">{activity.title}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{activity.user} • {activity.entity}</p>
-          </div>
-          <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{activity.timestamp}</span>
-        </motion.div>
+        </li>
       ))}
+    </ul>
+  );
+}
+
+function SkeletonDashboard() {
+  return (
+    <div className="animate-pulse space-y-6">
+      <div className="h-10 w-48 rounded-lg bg-slate-200 dark:bg-slate-700" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-700" />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-700 lg:col-span-2" />
+        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-700" />
+      </div>
     </div>
   );
 }
 
+const CONTENT_LINKS: Array<{
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  key: keyof DashboardPayload['counts'];
+}> = [
+  { href: '/admin/ekip', label: 'Ekip', icon: Users, key: 'teamActive' },
+  { href: '/admin/sss', label: 'SSS', icon: HelpCircle, key: 'faqActive' },
+  { href: '/admin/referanslar', label: 'Referans', icon: Quote, key: 'testimonialsActive' },
+  { href: '/admin/galeri', label: 'Galeri', icon: ImageIcon, key: 'galleryActive' },
+  { href: '/admin/ebulten', label: 'Bülten', icon: Mail, key: 'subscribersActive' },
+  { href: '/admin/sertifikalar', label: 'Sertifika', icon: Award, key: 'certificatesActive' },
+];
+
+// ============================================
+// PAGE
+// ============================================
+
 export default function AdminDashboardPage() {
   useAuth();
-  const [stats, setStats] = useState<Stats>({
-    services: 0,
-    blogPosts: 0,
-    contactRequests: 0,
-    unreadMessages: 0,
-    pageViews: 1247,
-    uniqueVisitors: 856,
-    conversionRate: 3.2,
-    avgSessionTime: '2:34',
-  });
-  const [recentMessages, setRecentMessages] = useState<any[]>([]);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [data, setData] = useState<DashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log('Dashboard mounted, fetching stats');
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        console.debug('Fetching dashboard data from APIs');
-
-        const [servicesRes, blogRes, contactRes] = await Promise.all([
-          fetch('/api/services'),
-          fetch('/api/blog'),
-          fetch('/api/contact'),
-        ]);
-
-        // Check responses
-        if (!servicesRes.ok) {
-          throw new Error(`Services API failed: ${servicesRes.status}`);
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/admin/dashboard', { cache: 'no-store' });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Oturum süresi dolmuş veya yetkiniz yok. Lütfen tekrar giriş yapın.');
         }
-        if (!blogRes.ok) {
-          throw new Error(`Blog API failed: ${blogRes.status}`);
-        }
-        if (!contactRes.ok) {
-          throw new Error(`Contact API failed: ${contactRes.status}`);
-        }
-
-        const services = await servicesRes.json();
-        const blogPosts = await blogRes.json();
-        const contacts = await contactRes.json();
-
-        console.log('Dashboard data fetched successfully', {
-          servicesCount: services.length,
-          blogCount: blogPosts.length,
-          contactsCount: contacts.length,
-        });
-
-        setStats(prev => ({
-          ...prev,
-          services: services.length,
-          blogPosts: blogPosts.length,
-          contactRequests: contacts.length,
-          unreadMessages: contacts.filter((c: any) => !c.read).length,
-        }));
-
-        setRecentMessages(contacts.slice(0, 5));
-
-        // Mock activity feed
-        setActivities([
-          { id: '1', type: 'create', title: 'Yeni hizmet eklendi', user: 'Admin', timestamp: '2 dk önce', entity: 'Hizmetler' },
-          { id: '2', type: 'contact', title: 'Yeni iletişim talebi', user: 'Ziyaretçi', timestamp: '5 dk önce', entity: 'İletişim' },
-          { id: '3', type: 'update', title: 'Blog yazısı güncellendi', user: 'Admin', timestamp: '15 dk önce', entity: 'Blog' },
-          { id: '4', type: 'view', title: 'Sayfa görüntüleme', user: 'Ziyaretçi', timestamp: '1 saat önce', entity: 'Analytics' },
-          { id: '5', type: 'create', title: 'Yeni blog yazısı', user: 'Admin', timestamp: '2 saat önce', entity: 'Blog' },
-        ]);
-
-        toast.success('Dashboard yüklendi', 'Veriler başarıyla güncellendi', 3000);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata';
-        console.error('Failed to fetch dashboard stats', { error: errorMessage }, err instanceof Error ? err : undefined);
-        trackError(err instanceof Error ? err : new Error(errorMessage), { context: 'dashboard' });
-        setError(errorMessage);
-        toast.error('Veri yüklenemedi', errorMessage, 5000);
-      } finally {
-        setLoading(false);
+        throw new Error(`Sunucu yanıtı: ${res.status}`);
       }
-    };
-
-    fetchStats();
+      const json = (await res.json()) as DashboardPayload;
+      setData(json);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Veri yüklenemedi';
+      setError(msg);
+      trackError(err instanceof Error ? err : new Error(msg), { context: 'admin-dashboard' });
+      toast.error('Dashboard', msg);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center bg-white dark:bg-slate-900 rounded-xl">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-emerald-500/30 dark:border-t-emerald-500/30"></div>
-      </div>
-    );
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (loading && !data) {
+    return <SkeletonDashboard />;
   }
 
-  if (error) {
+  if (error && !data) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-4 bg-white dark:bg-slate-900 rounded-xl p-8">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Veri Yüklenemedi</h3>
-          <p className="text-slate-600 dark:text-slate-400">{error}</p>
-        </div>
+      <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-slate-800">
+        <p className="text-center text-slate-600 dark:text-slate-300">{error}</p>
         <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg transition-colors"
+          type="button"
+          onClick={() => load()}
+          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700"
         >
-          Tekrar Dene
+          <RefreshCw size={16} />
+          Tekrar dene
         </button>
       </div>
     );
   }
 
-  const chartData = [45, 52, 48, 65, 72, 68, 85, 92, 88, 95, 102, 110];
+  if (!data) return null;
+
+  const { counts, chart, recentContacts, activity, contactsWeekHint } = data;
+
+  const contactTrend: 'up' | 'down' | 'neutral' =
+    counts.contactsThisWeek > counts.contactsPrevWeek
+      ? 'up'
+      : counts.contactsThisWeek < counts.contactsPrevWeek
+        ? 'down'
+        : 'neutral';
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-7xl space-y-8 pb-8">
+      {/* Üst başlık */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Hoş geldiniz! İşte bugünün özeti.
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+            Kontrol paneli
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Site içeriği ve talepler — canlı veritabanı özetiniz.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
-          <Calendar size={16} />
-          {new Date().toLocaleDateString('tr-TR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:text-sm">
+            <Calendar size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+            {new Date().toLocaleDateString('tr-TR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => load()}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <RefreshCw size={16} />
+            )}
+            Yenile
+          </button>
         </div>
       </div>
 
-      {/* Main Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Ana KPI */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
-          title="Toplam Hizmet"
-          value={stats.services}
+          title="Hizmetler"
+          value={counts.servicesActive}
+          hint={
+            counts.servicesTotal === 0
+              ? 'Veritabanında henüz hizmet yok'
+              : counts.servicesTotal === counts.servicesActive
+                ? `${formatNumber(counts.servicesTotal)} kayıt · tümü yayında`
+                : `${formatNumber(counts.servicesActive)} yayında · ${formatNumber(counts.servicesInactive)} pasif · ${formatNumber(counts.servicesTotal)} toplam`
+          }
           icon={Sparkles}
-          trend="up"
-          trendValue="+2 bu ay"
-          color="bg-gradient-to-br from-emerald-400 to-emerald-600"
+          trend={counts.servicesInactive > 0 ? 'neutral' : 'up'}
+          trendLabel={
+            counts.servicesTotal === 0
+              ? 'Hizmet eklemek için Hızlı işlemler'
+              : counts.servicesInactive > 0
+                ? `${formatNumber(counts.servicesInactive)} pasif hizmet`
+                : 'Tüm hizmetler aktif'
+          }
+          color="bg-gradient-to-br from-emerald-500 to-emerald-700"
           delay={0}
         />
         <StatsCard
-          title="Blog Yazısı"
-          value={stats.blogPosts}
+          title="Blog"
+          value={counts.blogPublished}
+          hint={`${formatNumber(counts.blogDrafts)} taslak · ${formatNumber(counts.blogTotal)} yazı · ${formatNumber(counts.blogViewsTotal)} toplam görüntülenme`}
           icon={FileText}
-          trend="up"
-          trendValue="+5 bu ay"
-          color="bg-gradient-to-br from-blue-400 to-blue-600"
+          trend="neutral"
+          trendLabel={
+            counts.blogDrafts > 0
+              ? `${formatNumber(counts.blogDrafts)} yayında değil`
+              : 'Tüm yazılar yayında'
+          }
+          color="bg-gradient-to-br from-sky-500 to-blue-700"
+          delay={0.05}
+        />
+        <StatsCard
+          title="Son 7 gün · talep"
+          value={counts.contactsThisWeek}
+          hint={contactsWeekHint}
+          icon={BarChart3}
+          trend={contactTrend}
+          trendLabel={
+            counts.contactsPrevWeek === 0 && counts.contactsThisWeek === 0
+              ? 'Önceki 7 gün: 0'
+              : `Önceki 7 gün: ${formatNumber(counts.contactsPrevWeek)}`
+          }
+          color="bg-gradient-to-br from-violet-500 to-purple-700"
           delay={0.1}
         />
         <StatsCard
-          title="Ziyaretçi (Bugün)"
-          value={stats.uniqueVisitors}
-          icon={Users}
-          trend="up"
-          trendValue="+12% vs dün"
-          color="bg-gradient-to-br from-purple-400 to-purple-600"
-          delay={0.2}
-        />
-        <StatsCard
-          title="Okunmamış Mesaj"
-          value={stats.unreadMessages}
+          title="Okunmamış mesaj"
+          value={counts.contactsUnread}
+          hint={`${formatNumber(counts.contactsTotal)} toplam iletişim talebi`}
           icon={MessageSquare}
-          trend={stats.unreadMessages > 0 ? 'up' : 'neutral'}
-          trendValue={stats.unreadMessages > 0 ? 'Yeni talep' : 'Tümü okundu'}
-          color="bg-gradient-to-br from-orange-400 to-orange-600"
-          delay={0.3}
+          trend={counts.contactsUnread > 0 ? 'up' : 'neutral'}
+          trendLabel={
+            counts.contactsUnread > 0
+              ? 'Talepler sayfasını kontrol edin'
+              : 'Güncel'
+          }
+          color="bg-gradient-to-br from-amber-500 to-orange-600"
+          delay={0.15}
         />
       </div>
 
-      {/* Analytics Row */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Traffic Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="lg:col-span-2 rounded-xl bg-white dark:bg-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Ziyaretçi Trafiği</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Son 12 gün</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-sm text-emerald-600">
-                <TrendingUp size={16} />
-                +24.5%
+      {/* İçerik özeti şeridi */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/50 sm:p-5"
+      >
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          İçerik envanteri
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {CONTENT_LINKS.map(({ href, label, icon: Icon, key }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/90 bg-white px-3 py-3 text-sm font-medium text-slate-800 shadow-sm transition hover:border-emerald-300 hover:shadow dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-emerald-600"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <Icon size={18} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span className="truncate">{label}</span>
               </span>
+              <span className="tabular-nums text-slate-500 dark:text-slate-400">
+                {formatNumber(counts[key])}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Grafik */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 lg:col-span-2 sm:p-6"
+        >
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                {chart.title}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Günlük yeni iletişim formu kayıtları
+              </p>
             </div>
+            <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+              <Eye size={12} aria-hidden />
+              Veritabanı
+            </span>
           </div>
-          <MiniChart data={chartData} />
-          <div className="flex justify-between mt-4 text-xs text-slate-400">
-            <span>20 Mart</span>
-            <span>25 Mart</span>
-            <span>30 Mart</span>
-            <span>2 Nisan</span>
-          </div>
+          <MiniBarChart values={chart.values} labels={chart.labels} />
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Hızlı işlemler */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="rounded-xl bg-white dark:bg-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700"
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6"
         >
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Hızlı İşlemler</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Hızlı işlemler</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sık kullanılan yönetim sayfaları</p>
+          <nav className="mt-4 flex flex-col gap-2" aria-label="Hızlı işlemler">
             <Link
               href="/admin/hizmetler/yeni"
-              className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+              className="flex items-center justify-between gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900 transition hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-100 dark:hover:bg-emerald-900/40"
             >
-              <Sparkles size={20} />
-              <span className="font-medium">Yeni Hizmet Ekle</span>
+              <span className="flex items-center gap-2">
+                <Sparkles size={18} />
+                Yeni hizmet
+              </span>
+              <ArrowRight size={16} className="opacity-60" />
             </Link>
             <Link
               href="/admin/blog/yeni"
-              className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+              className="flex items-center justify-between gap-2 rounded-xl bg-sky-50 px-4 py-3 text-sm font-medium text-sky-900 transition hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-100 dark:hover:bg-sky-900/40"
             >
-              <FileText size={20} />
-              <span className="font-medium">Blog Yazısı Ekle</span>
+              <span className="flex items-center gap-2">
+                <FileText size={18} />
+                Yeni blog yazısı
+              </span>
+              <ArrowRight size={16} className="opacity-60" />
             </Link>
             <Link
               href="/admin/talepler"
-              className="flex items-center gap-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+              className="flex items-center justify-between gap-2 rounded-xl bg-violet-50 px-4 py-3 text-sm font-medium text-violet-900 transition hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-100 dark:hover:bg-violet-900/40"
             >
-              <MessageSquare size={20} />
-              <span className="font-medium">Mesajları Gör</span>
+              <span className="flex items-center gap-2">
+                <MessageSquare size={18} />
+                Müşteri talepleri
+              </span>
+              <ArrowRight size={16} className="opacity-60" />
             </Link>
-          </div>
+            <Link
+              href="/admin/blog"
+              className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700/50"
+            >
+              <span className="flex items-center gap-2">
+                <FileText size={18} />
+                Tüm blog yazıları
+              </span>
+              <ArrowRight size={16} className="opacity-60" />
+            </Link>
+          </nav>
         </motion.div>
       </div>
 
-      {/* Bottom Row */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Recent Activity */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="rounded-xl bg-white dark:bg-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700"
+          transition={{ delay: 0.35 }}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son Aktiviteler</h2>
-            <Clock size={18} className="text-slate-400" />
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son hareketler</h2>
+            <Activity size={18} className="text-slate-400" aria-hidden />
           </div>
-          <ActivityFeed activities={activities} />
+          <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+            Son iletişim talepleri ve blog güncellemeleri (birleşik zaman çizelgesi)
+          </p>
+          <ActivityFeed items={activity} />
         </motion.div>
 
-        {/* Recent Messages */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="rounded-xl bg-white dark:bg-slate-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700"
+          transition={{ delay: 0.4 }}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son İletişim Talepleri</h2>
-            <MessageSquare size={18} className="text-slate-400" />
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son talepler</h2>
+            <Link
+              href="/admin/talepler"
+              className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              Tümünü aç
+            </Link>
           </div>
-          {recentMessages.length === 0 ? (
-            <p className="py-8 text-center text-slate-500 dark:text-slate-400">Henüz mesaj yok</p>
+          {recentContacts.length === 0 ? (
+            <p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+              Henüz iletişim talebi yok.
+            </p>
           ) : (
-            <div className="space-y-3">
-              {recentMessages.map((message) => (
-                <div key={message.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700">
-                    <Users size={18} className="text-slate-500 dark:text-slate-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 dark:text-white truncate">{message.name}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{message.service || 'Genel'}</p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs ${message.read
-                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400'
-                      }`}
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {recentContacts.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href="/admin/talepler"
+                    className="flex items-center gap-3 py-3 transition hover:bg-slate-50/80 dark:hover:bg-slate-700/30"
                   >
-                    {message.read ? 'Okundu' : 'Yeni'}
-                  </span>
-                </div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700">
+                      <Users size={18} className="text-slate-500 dark:text-slate-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-slate-900 dark:text-white">{m.name}</p>
+                      <p className="truncate text-sm text-slate-500 dark:text-slate-400">
+                        {m.service?.trim() || m.email}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          m.read
+                            ? 'bg-slate-100 text-slate-600 dark:bg-slate-600 dark:text-slate-200'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200'
+                        }`}
+                      >
+                        {m.read ? 'Okundu' : 'Yeni'}
+                      </span>
+                      <time className="text-xs text-slate-400" dateTime={m.createdAt}>
+                        {formatRelativeTr(m.createdAt)}
+                      </time>
+                    </div>
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </motion.div>
       </div>
+
+      <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+        Özet verisi:{' '}
+        <time dateTime={data.generatedAt}>
+          {new Date(data.generatedAt).toLocaleString('tr-TR')}
+        </time>
+      </p>
     </div>
   );
 }
