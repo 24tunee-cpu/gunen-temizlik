@@ -12,7 +12,18 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Sparkles, MapPin, Phone, Mail, Send, Globe, Share2, MessageCircle, ArrowUp } from 'lucide-react';
+import {
+  Sparkles,
+  MapPin,
+  Phone,
+  Mail,
+  Send,
+  Globe,
+  Share2,
+  MessageCircle,
+  ArrowUp,
+  Loader2,
+} from 'lucide-react';
 import { useState, useCallback, useMemo } from 'react';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { toTelHref } from '@/config/site-contact';
@@ -74,7 +85,9 @@ const FOOTER_LINKS: FooterLinkGroup = {
 export function Footer() {
   const { settings } = useSiteSettings();
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [doneMessage, setDoneMessage] = useState<string | null>(null);
+  const [subscribeError, setSubscribeError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const shouldReduceMotion = useReducedMotion();
 
@@ -95,14 +108,44 @@ export function Footer() {
   // ============================================
   // HANDLERS
   // ============================================
-  const handleSubscribe = useCallback((e: React.FormEvent) => {
+  const handleSubscribe = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubscribed(true);
+    const trimmed = email.trim();
+    if (!trimmed || submitting) return;
+
+    setSubscribeError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!res.ok) {
+        setSubscribeError(
+          typeof data.error === 'string' ? data.error : 'İşlem başarısız. Lütfen tekrar deneyin.'
+        );
+        return;
+      }
+
+      setDoneMessage(
+        typeof data.message === 'string' && data.message.length > 0
+          ? data.message
+          : 'Teşekkürler! Bültenimize başarıyla kaydoldunuz.'
+      );
       setEmail('');
-      // TODO: Implement actual newsletter subscription API call
+    } catch {
+      setSubscribeError('Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.');
+    } finally {
+      setSubmitting(false);
     }
-  }, [email]);
+  }, [email, submitting]);
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -137,7 +180,7 @@ export function Footer() {
               </p>
             </div>
             <div>
-              {subscribed ? (
+              {doneMessage ? (
                 <motion.div
                   className="flex items-center gap-3 text-emerald-400"
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -146,34 +189,50 @@ export function Footer() {
                   role="status"
                   aria-live="polite"
                 >
-                  <Sparkles className="h-5 w-5" aria-hidden="true" />
-                  <span>Teşekkürler! Başarıyla abone oldunuz.</span>
+                  <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span>{doneMessage}</span>
                 </motion.div>
               ) : (
                 <form
-                  onSubmit={handleSubscribe}
+                  onSubmit={(e) => void handleSubscribe(e)}
                   className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-stretch"
                   aria-label="E-bülten aboneliği"
                 >
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    placeholder="E-posta adresiniz"
-                    required
-                    className="min-h-11 min-w-0 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white placeholder:text-slate-500 transition-colors focus:border-emerald-500 focus:outline-none"
-                    aria-label="E-posta adresi"
-                    aria-required="true"
-                  />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={handleEmailChange}
+                      placeholder="E-posta adresiniz"
+                      required
+                      disabled={submitting}
+                      autoComplete="email"
+                      className="min-h-11 min-w-0 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-base text-white placeholder:text-slate-500 transition-colors focus:border-emerald-500 focus:outline-none disabled:opacity-60"
+                      aria-label="E-posta adresi"
+                      aria-required="true"
+                      aria-invalid={!!subscribeError}
+                      aria-describedby={subscribeError ? 'footer-newsletter-error' : undefined}
+                    />
+                    {subscribeError ? (
+                      <p id="footer-newsletter-error" className="text-sm text-red-400" role="alert">
+                        {subscribeError}
+                      </p>
+                    ) : null}
+                  </div>
                   <motion.button
                     type="submit"
-                    whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
-                    whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
-                    className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-emerald-600 sm:w-auto"
-                    aria-label="Abone ol"
+                    disabled={submitting}
+                    whileHover={shouldReduceMotion || submitting ? {} : { scale: 1.02 }}
+                    whileTap={shouldReduceMotion || submitting ? {} : { scale: 0.98 }}
+                    className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    aria-label={submitting ? 'Kaydediliyor…' : 'Abone ol'}
                   >
-                    <Send size={18} aria-hidden="true" />
-                    Abone Ol
+                    {submitting ? (
+                      <Loader2 className="h-[18px] w-[18px] animate-spin" aria-hidden />
+                    ) : (
+                      <Send size={18} aria-hidden="true" />
+                    )}
+                    {submitting ? 'Gönderiliyor…' : 'Abone Ol'}
                   </motion.button>
                 </form>
               )}
