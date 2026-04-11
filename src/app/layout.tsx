@@ -107,16 +107,10 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "YOUR_GOOGLE_VERIFICATION_CODE",
-    yandex: "YOUR_YANDEX_VERIFICATION",
-  },
   category: "business",
   classification: "Cleaning Services",
   other: {
     "msapplication-TileColor": "#10b981",
-    "google-site-verification": "YOUR_VERIFICATION",
-    "fb:app_id": "YOUR_FACEBOOK_APP_ID",
   },
 };
 
