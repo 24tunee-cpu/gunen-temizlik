@@ -48,6 +48,7 @@ const MAX_REQUESTS = 60;
 /** Maximum string lengths */
 const MAX_LENGTHS = {
   title: 200,
+  slug: 200,
   excerpt: 500,
   category: 50,
   author: 100,
@@ -312,6 +313,36 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Build update data dynamically with validation
     const updateData: Record<string, unknown> = {};
 
+    if (data.slug !== undefined) {
+      const raw =
+        typeof data.slug === 'string' ? sanitizeInput(data.slug.toLowerCase().trim()) : '';
+      if (!raw) {
+        return NextResponse.json({ error: 'Slug zorunludur' }, { status: 400, headers });
+      }
+      if (raw.length > MAX_LENGTHS.slug) {
+        return NextResponse.json(
+          { error: `Slug en fazla ${MAX_LENGTHS.slug} karakter olabilir` },
+          { status: 400, headers }
+        );
+      }
+      if (!isValidSlug(raw)) {
+        return NextResponse.json(
+          { error: 'Slug sadece küçük harf, rakam, tire ve alt çizgi içerebilir' },
+          { status: 400, headers }
+        );
+      }
+      if (raw !== existingPost.slug) {
+        const taken = await prisma.blogPost.findUnique({
+          where: { slug: raw },
+          select: { id: true },
+        });
+        if (taken && taken.id !== existingPost.id) {
+          return NextResponse.json({ error: 'Bu slug zaten kullanılıyor' }, { status: 400, headers });
+        }
+        updateData.slug = raw;
+      }
+    }
+
     // Validate and update title if provided
     if (data.title !== undefined) {
       if (typeof data.title !== 'string' || data.title.trim().length === 0) {
@@ -406,14 +437,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       MAX_LENGTHS.metaDesc
     );
 
-    console.log('Updating blog post by slug', { slug });
+    console.log('Updating blog post by slug', { slug, id: existingPost.id });
 
     const post = await prisma.blogPost.update({
-      where: { slug },
+      where: { id: existingPost.id },
       data: updateData,
     });
 
-    console.log('Blog post updated successfully', { slug, id: post.id });
+    console.log('Blog post updated successfully', { slug: post.slug, id: post.id });
 
     return NextResponse.json(
       {

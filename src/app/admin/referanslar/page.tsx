@@ -16,25 +16,41 @@ import {
   Loader2,
   Filter,
   ArrowUpDown,
-  ChevronDown,
-  MoreHorizontal,
   CheckSquare,
   Square,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from '@/store/toastStore';
+import { trackError } from '@/lib/client-error-handler';
 
 interface Testimonial {
   id: string;
   name: string;
-  location: string;
+  location: string | null;
   rating: number;
   content: string;
-  avatar?: string;
-  service?: string;
+  avatar?: string | null;
+  service?: string | null;
   isActive: boolean;
   order: number;
   createdAt: string;
+}
+
+function AvatarCell({ avatar, name }: { avatar?: string | null; name: string }) {
+  const v = avatar?.trim() || '';
+  const isUrl = /^https?:\/\//i.test(v) || v.startsWith('/');
+  if (isUrl && v) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={v} alt={name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+    );
+  }
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 text-lg dark:from-emerald-800 dark:to-emerald-700">
+      {v || '👤'}
+    </div>
+  );
 }
 
 type SortField = 'name' | 'rating' | 'createdAt' | 'order';
@@ -57,6 +73,7 @@ export default function TestimonialsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -75,13 +92,18 @@ export default function TestimonialsPage() {
 
   const fetchTestimonials = async () => {
     try {
-      const res = await fetch('/api/testimonials');
-      if (!res.ok) throw new Error('Failed to fetch testimonials');
+      setLoading(true);
+      setLoadError(null);
+      const res = await fetch('/api/testimonials', { credentials: 'include' });
+      if (!res.ok) throw new Error(`Referanslar yüklenemedi (${res.status})`);
       const data = await res.json();
       setTestimonials(Array.isArray(data) ? data : []);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Referanslar yüklenirken hata oluştu';
       console.error('Error fetching testimonials', {}, error instanceof Error ? error : undefined);
-      toast.error('Yukleme Hatasi', 'Referanslar yuklenirken bir hata olustu.');
+      trackError(error instanceof Error ? error : new Error(msg), { context: 'admin-testimonials' });
+      setLoadError(msg);
+      toast.error('Yükleme hatası', msg);
     } finally {
       setLoading(false);
     }
@@ -90,9 +112,7 @@ export default function TestimonialsPage() {
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) errors.name = 'İsim gereklidir';
-    if (!formData.location.trim()) errors.location = 'Lokasyon gereklidir';
     if (!formData.content.trim()) errors.content = 'Yorum içeriği gereklidir';
-    if (formData.content.length < 10) errors.content = 'Yorum en az 10 karakter olmalıdır';
     if (formData.rating < 1 || formData.rating > 5) errors.rating = 'Puan 1-5 arasında olmalıdır';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -104,13 +124,40 @@ export default function TestimonialsPage() {
 
     setIsSubmitting(true);
     try {
+      const payload = editingTestimonial
+        ? {
+            id: editingTestimonial.id,
+            name: formData.name,
+            location: formData.location.trim() || null,
+            rating: formData.rating,
+            content: formData.content,
+            avatar: formData.avatar.trim() || null,
+            service: formData.service.trim() || null,
+            isActive: formData.isActive,
+            order: formData.order,
+          }
+        : {
+            name: formData.name,
+            location: formData.location.trim() || null,
+            rating: formData.rating,
+            content: formData.content,
+            avatar: formData.avatar.trim() || null,
+            service: formData.service.trim() || null,
+            isActive: formData.isActive,
+            order: formData.order,
+          };
+
       const res = await fetch('/api/testimonials', {
         method: editingTestimonial ? 'PUT' : 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingTestimonial ? { ...formData, id: editingTestimonial.id } : formData),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to save testimonial');
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || 'Kayıt başarısız');
+      }
 
       setIsModalOpen(false);
       setEditingTestimonial(null);
@@ -119,7 +166,10 @@ export default function TestimonialsPage() {
       toast.success('Basarili', editingTestimonial ? 'Referans guncellendi.' : 'Yeni referans eklendi.');
     } catch (error) {
       console.error('Error saving testimonial', {}, error instanceof Error ? error : undefined);
-      toast.error('Kaydetme Hatasi', 'Referans kaydedilirken bir hata olustu.');
+      toast.error(
+        'Kaydetme hatası',
+        error instanceof Error ? error.message : 'Referans kaydedilemedi.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -127,27 +177,39 @@ export default function TestimonialsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/testimonials/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete testimonial');
+      const res = await fetch(`/api/testimonials/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || 'Silme başarısız');
+      }
       setShowDeleteConfirm(null);
-      fetchTestimonials();
-      toast.success('Silindi', 'Referans basariyla silindi.');
+      setSelectedItems((prev) => prev.filter((x) => x !== id));
+      void fetchTestimonials();
+      toast.success('Silindi', 'Referans kaldırıldı.');
     } catch (error) {
       console.error('Error deleting testimonial', {}, error instanceof Error ? error : undefined);
-      toast.error('Silme Hatasi', 'Referans silinirken bir hata olustu.');
+      toast.error('Silme hatası', error instanceof Error ? error.message : 'Referans silinemedi.');
     }
   };
 
   const handleBulkDelete = async () => {
+    const count = selectedItems.length;
     try {
       await Promise.all(
-        selectedItems.map(id => fetch(`/api/testimonials/${id}`, { method: 'DELETE' }))
+        selectedItems.map((id) =>
+          fetch(`/api/testimonials/${id}`, { method: 'DELETE', credentials: 'include' })
+        )
       );
       setSelectedItems([]);
       setShowBulkDeleteConfirm(false);
-      fetchTestimonials();
+      void fetchTestimonials();
+      toast.success('Silindi', `${count} referans kaldırıldı.`);
     } catch (error) {
       console.error('Error bulk deleting', {}, error instanceof Error ? error : undefined);
+      toast.error('Toplu silme', 'Bazı kayıtlar silinemedi.');
     }
   };
 
@@ -155,35 +217,51 @@ export default function TestimonialsPage() {
     try {
       const res = await fetch('/api/testimonials', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...testimonial, isActive: !testimonial.isActive }),
+        body: JSON.stringify({ id: testimonial.id, isActive: !testimonial.isActive }),
       });
 
-      if (!res.ok) throw new Error('Failed to update testimonial');
-      fetchTestimonials();
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || 'Güncelleme başarısız');
+      }
+      setTestimonials((prev) =>
+        prev.map((t) =>
+          t.id === testimonial.id ? { ...t, isActive: !testimonial.isActive } : t
+        )
+      );
+      toast.success(
+        'Durum güncellendi',
+        testimonial.isActive ? 'Referans siteden gizlendi.' : 'Referans yayında.'
+      );
     } catch (error) {
       console.error('Error updating testimonial', {}, error instanceof Error ? error : undefined);
+      toast.error('Güncelleme', error instanceof Error ? error.message : 'İşlem başarısız.');
     }
   };
 
-  const handleBulkToggleActive = async (isActive: boolean) => {
+  const handleBulkToggleActive = async (active: boolean) => {
+    const ids = [...selectedItems];
     try {
       await Promise.all(
-        selectedItems.map(id => {
-          const item = testimonials.find(t => t.id === id);
-          if (item) {
-            return fetch('/api/testimonials', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ...item, isActive }),
-            });
-          }
-        })
+        ids.map((id) =>
+          fetch('/api/testimonials', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, isActive: active }),
+          })
+        )
+      );
+      setTestimonials((prev) =>
+        prev.map((t) => (ids.includes(t.id) ? { ...t, isActive: active } : t))
       );
       setSelectedItems([]);
-      fetchTestimonials();
+      toast.success('Toplu güncelleme', active ? 'Seçilenler yayında.' : 'Seçilenler gizlendi.');
     } catch (error) {
       console.error('Error bulk updating', {}, error instanceof Error ? error : undefined);
+      toast.error('Toplu güncelleme', 'Bazı kayıtlar güncellenemedi.');
     }
   };
 
@@ -214,7 +292,7 @@ export default function TestimonialsPage() {
     setEditingTestimonial(testimonial);
     setFormData({
       name: testimonial.name,
-      location: testimonial.location,
+      location: testimonial.location ?? '',
       rating: testimonial.rating,
       content: testimonial.content,
       avatar: testimonial.avatar || '',
@@ -259,12 +337,13 @@ export default function TestimonialsPage() {
     return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  const filteredTestimonials = sortedTestimonials.filter(t => {
+  const filteredTestimonials = sortedTestimonials.filter((t) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.service && t.service.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      t.location.toLowerCase().includes(searchQuery.toLowerCase());
+      t.name.toLowerCase().includes(q) ||
+      t.content.toLowerCase().includes(q) ||
+      (t.service && t.service.toLowerCase().includes(q)) ||
+      (t.location && t.location.toLowerCase().includes(q));
 
     const matchesStatus =
       filterStatus === 'all' ? true :
@@ -275,10 +354,39 @@ export default function TestimonialsPage() {
     return matchesSearch && matchesStatus && matchesRating;
   });
 
-  if (loading) {
+  if (loading && testimonials.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-white dark:bg-slate-900 rounded-xl">
-        <Loader2 className="animate-spin h-8 w-8 text-emerald-500 dark:text-emerald-400" />
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="h-8 w-56 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+          <div className="h-10 w-40 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />
+          ))}
+        </div>
+        <div className="h-80 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />
+      </div>
+    );
+  }
+
+  if (loadError && testimonials.length === 0) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-xl bg-white dark:bg-slate-800 p-8">
+        <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400" />
+        <div className="text-center">
+          <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Referanslar yüklenemedi</h3>
+          <p className="text-slate-600 dark:text-slate-400">{loadError}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void fetchTestimonials()}
+          className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+        >
+          <Loader2 className="h-4 w-4" />
+          Tekrar dene
+        </button>
       </div>
     );
   }
@@ -293,7 +401,16 @@ export default function TestimonialsPage() {
             Web sitesinde görünen müşteri yorumlarını yönetin ve düzenleyin
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void fetchTestimonials()}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Yenile
+          </button>
           {selectedItems.length > 0 && (
             <div className="flex items-center gap-2 mr-2">
               <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -391,13 +508,13 @@ export default function TestimonialsPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">5 Yıldız</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-                {testimonials.filter(t => t.rating === 5).length}
+              <p className="text-sm text-slate-500 dark:text-slate-400">Gizli (pasif)</p>
+              <p className="mt-2 text-3xl font-bold text-slate-700 dark:text-slate-200">
+                {testimonials.filter((t) => !t.isActive).length}
               </p>
             </div>
-            <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-              <Star className="h-6 w-6 text-purple-600 fill-purple-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
+              <EyeOff className="h-6 w-6 text-slate-600 dark:text-slate-400" />
             </div>
           </div>
         </div>
@@ -555,12 +672,12 @@ export default function TestimonialsPage() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-800 dark:to-emerald-700 flex items-center justify-center text-lg">
-                        {testimonial.avatar || '👤'}
-                      </div>
-                      <div>
+                      <AvatarCell avatar={testimonial.avatar} name={testimonial.name} />
+                      <div className="min-w-0">
                         <p className="font-medium text-slate-900 dark:text-white">{testimonial.name}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{testimonial.location}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {testimonial.location?.trim() || '—'}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -719,27 +836,16 @@ export default function TestimonialsPage() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      Lokasyon <span className="text-red-500">*</span>
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Lokasyon <span className="text-slate-400">(isteğe bağlı)</span>
                     </label>
                     <input
                       type="text"
                       value={formData.location}
-                      onChange={(e) => {
-                        setFormData({ ...formData, location: e.target.value });
-                        if (formErrors.location) setFormErrors({ ...formErrors, location: '' });
-                      }}
-                      className={`w-full rounded-xl border px-4 py-2.5 focus:outline-none focus:ring-2 transition-all ${formErrors.location
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                        : 'border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-emerald-200'
-                        }`}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-700"
                       placeholder="Örn: Kadıköy, İstanbul"
                     />
-                    {formErrors.location && (
-                      <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {formErrors.location}
-                      </p>
-                    )}
                   </div>
                 </div>
 
@@ -839,7 +945,24 @@ export default function TestimonialsPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Liste sırası
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.order}
+                      onChange={(e) =>
+                        setFormData({ ...formData, order: parseInt(e.target.value, 10) || 0 })
+                      }
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-700"
+                    />
+                    <p className="mt-1 text-xs text-slate-400">Küçük sayı önce gösterilir.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
@@ -848,12 +971,12 @@ export default function TestimonialsPage() {
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                       className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                     />
-                    <label htmlFor="isActive" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <label htmlFor="isActive" className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
                       Yorumu yayında göster
                     </label>
                   </div>
                   <span className={`text-sm ${formData.isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {formData.isActive ? 'Yayında' : 'Taslak'}
+                    {formData.isActive ? 'Yayında' : 'Gizli'}
                   </span>
                 </div>
 

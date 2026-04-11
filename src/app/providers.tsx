@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
+import { SiteCustomCss } from '@/components/SiteCustomCss';
 // import { setupGlobalErrorHandlers, logPerformanceMetrics } from '@/lib/client-error-handler'; // DISABLED
 
 // ============================================
@@ -62,6 +63,7 @@ export function Providers({ children }: ProvidersProps) {
   if (!isMounted) {
     return (
       <SiteSettingsProvider>
+        <SiteCustomCss />
         {children}
       </SiteSettingsProvider>
     );
@@ -90,6 +92,7 @@ export function Providers({ children }: ProvidersProps) {
       }
     >
       <SiteSettingsProvider>
+        <SiteCustomCss />
         {children}
       </SiteSettingsProvider>
     </ErrorBoundary>

@@ -1,104 +1,14 @@
 /**
- * @fileoverview Site Settings API Route
- * @description Site genel ayarları yönetimi API endpoint'i.
- * GET (public) - site ayarlarını okur, PUT (admin only) - site ayarlarını günceller.
- *
- * @architecture
- * - Server-Side API Route
- * - Prisma ORM database access
- * - Auto-creation of default settings if not exists
- * - Admin authentication required for mutations
- *
- * @security
- * - GET: Public endpoint, rate limiting uygulanır
- * - PUT: Admin authentication required (JWT) - KRİTİK!
- * - Input validation and sanitization
- * - Whitelist-based field validation
- *
- * @admin-sync
- * Bu endpoint admin paneldeki /admin/ayarlar sayfası tarafından kullanılır.
- * Site başlığı, renkler, iletişim bilgileri vb. ayarlar admin panelden yönetilir.
- * @version 1.0.0
+ * @fileoverview Site Settings API (admin + public-safe GET)
+ * @description Prisma `SiteSettings` ile uyumlu tek kaynak. Admin PUT tam güncelleme;
+ * GET: yönetici oturumunda tüm alanlar, aksi halde yalnızca site /api/settings ile uyumlu güvenli alt küme.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
-
-// ============================================
-// CONFIGURATION
-// ============================================
-
-/** Logger instance */
-
-/** Default site settings */
-const DEFAULT_SETTINGS = {
-  primaryColor: '#10b981',
-  secondaryColor: '#059669',
-  phone: '0555 123 45 67',
-  email: 'info@gunentemizlik.com',
-  address: 'İstanbul, Türkiye',
-  workingHours: 'Pzt-Cmt: 08:00 - 20:00',
-  facebook: '',
-  instagram: '',
-  twitter: '',
-  linkedin: '',
-  siteTitle: 'Günen Temizlik',
-  siteDescription: 'İstanbul\'un önde gelen profesyonel temizlik şirketi',
-  customCss: '',
-  customJs: '',
-} as const;
-
-/** Valid settings fields whitelist */
-const VALID_SETTINGS_FIELDS = [
-  'primaryColor',
-  'secondaryColor',
-  'phone',
-  'email',
-  'address',
-  'workingHours',
-  'facebook',
-  'instagram',
-  'twitter',
-  'linkedin',
-  'siteTitle',
-  'siteDescription',
-  'logo',
-  'favicon',
-  'customCss',
-  'customJs',
-] as const;
-
-/** Rate limiting map (IP -> timestamp array) */
-const rateLimitMap = new Map<string, number[]>();
-
-/** Rate limit window: 1 minute */
-const RATE_LIMIT_WINDOW = 60 * 1000;
-
-/** Max requests per window: 60 */
-const MAX_REQUESTS = 60;
-
-/** Maximum string lengths for settings fields */
-const MAX_LENGTHS: Record<string, number> = {
-  phone: 20,
-  email: 100,
-  address: 200,
-  workingHours: 50,
-  facebook: 200,
-  instagram: 200,
-  twitter: 200,
-  linkedin: 200,
-  siteTitle: 100,
-  siteDescription: 200,
-  logo: 500,
-  favicon: 500,
-  customCss: 10000,  // 10KB CSS kodu
-  customJs: 10000,  // 10KB JavaScript kodu
-};
-
-// ============================================
-// CORS HEADERS
-// ============================================
+import type { SiteSettings as SiteSettingsRow } from '@prisma/client';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -106,272 +16,308 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// ============================================
-// TYPES
-// ============================================
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const MAX_REQUESTS = 60;
 
-/** Site settings data type */
-interface SiteSettingsData {
-  primaryColor?: string;
-  secondaryColor?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  workingHours?: string;
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-  linkedin?: string;
-  siteTitle?: string;
-  siteDescription?: string;
-  logo?: string;
-  favicon?: string;
-  customCss?: string;
-  customJs?: string;
+const DEFAULT_ROBOTS = `User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Allow: /
+Sitemap: https://gunentemizlik.com/sitemap.xml`;
+
+/** Prisma create için varsayılanlar (şema ile birebir) */
+function defaultCreateData(): Omit<SiteSettingsRow, 'id' | 'updatedAt'> {
+  return {
+    siteName: 'Günen Temizlik',
+    siteDescription: "İstanbul'un güvenilir profesyonel temizlik şirketi",
+    siteUrl: 'https://gunentemizlik.com',
+    logo: null,
+    favicon: '/favicon.ico',
+    primaryColor: '#10b981',
+    secondaryColor: '#059669',
+    accentColor: '#34d399',
+    phone: '0555 123 45 67',
+    email: 'info@gunentemizlik.com',
+    address: 'İstanbul, Türkiye',
+    workingHours: '7/24 Hizmet',
+    whatsapp: null,
+    facebook: null,
+    instagram: null,
+    twitter: null,
+    linkedin: null,
+    youtube: null,
+    seoTitle: 'Günen Temizlik | Profesyonel Temizlik Hizmetleri',
+    seoDescription:
+      'Ev, ofis ve endüstriyel temizlik. Profesyonel ekip, şeffaf fiyat, memnuniyet garantisi.',
+    seoKeywords: 'temizlik, ofis temizliği, ev temizliği, istanbul temizlik',
+    ogImage: '/og-image.jpg',
+    twitterHandle: '@gunentemizlik',
+    canonicalUrl: 'https://gunentemizlik.com',
+    googleAnalyticsId: null,
+    googleTagManagerId: null,
+    facebookPixelId: null,
+    robotsTxt: DEFAULT_ROBOTS,
+    sitemapEnabled: true,
+    maintenanceMode: false,
+    customCss: null,
+    customJs: null,
+  };
 }
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
+const STRING_FIELDS = [
+  'siteName',
+  'siteDescription',
+  'siteUrl',
+  'logo',
+  'favicon',
+  'primaryColor',
+  'secondaryColor',
+  'accentColor',
+  'phone',
+  'email',
+  'address',
+  'workingHours',
+  'whatsapp',
+  'facebook',
+  'instagram',
+  'twitter',
+  'linkedin',
+  'youtube',
+  'seoTitle',
+  'seoDescription',
+  'seoKeywords',
+  'ogImage',
+  'twitterHandle',
+  'canonicalUrl',
+  'googleAnalyticsId',
+  'googleTagManagerId',
+  'facebookPixelId',
+  'robotsTxt',
+  'customCss',
+  'customJs',
+] as const;
 
-/**
- * Get client IP from request headers
- * @param request NextRequest object
- * @returns Client IP address
- */
+const MAX_LEN: Record<string, number> = {
+  siteName: 120,
+  siteDescription: 500,
+  siteUrl: 300,
+  logo: 800,
+  favicon: 800,
+  phone: 40,
+  email: 120,
+  address: 500,
+  workingHours: 120,
+  whatsapp: 40,
+  facebook: 500,
+  instagram: 500,
+  twitter: 500,
+  linkedin: 500,
+  youtube: 500,
+  seoTitle: 120,
+  seoDescription: 320,
+  seoKeywords: 500,
+  ogImage: 800,
+  twitterHandle: 80,
+  canonicalUrl: 500,
+  googleAnalyticsId: 80,
+  googleTagManagerId: 80,
+  facebookPixelId: 80,
+  robotsTxt: 20000,
+  customCss: 100000,
+  customJs: 100000,
+};
+
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
-
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-
-  if (realIp) {
-    return realIp;
-  }
-
+  if (forwarded) return forwarded.split(',')[0].trim();
+  if (realIp) return realIp;
   return 'unknown';
 }
 
-/**
- * Check rate limit for IP address
- * @param ip Client IP address
- * @returns boolean - true if rate limited
- */
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
-
-  // Filter out old timestamps outside the window
-  const validTimestamps = timestamps.filter(
-    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
-  );
-
-  // Check if limit exceeded
-  if (validTimestamps.length >= MAX_REQUESTS) {
-    return true;
-  }
-
-  // Add current timestamp
-  validTimestamps.push(now);
-  rateLimitMap.set(ip, validTimestamps);
-
+  const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW);
+  if (valid.length >= MAX_REQUESTS) return true;
+  valid.push(now);
+  rateLimitMap.set(ip, valid);
   return false;
 }
 
-/**
- * Validate hex color format
- * @param color Color string to validate
- * @returns boolean - true if valid hex color
- */
-function isValidHexColor(color: string): boolean {
+function isValidHex(color: string): boolean {
   return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color);
 }
 
-/**
- * Validate email format
- * @param email Email string to validate
- * @returns boolean - true if valid email
- */
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/**
- * Sanitize and validate settings data
- * @param data Raw settings data from request
- * @returns Sanitized settings data
- * @throws Error if validation fails
- */
-function sanitizeSettingsData(data: Record<string, unknown>): SiteSettingsData {
-  const sanitized: SiteSettingsData = {};
-
-  for (const [key, value] of Object.entries(data)) {
-    // Skip invalid fields (whitelist check)
-    if (!VALID_SETTINGS_FIELDS.includes(key as typeof VALID_SETTINGS_FIELDS[number])) {
-      console.warn('Invalid settings field attempted', { field: key });
-      continue;
-    }
-
-    // Skip null/undefined values
-    if (value === null || value === undefined) {
-      continue;
-    }
-
-    // Ensure value is string
-    if (typeof value !== 'string') {
-      throw new Error(`Invalid type for field "${key}". Expected string.`);
-    }
-
-    // Validate and sanitize based on field type
-    switch (key) {
-      case 'primaryColor':
-      case 'secondaryColor':
-        if (!isValidHexColor(value)) {
-          throw new Error(`Invalid hex color format for "${key}"`);
-        }
-        sanitized[key as keyof SiteSettingsData] = value.toLowerCase();
-        break;
-
-      case 'email':
-        if (value && !isValidEmail(value)) {
-          throw new Error('Invalid email format');
-        }
-        sanitized[key] = sanitizeInput(value);
-        break;
-
-      case 'phone':
-        // Allow only numbers, spaces, +, -, (, )
-        if (!/^[\d\s\+\-\(\)]+$/.test(value)) {
-          throw new Error('Invalid phone number format');
-        }
-        sanitized[key] = value.slice(0, MAX_LENGTHS.phone);
-        break;
-
-      default:
-        // General string sanitization with length limit
-        const maxLength = MAX_LENGTHS[key] || 500;
-        sanitized[key as keyof SiteSettingsData] = sanitizeInput(value).slice(0, maxLength);
-    }
-  }
-
-  return sanitized;
+function isValidPhone(phone: string): boolean {
+  return /^[\d\s\+\-\(\)\.]+$/.test(phone) && phone.replace(/\D/g, '').length >= 10;
 }
 
-// ============================================
-// API HANDLERS
-// ============================================
+/** Ziyaretçi için hassas olmayan alanlar (/api/settings ile uyumlu + accent/linkedin/youtube) */
+function publicSubset(row: SiteSettingsRow) {
+  return {
+    siteName: row.siteName,
+    siteDescription: row.siteDescription,
+    siteUrl: row.siteUrl,
+    logo: row.logo,
+    favicon: row.favicon,
+    primaryColor: row.primaryColor,
+    secondaryColor: row.secondaryColor,
+    accentColor: row.accentColor,
+    phone: row.phone,
+    email: row.email,
+    address: row.address,
+    workingHours: row.workingHours,
+    whatsapp: row.whatsapp,
+    facebook: row.facebook,
+    instagram: row.instagram,
+    twitter: row.twitter,
+    linkedin: row.linkedin,
+    youtube: row.youtube,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+    seoKeywords: row.seoKeywords,
+    ogImage: row.ogImage,
+    twitterHandle: row.twitterHandle,
+    canonicalUrl: row.canonicalUrl,
+    maintenanceMode: row.maintenanceMode,
+    sitemapEnabled: row.sitemapEnabled,
+    customCss: row.customCss ?? '',
+  };
+}
 
-/**
- * OPTIONS handler for CORS preflight
- */
+function sanitizeBody(body: Record<string, unknown>): Partial<SiteSettingsRow> {
+  const out: Record<string, unknown> = {};
+
+  for (const key of STRING_FIELDS) {
+    const v = body[key];
+    if (v === undefined) continue;
+    if (v === null) {
+      if (key === 'siteName' || key === 'email' || key === 'phone') {
+        throw new Error('Zorunlu alanlar null olamaz');
+      }
+      (out as Record<string, string | null>)[key] = null;
+      continue;
+    }
+    if (typeof v !== 'string') {
+      throw new Error(`${key} metin olmalıdır`);
+    }
+    const trimmed = v.trim();
+    if (trimmed === '') {
+      if (key === 'siteName' || key === 'email' || key === 'phone') {
+        throw new Error(
+          key === 'siteName' ? 'Site adı zorunludur' : key === 'email' ? 'E-posta zorunludur' : 'Telefon zorunludur'
+        );
+      }
+      (out as Record<string, string | null>)[key] = null;
+      continue;
+    }
+    const max = MAX_LEN[key] ?? 2000;
+    let s = sanitizeInput(trimmed).slice(0, max);
+
+    if (key === 'primaryColor' || key === 'secondaryColor' || key === 'accentColor') {
+      if (!isValidHex(s)) throw new Error(`Geçersiz renk: ${key}`);
+      s = s.toLowerCase();
+    }
+    if (key === 'email' && !isValidEmail(s)) throw new Error('Geçersiz e-posta');
+    if (key === 'phone' && !isValidPhone(s)) throw new Error('Geçersiz telefon (en az 10 rakam)');
+    // whatsapp: numara veya wa.me linki — sadece uzunluk
+
+    (out as Record<string, string>)[key] = s;
+  }
+
+  if (body.sitemapEnabled !== undefined) {
+    if (typeof body.sitemapEnabled !== 'boolean') throw new Error('sitemapEnabled boolean olmalı');
+    out.sitemapEnabled = body.sitemapEnabled;
+  }
+  if (body.maintenanceMode !== undefined) {
+    if (typeof body.maintenanceMode !== 'boolean') throw new Error('maintenanceMode boolean olmalı');
+    out.maintenanceMode = body.maintenanceMode;
+  }
+
+  return out as Partial<SiteSettingsRow>;
+}
+
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: CORS_HEADERS });
 }
 
-/**
- * GET handler - Fetch site settings (public)
- * @param request NextRequest object
- * @returns Site settings JSON
- */
 export async function GET(request: NextRequest) {
   const headers = { ...CORS_HEADERS };
   const ip = getClientIp(request);
-
-  // Rate limiting for public endpoint
   if (checkRateLimit(ip)) {
-    console.warn('Rate limit exceeded on GET site-settings', { ip });
-    return NextResponse.json(
-      { error: 'Çok fazla istek. Lütfen 1 dakika bekleyin.' },
-      { status: 429, headers }
-    );
+    return NextResponse.json({ error: 'Çok fazla istek.' }, { status: 429, headers });
   }
 
   try {
-    console.log('Fetching site settings', { ip });
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
 
-    let settings = await prisma.siteSettings.findFirst();
-
-    // Create default settings if none exist
-    if (!settings) {
-      console.log('Creating default site settings');
-      settings = await prisma.siteSettings.create({
-        data: DEFAULT_SETTINGS,
-      });
+    let row = await prisma.siteSettings.findFirst();
+    if (!row) {
+      row = await prisma.siteSettings.create({ data: defaultCreateData() });
     }
 
-    console.log('Site settings retrieved successfully');
-
-    return NextResponse.json(settings, { headers });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Failed to fetch site settings', { error: errorMessage, ip });
-
-    // Return default settings on error
-    return NextResponse.json(DEFAULT_SETTINGS, { status: 200, headers });
-  }
-}
-
-/**
- * PUT handler - Update site settings (admin only)
- * @param request NextRequest object
- * @returns Updated site settings JSON
- */
-export async function PUT(request: NextRequest) {
-  const headers = { ...CORS_HEADERS };
-
-  // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
-  const authError = await requireAdminAuth(request);
-  if (authError) {
-    console.warn('Unauthorized site settings update attempt');
-    return authError;
-  }
-
-  try {
-    const body = await request.json();
-
-    console.log('Updating site settings', { fields: Object.keys(body) });
-
-    // Validate and sanitize input data
-    let sanitizedData: SiteSettingsData;
-    try {
-      sanitizedData = sanitizeSettingsData(body);
-    } catch (validationError) {
-      const message = validationError instanceof Error ? validationError.message : 'Validation failed';
-      console.warn('Site settings validation failed', { error: message });
+    if (row.maintenanceMode && !isAdmin) {
       return NextResponse.json(
-        { error: message },
-        { status: 400, headers }
+        {
+          siteName: row.siteName,
+          maintenanceMode: true,
+          maintenanceMessage: 'Site bakım modunda. Lütfen daha sonra tekrar deneyin.',
+        },
+        { headers }
       );
     }
 
-    // Check if settings exist
-    const existing = await prisma.siteSettings.findFirst();
-
-    let settings;
-    if (existing) {
-      // Update existing settings
-      settings = await prisma.siteSettings.update({
-        where: { id: existing.id },
-        data: sanitizedData,
-      });
-      console.log('Site settings updated successfully', { id: existing.id });
-    } else {
-      // Create new settings with defaults + provided data
-      settings = await prisma.siteSettings.create({
-        data: { ...DEFAULT_SETTINGS, ...sanitizedData },
-      });
-      console.log('Site settings created successfully', { id: settings.id });
+    if (isAdmin) {
+      return NextResponse.json(row, { headers });
     }
 
-    return NextResponse.json(settings, { headers });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Failed to update site settings', { error: errorMessage });
-    return NextResponse.json(
-      { error: 'Site ayarları güncellenemedi' },
-      { status: 500, headers }
-    );
+    return NextResponse.json(publicSubset(row), { headers });
+  } catch (e) {
+    console.error('GET site-settings', e);
+    return NextResponse.json({ error: 'Ayarlar yüklenemedi' }, { status: 500, headers });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const headers = { ...CORS_HEADERS };
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
+  try {
+    const body = (await request.json()) as Record<string, unknown>;
+    let patch: Partial<SiteSettingsRow>;
+    try {
+      patch = sanitizeBody(body);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Doğrulama hatası';
+      return NextResponse.json({ error: msg }, { status: 400, headers });
+    }
+
+    const existing = await prisma.siteSettings.findFirst();
+    let row: SiteSettingsRow;
+    if (existing) {
+      row = await prisma.siteSettings.update({
+        where: { id: existing.id },
+        data: patch,
+      });
+    } else {
+      row = await prisma.siteSettings.create({
+        data: { ...defaultCreateData(), ...patch },
+      });
+    }
+
+    return NextResponse.json(row, { headers });
+  } catch (e) {
+    console.error('PUT site-settings', e);
+    return NextResponse.json({ error: 'Site ayarları güncellenemedi' }, { status: 500, headers });
   }
 }

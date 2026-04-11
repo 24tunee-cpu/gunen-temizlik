@@ -15,6 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -168,10 +169,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Fetching all testimonials', { ip });
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    console.log('Fetching all testimonials', { ip, isAdmin });
 
     const testimonials = await prisma.testimonial.findMany({
-      where: { isActive: true },
+      ...(isAdmin ? {} : { where: { isActive: true } }),
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       select: {
         id: true,

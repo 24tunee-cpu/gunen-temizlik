@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
-  Settings,
   Phone,
   Mail,
   MapPin,
@@ -13,117 +13,266 @@ import {
   Upload,
   Image as ImageIcon,
   X,
-  Check,
   Globe,
-  Eye,
   AlertCircle,
   RefreshCw,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Search,
+  Code2,
+  Shield,
+  Download,
+  Building2,
 } from 'lucide-react';
-import Image from 'next/image';
 import { toast } from '@/store/toastStore';
+import { trackError } from '@/lib/client-error-handler';
+import { formatDate } from '@/lib/utils';
 
-interface SiteSettings {
-  id?: string;
-  logo?: string;
-  favicon?: string;
+type TabId = 'general' | 'appearance' | 'social' | 'seo' | 'advanced';
+
+interface FormState {
+  siteName: string;
+  siteDescription: string;
+  siteUrl: string;
+  logo: string;
+  favicon: string;
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
   phone: string;
   email: string;
-  address?: string;
-  workingHours?: string;
-  facebook?: string;
-  instagram?: string;
-  twitter?: string;
-  whatsapp?: string;
-  metaTitle?: string;
-  metaDesc?: string;
-  metaKeywords?: string;
-  googleAnalyticsId?: string;
-  customCss?: string;
-  customJs?: string;
+  address: string;
+  workingHours: string;
+  whatsapp: string;
+  facebook: string;
+  instagram: string;
+  twitter: string;
+  linkedin: string;
+  youtube: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+  ogImage: string;
+  twitterHandle: string;
+  canonicalUrl: string;
+  googleAnalyticsId: string;
+  googleTagManagerId: string;
+  facebookPixelId: string;
+  robotsTxt: string;
+  sitemapEnabled: boolean;
+  maintenanceMode: boolean;
+  customCss: string;
+  customJs: string;
 }
 
-const defaultSettings: SiteSettings = {
+const emptyForm = (): FormState => ({
+  siteName: '',
+  siteDescription: '',
+  siteUrl: 'https://gunentemizlik.com',
+  logo: '',
+  favicon: '/favicon.ico',
   primaryColor: '#10b981',
   secondaryColor: '#059669',
   accentColor: '#34d399',
-  phone: '0555 123 45 67',
-  email: 'info@gunentemizlik.com',
-  address: 'İstanbul, Türkiye',
-  workingHours: 'Pzt-Cum: 08:00 - 18:00',
-  metaTitle: 'Günen Temizlik - Profesyonel Temizlik Hizmetleri',
-  metaDesc: 'Ev, ofis ve endüstriyel temizlik hizmetleri. Profesyonel ekip, kaliteli hizmet.',
-  metaKeywords: 'temizlik, ofis temizliği, ev temizliği, istanbul temizlik',
-};
+  phone: '',
+  email: '',
+  address: '',
+  workingHours: '',
+  whatsapp: '',
+  facebook: '',
+  instagram: '',
+  twitter: '',
+  linkedin: '',
+  youtube: '',
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
+  ogImage: '',
+  twitterHandle: '',
+  canonicalUrl: '',
+  googleAnalyticsId: '',
+  googleTagManagerId: '',
+  facebookPixelId: '',
+  robotsTxt: '',
+  sitemapEnabled: true,
+  maintenanceMode: false,
+  customCss: '',
+  customJs: '',
+});
+
+function apiRowToForm(row: Record<string, unknown>): FormState {
+  const s = (k: string) => (typeof row[k] === 'string' ? (row[k] as string) : row[k] ? String(row[k]) : '');
+  const b = (k: string, d: boolean) => (typeof row[k] === 'boolean' ? row[k] : d) as boolean;
+  return {
+    siteName: s('siteName') || 'Günen Temizlik',
+    siteDescription: s('siteDescription'),
+    siteUrl: s('siteUrl') || 'https://gunentemizlik.com',
+    logo: s('logo'),
+    favicon: s('favicon') || '/favicon.ico',
+    primaryColor: s('primaryColor') || '#10b981',
+    secondaryColor: s('secondaryColor') || '#059669',
+    accentColor: s('accentColor') || '#34d399',
+    phone: s('phone'),
+    email: s('email'),
+    address: s('address'),
+    workingHours: s('workingHours'),
+    whatsapp: s('whatsapp'),
+    facebook: s('facebook'),
+    instagram: s('instagram'),
+    twitter: s('twitter'),
+    linkedin: s('linkedin'),
+    youtube: s('youtube'),
+    seoTitle: s('seoTitle'),
+    seoDescription: s('seoDescription'),
+    seoKeywords: s('seoKeywords'),
+    ogImage: s('ogImage'),
+    twitterHandle: s('twitterHandle'),
+    canonicalUrl: s('canonicalUrl'),
+    googleAnalyticsId: s('googleAnalyticsId'),
+    googleTagManagerId: s('googleTagManagerId'),
+    facebookPixelId: s('facebookPixelId'),
+    robotsTxt: s('robotsTxt'),
+    sitemapEnabled: b('sitemapEnabled', true),
+    maintenanceMode: b('maintenanceMode', false),
+    customCss: s('customCss'),
+    customJs: s('customJs'),
+  };
+}
+
+function formToPayload(f: FormState): Record<string, unknown> {
+  return {
+    siteName: f.siteName.trim(),
+    siteDescription: f.siteDescription.trim() || null,
+    siteUrl: f.siteUrl.trim(),
+    logo: f.logo.trim() || null,
+    favicon: f.favicon.trim() || null,
+    primaryColor: f.primaryColor.trim(),
+    secondaryColor: f.secondaryColor.trim(),
+    accentColor: f.accentColor.trim(),
+    phone: f.phone.trim(),
+    email: f.email.trim(),
+    address: f.address.trim() || null,
+    workingHours: f.workingHours.trim() || null,
+    whatsapp: f.whatsapp.trim() || null,
+    facebook: f.facebook.trim() || null,
+    instagram: f.instagram.trim() || null,
+    twitter: f.twitter.trim() || null,
+    linkedin: f.linkedin.trim() || null,
+    youtube: f.youtube.trim() || null,
+    seoTitle: f.seoTitle.trim() || null,
+    seoDescription: f.seoDescription.trim() || null,
+    seoKeywords: f.seoKeywords.trim() || null,
+    ogImage: f.ogImage.trim() || null,
+    twitterHandle: f.twitterHandle.trim() || null,
+    canonicalUrl: f.canonicalUrl.trim() || null,
+    googleAnalyticsId: f.googleAnalyticsId.trim() || null,
+    googleTagManagerId: f.googleTagManagerId.trim() || null,
+    facebookPixelId: f.facebookPixelId.trim() || null,
+    robotsTxt: f.robotsTxt.trim() || null,
+    sitemapEnabled: f.sitemapEnabled,
+    maintenanceMode: f.maintenanceMode,
+    customCss: f.customCss.trim() || null,
+    customJs: f.customJs.trim() || null,
+  };
+}
 
 export default function SiteSettingsPage() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [baseline, setBaseline] = useState<string>('');
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'social' | 'seo' | 'advanced'>('general');
-  const [showPreview, setShowPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('general');
   const [uploadingImage, setUploadingImage] = useState<'logo' | 'favicon' | null>(null);
-  const [savedSuccess, setSavedSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDirty = useMemo(() => JSON.stringify(form) !== baseline, [form, baseline]);
 
   useEffect(() => {
-    fetchSettings();
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  const applyRow = useCallback((data: Record<string, unknown>) => {
+    const next = apiRowToForm(data);
+    setForm(next);
+    setBaseline(JSON.stringify(next));
+    if (typeof data.updatedAt === 'string') setUpdatedAt(data.updatedAt);
+    else setUpdatedAt(null);
   }, []);
 
-  useEffect(() => {
-    if (savedSuccess) {
-      setTimeout(() => setSavedSuccess(false), 3000);
-    }
-  }, [savedSuccess]);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
-      const res = await fetch('/api/site-settings');
-      if (res.ok) {
-        const data = await res.json();
-        setSettings({ ...defaultSettings, ...data });
+      setLoading(true);
+      setLoadError(null);
+      const res = await fetch('/api/site-settings', { credentials: 'include' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        let msg = 'Ayarlar yüklenemedi.';
+        if (res.status === 401) msg = 'Oturum gerekli. Yeniden giriş yapın.';
+        else if (err?.error) msg = err.error;
+        throw new Error(msg);
       }
-    } catch (error) {
-      console.error('Error fetching settings', {}, error instanceof Error ? error : undefined);
-      toast.error('Yukleme Hatasi', 'Ayarlar yuklenirken bir hata olustu.');
+      const data = await res.json();
+      applyRow(data as Record<string, unknown>);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Ayarlar yüklenemedi.';
+      setLoadError(msg);
+      trackError(e instanceof Error ? e : new Error(msg), { context: 'admin-site-settings' });
+      toast.error('Yükleme hatası', msg);
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyRow]);
 
-  const validateSettings = () => {
-    const newErrors: Record<string, string> = {};
-    if (!settings.phone) newErrors.phone = 'Telefon numarası gereklidir';
-    if (!settings.email) newErrors.email = 'E-posta adresi gereklidir';
-    if (settings.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.email)) {
-      newErrors.email = 'Geçerli bir e-posta adresi girin';
+  useEffect(() => {
+    void fetchSettings();
+  }, [fetchSettings]);
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.siteName.trim()) e.siteName = 'Site adı zorunludur';
+    if (!form.email.trim()) e.email = 'E-posta zorunludur';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Geçerli e-posta girin';
+    if (!form.phone.trim()) e.phone = 'Telefon zorunludur';
+    else {
+      const digits = form.phone.replace(/\D/g, '');
+      if (digits.length < 10) e.phone = 'En az 10 rakam içermelidir';
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!form.siteUrl.trim().startsWith('http')) e.siteUrl = 'https:// ile başlamalıdır';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSave = async () => {
-    if (!validateSettings()) return;
-
+    if (!validate()) {
+      toast.error('Doğrulama', 'Lütfen zorunlu alanları kontrol edin.');
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch('/api/site-settings', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(formToPayload(form)),
       });
-      if (res.ok) {
-        setSavedSuccess(true);
-        toast.success('Kaydedildi', 'Ayarlar basariyla kaydedildi.');
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error || `Kayıt başarısız (${res.status})`);
       }
-    } catch (error) {
-      console.error('Error saving settings', {}, error instanceof Error ? error : undefined);
-      toast.error('Kaydetme Hatasi', 'Ayarlar kaydedilirken bir hata olustu.');
+      applyRow(data as Record<string, unknown>);
+      toast.success('Kaydedildi', 'Site ayarları güncellendi.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Kayıt başarısız';
+      trackError(err instanceof Error ? err : new Error(msg), { context: 'admin-site-settings-save' });
+      toast.error('Kayıt hatası', msg);
     } finally {
       setSaving(false);
     }
@@ -132,535 +281,653 @@ export default function SiteSettingsPage() {
   const handleImageUpload = async (type: 'logo' | 'favicon', file: File) => {
     setUploadingImage(type);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', type);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (res.ok) {
-        const { url } = await res.json();
-        setSettings(prev => ({ ...prev, [type]: url }));
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || 'Yükleme başarısız');
       }
-    } catch (error) {
-      console.error('Upload error', {}, error instanceof Error ? error : undefined);
+      const { url } = await res.json();
+      setForm((p) => ({ ...p, [type]: url }));
+      toast.success('Yükleme tamam', type === 'logo' ? 'Logo güncellendi.' : 'Favicon güncellendi.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Dosya yüklenemedi';
+      toast.error('Yükleme', msg);
     } finally {
       setUploadingImage(null);
     }
   };
 
-  const handleReset = () => {
-    if (confirm('Tüm ayarları varsayılana sıfırlamak istediğinize emin misiniz?')) {
-      setSettings(defaultSettings);
-    }
+  const copyContactBlock = () => {
+    const block = `${form.siteName}\nTel: ${form.phone}\nE-posta: ${form.email}\n${form.address ? `Adres: ${form.address}\n` : ''}${form.workingHours ? `Çalışma: ${form.workingHours}` : ''}`;
+    void navigator.clipboard.writeText(block.trim());
+    toast.success('Kopyalandı', 'İletişim özeti panoya alındı.');
   };
 
-  if (loading) {
+  const exportJson = () => {
+    const blob = new Blob([JSON.stringify(formToPayload(form), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `site-ayarlari-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.success('Dışa aktarıldı', 'JSON dosyası indirildi.');
+  };
+
+  const tabs: { id: TabId; label: string; icon: typeof Building2 }[] = [
+    { id: 'general', label: 'Genel', icon: Building2 },
+    { id: 'appearance', label: 'Görünüm', icon: Palette },
+    { id: 'social', label: 'Sosyal', icon: Globe },
+    { id: 'seo', label: 'SEO ve ölçüm', icon: Search },
+    { id: 'advanced', label: 'Gelişmiş', icon: Code2 },
+  ];
+
+  if (loading && !baseline) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin h-8 w-8 text-emerald-500" />
+      <div className="space-y-6">
+        <div className="h-10 w-64 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+        <div className="grid gap-6 lg:grid-cols-[14rem_1fr]">
+          <div className="space-y-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700" />
+            ))}
+          </div>
+          <div className="h-96 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />
+        </div>
       </div>
     );
   }
 
-  const tabs = [
-    { id: 'general', label: 'Genel', icon: Settings },
-    { id: 'appearance', label: 'Görünüm', icon: Palette },
-    { id: 'social', label: 'Sosyal Medya', icon: Globe },
-    { id: 'seo', label: 'SEO', icon: Eye },
-    { id: 'advanced', label: 'Gelişmiş', icon: RefreshCw },
-  ];
+  if (loadError && !baseline) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-xl bg-white p-8 dark:bg-slate-800">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <p className="text-center text-slate-600 dark:text-slate-400">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => void fetchSettings()}
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600"
+        >
+          Tekrar dene
+        </button>
+      </div>
+    );
+  }
+
+  const field =
+    (k: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const v = e.target.value;
+      setForm((p) => ({ ...p, [k]: v }));
+      if (errors[k as string]) setErrors((er) => ({ ...er, [k]: '' }));
+    };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Site Ayarları</h1>
-          <p className="mt-1 text-sm text-slate-500">Web sitenizin genel ayarlarını buradan yönetin</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Site ayarları</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Marka, iletişim, SEO ve teknik ayarlar veritabanında saklanır; kayıttan sonra canlı site{' '}
+            <code className="rounded bg-slate-100 px-1 text-xs dark:bg-slate-700">/api/settings</code> üzerinden okur.
+          </p>
+          {updatedAt && (
+            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+              Son kayıt: {formatDate(updatedAt, 'datetime')}
+            </p>
+          )}
+          {isDirty && (
+            <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-400">Kaydedilmemiş değişiklikler var.</p>
+          )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-xl font-medium hover:bg-slate-50"
+            type="button"
+            onClick={() => void fetchSettings()}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            <Eye className="h-4 w-4" />
-            {showPreview ? 'Önizlemeyi Gizle' : 'Önizleme'}
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Yenile
           </button>
           <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-4 py-2 border rounded-xl font-medium text-slate-600 hover:bg-slate-50"
+            type="button"
+            onClick={copyContactBlock}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            <RefreshCw className="h-4 w-4" />
-            Sıfırla
+            <Copy className="h-4 w-4" />
+            İletişim özeti
           </button>
+          <button
+            type="button"
+            onClick={exportJson}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            <Download className="h-4 w-4" />
+            JSON
+          </button>
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Ana site
+          </Link>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-emerald-500 text-white rounded-xl font-medium shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 disabled:opacity-50"
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={saving || !isDirty}
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2 font-medium text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700"
           >
-            {saving ? (
-              <><Loader2 className="animate-spin h-4 w-4" /> Kaydediliyor...</>
-            ) : savedSuccess ? (
-              <><Check className="h-4 w-4" /> Kaydedildi!</>
-            ) : (
-              <><Save className="h-4 w-4" /> Kaydet</>
-            )}
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Kaydet
           </motion.button>
         </div>
       </div>
 
-      {/* Success Message */}
-      <AnimatePresence>
-        {savedSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3"
-          >
-            <Check className="h-5 w-5 text-emerald-600" />
-            <span className="text-emerald-800 font-medium">Ayarlar başarıyla kaydedildi!</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {loadError && baseline && (
+        <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span className="flex-1">Yenileme hatası: {loadError}</span>
+        </div>
+      )}
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Tabs */}
-        <div className="lg:w-64 space-y-2">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <nav className="flex gap-2 overflow-x-auto pb-2 lg:w-60 lg:flex-col lg:pb-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                  : 'hover:bg-slate-100 text-slate-600'
-                  }`}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                }`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-5 w-5 shrink-0" />
                 {tab.label}
               </button>
             );
           })}
-        </div>
+        </nav>
 
-        {/* Content */}
-        <div className="flex-1 space-y-6">
-          {/* General Tab */}
+        <div className="min-w-0 flex-1 space-y-6">
           {activeTab === 'general' && (
-            <div className="space-y-6">
-              {/* Logo Upload */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-                <h3 className="text-lg font-semibold mb-4 dark:text-slate-100">Logo & Favicon</h3>
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Site Logosu</label>
-                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors">
-                      {settings.logo ? (
-                        <div className="relative w-full h-32 mb-4">
-                          <Image src={settings.logo} alt="Logo" fill className="object-contain" />
-                          <button
-                            onClick={() => setSettings({ ...settings, logo: undefined })}
-                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="h-32 flex items-center justify-center mb-4">
-                          <ImageIcon className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleImageUpload('logo', e.target.files[0])}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label
-                        htmlFor="logo-upload"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors dark:text-slate-200"
-                      >
-                        {uploadingImage === 'logo' ? (
-                          <><Loader2 className="animate-spin h-4 w-4" /> Yükleniyor...</>
-                        ) : (
-                          <><Upload className="h-4 w-4" /> Logo Yükle</>
-                        )}
-                      </label>
-                    </div>
+            <>
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Marka ve adres</h2>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Site adı *</label>
+                    <input
+                      value={form.siteName}
+                      onChange={field('siteName')}
+                      className={`w-full rounded-xl border px-4 py-2.5 dark:bg-slate-700 dark:text-white ${
+                        errors.siteName ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'
+                      }`}
+                    />
+                    {errors.siteName && <p className="mt-1 text-xs text-red-500">{errors.siteName}</p>}
                   </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Kısa açıklama</label>
+                    <textarea
+                      value={form.siteDescription}
+                      onChange={field('siteDescription')}
+                      rows={2}
+                      className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Site URL *</label>
+                    <input
+                      value={form.siteUrl}
+                      onChange={field('siteUrl')}
+                      className={`w-full rounded-xl border px-4 py-2.5 font-mono text-sm dark:bg-slate-700 dark:text-white ${
+                        errors.siteUrl ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'
+                      }`}
+                    />
+                    {errors.siteUrl && <p className="mt-1 text-xs text-red-500">{errors.siteUrl}</p>}
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Logo ve favicon</h2>
+                <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                  URL girebilir veya dosya yükleyebilirsiniz. Görseller için tam adres veya{' '}
+                  <code className="text-xs">/uploads/...</code> yolu kullanılabilir.
+                </p>
+                <div className="grid gap-6 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Favicon</label>
-                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors">
-                      {settings.favicon ? (
-                        <div className="relative w-16 h-16 mx-auto mb-4">
-                          <Image src={settings.favicon} alt="Favicon" fill className="object-contain" />
+                    <label className="mb-2 block text-sm font-medium dark:text-slate-300">Logo URL</label>
+                    <input
+                      value={form.logo}
+                      onChange={field('logo')}
+                      placeholder="/uploads/logo.png"
+                      className="mb-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                    <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center dark:border-slate-600">
+                      {form.logo ? (
+                        <div className="relative mx-auto mb-3 flex h-28 items-center justify-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={form.logo} alt="" className="max-h-28 max-w-full object-contain" />
                           <button
-                            onClick={() => setSettings({ ...settings, favicon: undefined })}
-                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full"
+                            type="button"
+                            onClick={() => setForm((p) => ({ ...p, logo: '' }))}
+                            className="absolute -right-1 -top-1 rounded-full bg-red-500 p-1 text-white"
+                            aria-label="Logoyu kaldır"
                           >
                             <X className="h-3 w-3" />
                           </button>
                         </div>
                       ) : (
-                        <div className="h-16 w-16 mx-auto bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-4">
-                          <ImageIcon className="h-8 w-8 text-slate-300 dark:text-slate-500" />
-                        </div>
+                        <ImageIcon className="mx-auto mb-3 h-10 w-10 text-slate-300" />
                       )}
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleImageUpload('favicon', e.target.files[0])}
                         className="hidden"
-                        id="favicon-upload"
+                        id="logo-up"
+                        onChange={(e) => e.target.files?.[0] && void handleImageUpload('logo', e.target.files[0])}
                       />
                       <label
-                        htmlFor="favicon-upload"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors dark:text-slate-200"
+                        htmlFor="logo-up"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm dark:bg-slate-700"
                       >
-                        {uploadingImage === 'favicon' ? (
-                          <><Loader2 className="animate-spin h-4 w-4" /> Yükleniyor...</>
-                        ) : (
-                          <><Upload className="h-4 w-4" /> Favicon Yükle</>
-                        )}
+                        {uploadingImage === 'logo' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        Yükle
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium dark:text-slate-300">Favicon URL</label>
+                    <input
+                      value={form.favicon}
+                      onChange={field('favicon')}
+                      className="mb-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                    <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center dark:border-slate-600">
+                      {form.favicon ? (
+                        <div className="relative mx-auto mb-3 flex h-16 w-16 items-center justify-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={form.favicon} alt="" className="max-h-16 max-w-16 object-contain" />
+                          <button
+                            type="button"
+                            onClick={() => setForm((p) => ({ ...p, favicon: '' }))}
+                            className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white"
+                            aria-label="Favicon kaldır"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <ImageIcon className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="fav-up"
+                        onChange={(e) => e.target.files?.[0] && void handleImageUpload('favicon', e.target.files[0])}
+                      />
+                      <label
+                        htmlFor="fav-up"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm dark:bg-slate-700"
+                      >
+                        {uploadingImage === 'favicon' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        Yükle
                       </label>
                     </div>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Contact Info */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                    <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold dark:text-slate-100">İletişim Bilgileri</h3>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-5">
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  <Phone className="h-5 w-5 text-emerald-600" />
+                  İletişim
+                </h2>
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">
-                      Telefon <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
-                      <input
-                        type="tel"
-                        value={settings.phone}
-                        onChange={(e) => {
-                          setSettings({ ...settings, phone: e.target.value });
-                          if (errors.phone) setErrors({ ...errors, phone: '' });
-                        }}
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 transition-colors ${errors.phone
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500/50'
-                          : 'border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500/20'
-                          }`}
-                        placeholder="0555 123 45 67"
-                      />
-                    </div>
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {errors.phone}
-                      </p>
-                    )}
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Telefon *</label>
+                    <input
+                      value={form.phone}
+                      onChange={field('phone')}
+                      className={`w-full rounded-xl border px-4 py-2.5 dark:bg-slate-700 dark:text-white ${
+                        errors.phone ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'
+                      }`}
+                    />
+                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">
-                      E-posta <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
-                      <input
-                        type="email"
-                        value={settings.email}
-                        onChange={(e) => {
-                          setSettings({ ...settings, email: e.target.value });
-                          if (errors.email) setErrors({ ...errors, email: '' });
-                        }}
-                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 transition-colors ${errors.email
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500/50'
-                          : 'border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500/20'
-                          }`}
-                        placeholder="info@gunentemizlik.com"
-                      />
-                    </div>
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {errors.email}
-                      </p>
-                    )}
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">E-posta *</label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={field('email')}
+                      className={`w-full rounded-xl border px-4 py-2.5 dark:bg-slate-700 dark:text-white ${
+                        errors.email ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'
+                      }`}
+                    />
+                    {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Adres</label>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Adres</label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-3 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                       <textarea
-                        value={settings.address}
-                        onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                        value={form.address}
+                        onChange={field('address')}
                         rows={3}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 resize-none transition-colors"
-                        placeholder="Tam adres bilgisi..."
+                        className="w-full resize-none rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Çalışma Saatleri</label>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Çalışma saatleri</label>
                     <input
-                      type="text"
-                      value={settings.workingHours}
-                      onChange={(e) => setSettings({ ...settings, workingHours: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-                      placeholder="Pzt-Cum: 08:00 - 18:00"
+                      value={form.workingHours}
+                      onChange={field('workingHours')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">WhatsApp</label>
+                    <input
+                      value={form.whatsapp}
+                      onChange={field('whatsapp')}
+                      placeholder="+90 555 123 45 67 veya https://wa.me/905551234567"
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                 </div>
-              </div>
-            </div>
+              </section>
+            </>
           )}
 
-          {/* Appearance Tab */}
           {activeTab === 'appearance' && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                  <Palette className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="text-lg font-semibold dark:text-slate-100">Tema Renkleri</h3>
-              </div>
-              <div className="grid sm:grid-cols-3 gap-6">
-                {[
-                  { key: 'primaryColor', label: 'Ana Renk', desc: 'Butonlar, linkler' },
-                  { key: 'secondaryColor', label: 'İkincil Renk', desc: 'Vurgular, hover' },
-                  { key: 'accentColor', label: 'Vurgu Rengi', desc: 'Özel elementler' },
-                ].map((color) => (
-                  <div key={color.key}>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">{color.label}</label>
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-white">Tema renkleri</h2>
+              <div className="grid gap-6 sm:grid-cols-3">
+                {(
+                  [
+                    { k: 'primaryColor' as const, label: 'Ana renk', hint: 'Butonlar, vurgular' },
+                    { k: 'secondaryColor' as const, label: 'İkincil', hint: 'Hover, ikonlar' },
+                    { k: 'accentColor' as const, label: 'Vurgu', hint: 'Rozet, link tonları' },
+                  ] as const
+                ).map(({ k, label, hint }) => (
+                  <div key={k}>
+                    <label className="mb-2 block text-sm font-medium dark:text-slate-300">{label}</label>
                     <div className="flex gap-3">
-                      <div className="relative">
-                        <input
-                          type="color"
-                          value={settings[color.key as keyof SiteSettings] as string}
-                          onChange={(e) => setSettings({ ...settings, [color.key]: e.target.value })}
-                          className="h-12 w-12 rounded-xl cursor-pointer border-0 p-0"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={settings[color.key as keyof SiteSettings] as string}
-                          onChange={(e) => setSettings({ ...settings, [color.key]: e.target.value })}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm font-mono uppercase transition-colors"
-                        />
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{color.desc}</p>
-                      </div>
+                      <input
+                        type="color"
+                        value={form[k]}
+                        onChange={(e) => setForm((p) => ({ ...p, [k]: e.target.value }))}
+                        className="h-12 w-14 cursor-pointer rounded-lg border-0 bg-transparent p-0"
+                      />
+                      <input
+                        value={form[k]}
+                        onChange={(e) => setForm((p) => ({ ...p, [k]: e.target.value }))}
+                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm uppercase dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                      />
                     </div>
+                    <p className="mt-1 text-xs text-slate-400">{hint}</p>
                   </div>
                 ))}
               </div>
-
-              {/* Preview */}
-              <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                <h4 className="text-sm font-medium mb-4 dark:text-slate-200">Canlı Önizleme</h4>
-                <div className="flex flex-wrap gap-4">
+              <div className="mt-8 rounded-xl bg-slate-50 p-6 dark:bg-slate-900/50">
+                <p className="mb-4 text-sm font-medium dark:text-slate-300">Önizleme</p>
+                <div className="flex flex-wrap gap-3">
                   <button
-                    className="px-6 py-2.5 rounded-xl font-medium text-white transition-colors"
-                    style={{ backgroundColor: settings.primaryColor }}
+                    type="button"
+                    className="rounded-xl px-5 py-2.5 text-sm font-medium text-white"
+                    style={{ backgroundColor: form.primaryColor }}
                   >
-                    Ana Buton
+                    Birincil
                   </button>
                   <button
-                    className="px-6 py-2.5 rounded-xl font-medium text-white transition-colors"
-                    style={{ backgroundColor: settings.secondaryColor }}
+                    type="button"
+                    className="rounded-xl px-5 py-2.5 text-sm font-medium text-white"
+                    style={{ backgroundColor: form.secondaryColor }}
                   >
-                    İkincil Buton
+                    İkincil
                   </button>
                   <span
-                    className="px-4 py-2 rounded-full text-sm font-medium"
-                    style={{ backgroundColor: settings.accentColor + '20', color: settings.accentColor }}
+                    className="rounded-full px-4 py-2 text-sm font-medium"
+                    style={{ backgroundColor: `${form.accentColor}33`, color: form.accentColor }}
                   >
-                    Vurgu Etiketi
+                    Vurgu
                   </span>
                 </div>
+                <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                  Renklerin tam etkisi için bileşenlerde CSS değişkeni kullanımı gerekir; şu an önizleme göstergesidir.
+                </p>
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Social Tab */}
           {activeTab === 'social' && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                  <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-lg font-semibold dark:text-slate-100">Sosyal Medya Bağlantıları</h3>
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-white">Sosyal medya</h2>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {(
+                  [
+                    ['facebook', 'Facebook'],
+                    ['instagram', 'Instagram'],
+                    ['twitter', 'X (Twitter)'],
+                    ['linkedin', 'LinkedIn'],
+                    ['youtube', 'YouTube'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div key={key}>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">{label}</label>
+                    <input
+                      value={form[key]}
+                      onChange={field(key)}
+                      placeholder="https://"
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="grid sm:grid-cols-2 gap-5">
-                {[
-                  { key: 'facebook', label: 'Facebook', icon: () => <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>, placeholder: 'https://facebook.com/...', color: 'bg-blue-600' },
-                  { key: 'instagram', label: 'Instagram', icon: () => <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.072-4.354-.2-6.78-2.618-6.979-6.98-.058-1.282-.073-1.69-.073-4.949 0-3.259.014-3.667.072-4.946.072-4.354.2-6.78 2.618-6.979 6.98-.059 1.281-.073 1.689-.073 4.948zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>, placeholder: 'https://instagram.com/...', color: 'bg-pink-600' },
-                  { key: 'twitter', label: 'Twitter', icon: () => <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>, placeholder: 'https://twitter.com/...', color: 'bg-sky-500' },
-                  { key: 'whatsapp', label: 'WhatsApp', icon: () => <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 5.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.955L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>, placeholder: '905551234567', color: 'bg-green-500' },
-                ].map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <div key={social.key}>
-                      <label className="block text-sm font-medium mb-2 dark:text-slate-300">{social.label}</label>
-                      <div className="relative">
-                        <div className={`absolute left-3 top-1/2 -translate-y-1/2 h-8 w-8 ${social.color} rounded-lg flex items-center justify-center`}>
-                          <social.icon />
-                        </div>
-                        <input
-                          type="text"
-                          value={(settings[social.key as keyof SiteSettings] as string) || ''}
-                          onChange={(e) => setSettings({ ...settings, [social.key]: e.target.value })}
-                          className="w-full pl-14 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-                          placeholder={social.placeholder}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            </section>
           )}
 
-          {/* SEO Tab */}
           {activeTab === 'seo' && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
-                    <Eye className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold dark:text-slate-100">SEO Ayarları</h3>
-                </div>
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-white">SEO</h2>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Meta Başlık</label>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Meta başlık</label>
                     <input
-                      type="text"
-                      value={settings.metaTitle}
-                      onChange={(e) => setSettings({ ...settings, metaTitle: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-                      placeholder="Sayfa başlığı..."
+                      value={form.seoTitle}
+                      onChange={field('seoTitle')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                     />
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                      Önerilen: 50-60 karakter ({settings.metaTitle?.length || 0} karakter)
-                    </p>
+                    <p className="mt-1 text-xs text-slate-400">{form.seoTitle.length}/60 önerilen</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Meta Açıklama</label>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Meta açıklama</label>
                     <textarea
-                      value={settings.metaDesc}
-                      onChange={(e) => setSettings({ ...settings, metaDesc: e.target.value })}
+                      value={form.seoDescription}
+                      onChange={field('seoDescription')}
                       rows={3}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 resize-none transition-colors"
-                      placeholder="Sayfa açıklaması..."
+                      className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                     />
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                      Önerilen: 150-160 karakter ({settings.metaDesc?.length || 0} karakter)
-                    </p>
+                    <p className="mt-1 text-xs text-slate-400">{form.seoDescription.length}/160 önerilen</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Meta Keywords</label>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Anahtar kelimeler</label>
                     <input
-                      type="text"
-                      value={settings.metaKeywords}
-                      onChange={(e) => setSettings({ ...settings, metaKeywords: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-colors"
-                      placeholder="anahtar, kelimeler, virgülle, ayrılmış"
+                      value={form.seoKeywords}
+                      onChange={field('seoKeywords')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Google Analytics ID</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={settings.googleAnalyticsId}
-                        onChange={(e) => setSettings({ ...settings, googleAnalyticsId: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-mono text-sm transition-colors"
-                        placeholder="G-XXXXXXXXXX"
-                      />
-                    </div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">OG görsel URL</label>
+                    <input
+                      value={form.ogImage}
+                      onChange={field('ogImage')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Twitter / X kullanıcı adı</label>
+                    <input
+                      value={form.twitterHandle}
+                      onChange={field('twitterHandle')}
+                      placeholder="@marka"
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Canonical URL</label>
+                    <input
+                      value={form.canonicalUrl}
+                      onChange={field('canonicalUrl')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Preview Card */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-                <h4 className="text-sm font-medium mb-4 dark:text-slate-200">Google Arama Sonuçları Önizlemesi</h4>
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-700 max-w-2xl">
-                  <div className="text-sm text-slate-800 dark:text-slate-100 truncate" style={{ color: '#1a0dab' }}>
-                    {settings.metaTitle || 'Site Başlığı'}
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-white">Ölçüm (yalnızca yönetici panelinden kayıt)</h2>
+                <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                  Bu kimlikler veritabanında saklanır; ziyaretçi API&apos;si bunları döndürmez. Entegrasyon için{' '}
+                  <code className="text-xs">layout</code> veya etiket bileşeninde kullanılmalıdır.
+                </p>
+                <div className="grid gap-5 sm:grid-cols-1">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Google Analytics (G-...)</label>
+                    <input
+                      value={form.googleAnalyticsId}
+                      onChange={field('googleAnalyticsId')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
                   </div>
-                  <div className="text-xs text-green-700 dark:text-green-500 mt-0.5">
-                    www.gunentemizlik.com › ana-sayfa
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Google Tag Manager (GTM-...)</label>
+                    <input
+                      value={form.googleTagManagerId}
+                      onChange={field('googleTagManagerId')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
-                    {settings.metaDesc || 'Site açıklaması burada görünecek...'}
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">Meta Pixel ID</label>
+                    <input
+                      value={form.facebookPixelId}
+                      onChange={field('facebookPixelId')}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
                   </div>
                 </div>
-              </div>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">Arama sonucu önizlemesi</h3>
+                <div className="max-w-xl rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-600 dark:bg-slate-900">
+                  <div className="truncate text-blue-800 dark:text-blue-400">{form.seoTitle || form.siteName}</div>
+                  <div className="text-xs text-green-700 dark:text-green-500">
+                    {(form.canonicalUrl || form.siteUrl || '').replace(/^https?:\/\//, '')}
+                  </div>
+                  <div className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+                    {form.seoDescription || form.siteDescription || 'Açıklama…'}
+                  </div>
+                </div>
+              </section>
             </div>
           )}
 
-          {/* Advanced Tab */}
           {activeTab === 'advanced' && (
             <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                    <RefreshCw className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                  </div>
-                  <h3 className="text-lg font-semibold dark:text-slate-100">Gelişmiş Ayarlar</h3>
-                </div>
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Özel CSS</label>
-                    <textarea
-                      value={settings.customCss}
-                      onChange={(e) => setSettings({ ...settings, customCss: e.target.value })}
-                      rows={6}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-mono text-sm resize-none transition-colors"
-                      placeholder="/* Özel CSS kodlarınız */"
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  <Shield className="h-5 w-5 text-slate-600" />
+                  Site davranışı
+                </h2>
+                <div className="space-y-4">
+                  <label className="flex cursor-pointer items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={form.sitemapEnabled}
+                      onChange={(e) => setForm((p) => ({ ...p, sitemapEnabled: e.target.checked }))}
+                      className="h-5 w-5 rounded border-slate-300 dark:border-slate-600"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-slate-300">Özel JavaScript</label>
-                    <textarea
-                      value={settings.customJs}
-                      onChange={(e) => setSettings({ ...settings, customJs: e.target.value })}
-                      rows={6}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-mono text-sm resize-none transition-colors"
-                      placeholder="// Özel JavaScript kodlarınız"
+                    <span className="text-sm dark:text-slate-300">Sitemap etkin (robots ile uyumlu tutun)</span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+                    <input
+                      type="checkbox"
+                      checked={form.maintenanceMode}
+                      onChange={(e) => setForm((p) => ({ ...p, maintenanceMode: e.target.checked }))}
+                      className="h-5 w-5 rounded border-slate-300 dark:border-amber-800"
                     />
-                  </div>
+                    <div>
+                      <span className="text-sm font-medium text-amber-900 dark:text-amber-200">Bakım modu</span>
+                      <p className="text-xs text-amber-800/90 dark:text-amber-300/80">
+                        Açıkken ziyaretçi API&apos;si kısıtlı yanıt döner. Yönetici paneli etkilenmez.
+                      </p>
+                    </div>
+                  </label>
                 </div>
-              </div>
+              </section>
 
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">robots.txt içeriği</h2>
+                <textarea
+                  value={form.robotsTxt}
+                  onChange={field('robotsTxt')}
+                  rows={10}
+                  className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                  placeholder="User-agent: * ..."
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Üretimde gerçek robots için bu içeriği route veya statik dosyaya bağlamanız gerekebilir.
+                </p>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  <Code2 className="h-5 w-5" />
+                  Özel CSS / JS
+                </h2>
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-blue-800 dark:text-blue-300">Bilgi</h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-400/90 mt-1 leading-relaxed">
-                      Özel CSS ve JavaScript kodları sitenizin tüm sayfalarına uygulanır.
-                      Bu özelliği dikkatli kullanın - hatalı kodlar sitenin çalışmasını etkileyebilir.
-                    </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-500/80 mt-2">
-                      Değişiklik yapmadan önce yedek almanız önerilir.
-                    </p>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">CSS</label>
+                    <textarea
+                      value={form.customCss}
+                      onChange={field('customCss')}
+                      rows={8}
+                      className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium dark:text-slate-300">JavaScript</label>
+                    <textarea
+                      value={form.customJs}
+                      onChange={field('customJs')}
+                      rows={8}
+                      className="w-full resize-y rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    />
                   </div>
                 </div>
-              </div>
+                <p className="mt-4 flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  Özel kodların sayfaya enjekte edilmesi ayrı bir layout bileşeni gerektirir; burada güvenli şekilde saklanır.
+                </p>
+              </section>
             </div>
           )}
         </div>

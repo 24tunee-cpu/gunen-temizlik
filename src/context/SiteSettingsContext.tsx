@@ -49,6 +49,8 @@ export interface SiteSettings {
   siteUrl: string;
   logo: string;
   favicon: string;
+  /** Marka vurgu rengi (veritabanı: accentColor) */
+  accentColor: string;
 
   // İletişim
   phone: string;
@@ -97,6 +99,7 @@ const defaultSettings: SiteSettings = {
   siteUrl: 'https://gunentemizlik.com',
   logo: '/logo.png',
   favicon: '/favicon.ico',
+  accentColor: '#34d399',
 
   phone: '+90 555 123 4567',
   email: 'info@gunentemizlik.com',
@@ -322,6 +325,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       // Save to API
       const response = await fetch('/api/settings', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
       });

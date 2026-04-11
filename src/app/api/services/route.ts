@@ -23,6 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { withAPILogging } from '@/lib/api-logger';
 import { withErrorHandler } from '@/lib/error-handler';
@@ -74,8 +75,13 @@ const getHandler = async (req: NextRequest) => {
   }
 
   try {
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
     const services = await prisma.service.findMany({
-      where: { isActive: true },
+      ...(isAdmin ? {} : { where: { isActive: true } }),
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       select: {
         id: true,

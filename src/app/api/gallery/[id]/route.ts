@@ -23,6 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -155,7 +156,7 @@ export async function OPTIONS() {
 }
 
 /**
- * GET handler - Fetch single gallery item (public)
+ * GET handler - Fetch single gallery item (public: active only; admin: drafts too)
  * @param request NextRequest object
  * @param params Route parameters with ID
  * @returns Single gallery item JSON
@@ -207,8 +208,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only return active items for public endpoint
-    if (!item.isActive) {
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    // Only return active items for public; admins may preview drafts
+    if (!item.isActive && !isAdmin) {
       return NextResponse.json(
         { error: 'Galeri öğesi bulunamadı' },
         { status: 404, headers }

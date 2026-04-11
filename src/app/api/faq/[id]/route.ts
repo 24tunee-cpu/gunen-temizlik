@@ -23,6 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -145,7 +146,7 @@ export async function OPTIONS() {
 }
 
 /**
- * GET handler - Fetch single FAQ (public)
+ * GET handler - Fetch single FAQ (public: active only; admin: drafts too)
  * @param request NextRequest object
  * @param params Route parameters with ID
  * @returns Single FAQ JSON
@@ -196,8 +197,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only return active FAQs for public endpoint
-    if (!faq.isActive) {
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    if (!faq.isActive && !isAdmin) {
       return NextResponse.json(
         { error: 'SSS öğesi bulunamadı' },
         { status: 404, headers }

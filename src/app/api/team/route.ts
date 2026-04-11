@@ -20,6 +20,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -143,7 +144,7 @@ export async function OPTIONS() {
 }
 
 /**
- * GET handler - List all team members (public)
+ * GET handler - List team members (public: active only; admin session: all)
  * @param request NextRequest object
  * @returns JSON array of team members
  */
@@ -161,10 +162,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Fetching all team members', { ip });
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    console.log('Fetching all team members', { ip, isAdmin });
 
     const members = await prisma.teamMember.findMany({
-      where: { isActive: true },
+      where: isAdmin ? {} : { isActive: true },
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       select: {
         id: true,

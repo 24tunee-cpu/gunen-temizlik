@@ -22,6 +22,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
@@ -157,15 +158,25 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const published = searchParams.get('published');
+    const publishedParam = searchParams.get('published');
     const category = searchParams.get('category');
     const limit = searchParams.get('limit');
 
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
     const where: Record<string, unknown> = {};
-    if (published === 'true') where.published = true;
+    if (!isAdmin) {
+      where.published = true;
+    } else {
+      if (publishedParam === 'true') where.published = true;
+      else if (publishedParam === 'false') where.published = false;
+    }
     if (category) where.category = category;
 
-    console.log('Fetching blog posts', { ip, filters: { published, category, limit } });
+    console.log('Fetching blog posts', { ip, isAdmin, filters: { publishedParam, category, limit } });
 
     const posts = await prisma.blogPost.findMany({
       where,
@@ -182,6 +193,7 @@ export async function GET(request: NextRequest) {
         tags: true,
         author: true,
         published: true,
+        views: true,
         metaTitle: true,
         metaDesc: true,
         createdAt: true,

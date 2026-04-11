@@ -20,6 +20,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -120,7 +121,7 @@ export async function OPTIONS() {
 }
 
 /**
- * GET handler - List all FAQs (public)
+ * GET handler - List FAQs (public: active only; admin session: all)
  * @param request NextRequest object
  * @returns FAQs JSON array
  */
@@ -138,10 +139,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Fetching all FAQs', { ip });
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    console.log('Fetching all FAQs', { ip, isAdmin });
 
     const faqs = await prisma.faq.findMany({
-      where: { isActive: true },
+      where: isAdmin ? {} : { isActive: true },
       orderBy: [{ category: 'asc' }, { order: 'asc' }],
       select: {
         id: true,

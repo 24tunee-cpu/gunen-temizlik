@@ -153,6 +153,7 @@ model SiteSettings {
   favicon         String   @default("/favicon.ico")
   primaryColor    String   @default("#10b981")
   secondaryColor  String   @default("#059669")
+  accentColor     String   @default("#34d399")
   phone           String   @default("0555 123 45 67")
   email           String   @default("info@gunentemizlik.com")
   address         String?
@@ -161,6 +162,8 @@ model SiteSettings {
   facebook        String?
   instagram       String?
   twitter         String?
+  linkedin        String?
+  youtube         String?
   seoTitle        String?
   seoDescription  String?
   seoKeywords     String?

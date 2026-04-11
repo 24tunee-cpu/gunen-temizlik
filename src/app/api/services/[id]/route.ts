@@ -23,6 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -175,6 +176,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     console.log('Fetching service by ID', { id, ip });
 
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
     const service = await prisma.service.findUnique({
       where: { id },
       select: {
@@ -203,8 +209,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only return active services for public endpoint
-    if (!service.isActive) {
+    if (!isAdmin && !service.isActive) {
       return NextResponse.json(
         { error: 'Hizmet bulunamadı' },
         { status: 404, headers }

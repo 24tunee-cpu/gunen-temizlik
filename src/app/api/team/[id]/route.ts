@@ -22,6 +22,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
@@ -167,7 +168,7 @@ export async function OPTIONS() {
 }
 
 /**
- * GET handler - Fetch single team member (public)
+ * GET handler - Fetch single team member (public: active only; admin: drafts too)
  * @param request NextRequest object
  * @param params Route parameters with ID
  * @returns Single team member JSON
@@ -222,8 +223,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only return active members for public endpoint
-    if (!member.isActive) {
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
+    if (!member.isActive && !isAdmin) {
       return NextResponse.json(
         { error: 'Ekip üyesi bulunamadı' },
         { status: 404, headers }
@@ -295,12 +300,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.name = sanitizeInput(body.name as string);
     }
 
-    if (body.role !== undefined) {
-      const roleValidation = validateRequiredString(body.role, 'Pozisyon', MAX_LENGTHS.role);
+    const roleBody = body.role !== undefined ? body.role : body.position;
+    if (roleBody !== undefined) {
+      const roleValidation = validateRequiredString(roleBody, 'Pozisyon', MAX_LENGTHS.role);
       if (!roleValidation.valid) {
         return NextResponse.json({ error: roleValidation.error || 'Pozisyon zorunludur' }, { status: 400, headers });
       }
-      updateData.role = sanitizeInput(body.role as string);
+      updateData.role = sanitizeInput(roleBody as string);
     }
 
     if (body.bio !== undefined) {

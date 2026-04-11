@@ -45,6 +45,7 @@ const DEFAULT_SETTINGS = {
   favicon: '/favicon.ico',
   primaryColor: '#10b981',
   secondaryColor: '#059669',
+  accentColor: '#34d399',
   phone: '+90 555 123 4567',
   email: 'info@gunentemizlik.com',
   address: 'Ataşehir, İstanbul',
@@ -53,6 +54,8 @@ const DEFAULT_SETTINGS = {
   facebook: 'https://facebook.com/gunentemizlik',
   instagram: 'https://instagram.com/gunentemizlik',
   twitter: '',
+  linkedin: '',
+  youtube: '',
   seoTitle: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24",
   seoDescription: 'Profesyonel temizlik hizmetleri. İnşaat sonrası, ofis, ev temizliği, koltuk yıkama. 15+ yıl deneyim, 5000+ mutlu müşteri. Ücretsiz keşif!',
   seoKeywords: 'istanbul temizlik şirketi, profesyonel temizlik, ofis temizliği, inşaat sonrası temizlik, koltuk yıkama',
@@ -65,6 +68,8 @@ const DEFAULT_SETTINGS = {
   robotsTxt: 'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nAllow: /\nSitemap: https://gunentemizlik.com/sitemap.xml',
   sitemapEnabled: true,
   maintenanceMode: false,
+  customCss: '',
+  customJs: '',
 } as const;
 
 /** Rate limiting map (IP -> timestamp array) */
@@ -207,6 +212,7 @@ export async function GET(request: NextRequest) {
       favicon: settings.favicon,
       primaryColor: settings.primaryColor,
       secondaryColor: settings.secondaryColor,
+      accentColor: settings.accentColor,
       phone: settings.phone,
       email: settings.email,
       address: settings.address,
@@ -215,6 +221,8 @@ export async function GET(request: NextRequest) {
       facebook: settings.facebook,
       instagram: settings.instagram,
       twitter: settings.twitter,
+      linkedin: settings.linkedin,
+      youtube: settings.youtube,
       seoTitle: settings.seoTitle,
       seoDescription: settings.seoDescription,
       seoKeywords: settings.seoKeywords,
@@ -223,6 +231,7 @@ export async function GET(request: NextRequest) {
       canonicalUrl: settings.canonicalUrl,
       maintenanceMode: settings.maintenanceMode,
       sitemapEnabled: settings.sitemapEnabled,
+      customCss: settings.customCss ?? '',
     };
 
     return NextResponse.json(publicSettings, { headers });
@@ -265,12 +274,17 @@ export async function POST(request: NextRequest) {
         { status: 400, headers }
       );
     }
+    if (body.accentColor && !isValidHexColor(body.accentColor as string)) {
+      return NextResponse.json(
+        { error: 'Geçersiz accentColor formatı' },
+        { status: 400, headers }
+      );
+    }
 
     // Get existing settings
     let settings = await prisma.siteSettings.findFirst();
 
     if (!settings) {
-      // Create with provided data merged with defaults
       settings = await prisma.siteSettings.create({
         data: {
           ...DEFAULT_SETTINGS,
@@ -334,6 +348,12 @@ export async function PUT(request: NextRequest) {
         { status: 400, headers }
       );
     }
+    if (body.accentColor && !isValidHexColor(body.accentColor as string)) {
+      return NextResponse.json(
+        { error: 'Geçersiz accentColor formatı' },
+        { status: 400, headers }
+      );
+    }
 
     let settings = await prisma.siteSettings.findFirst();
 
@@ -371,21 +391,45 @@ export async function PUT(request: NextRequest) {
 // Helper function to sanitize settings input
 function sanitizeSettings(data: Record<string, unknown>): Record<string, unknown> {
   const sanitized: Record<string, unknown> = {};
-  const stringFields = [
-    'siteName', 'siteDescription', 'siteUrl', 'logo', 'favicon',
-    'primaryColor', 'secondaryColor', 'phone', 'email', 'address',
-    'workingHours', 'whatsapp', 'facebook', 'instagram', 'twitter',
-    'seoTitle', 'seoDescription', 'seoKeywords', 'ogImage', 'twitterHandle',
-    'canonicalUrl', 'googleAnalyticsId', 'googleTagManagerId', 'facebookPixelId', 'robotsTxt'
+  const stringFields: { field: string; max: number }[] = [
+    { field: 'siteName', max: 120 },
+    { field: 'siteDescription', max: 500 },
+    { field: 'siteUrl', max: 300 },
+    { field: 'logo', max: 800 },
+    { field: 'favicon', max: 800 },
+    { field: 'primaryColor', max: 20 },
+    { field: 'secondaryColor', max: 20 },
+    { field: 'accentColor', max: 20 },
+    { field: 'phone', max: 40 },
+    { field: 'email', max: 120 },
+    { field: 'address', max: 500 },
+    { field: 'workingHours', max: 120 },
+    { field: 'whatsapp', max: 500 },
+    { field: 'facebook', max: 500 },
+    { field: 'instagram', max: 500 },
+    { field: 'twitter', max: 500 },
+    { field: 'linkedin', max: 500 },
+    { field: 'youtube', max: 500 },
+    { field: 'seoTitle', max: 120 },
+    { field: 'seoDescription', max: 320 },
+    { field: 'seoKeywords', max: 500 },
+    { field: 'ogImage', max: 800 },
+    { field: 'twitterHandle', max: 80 },
+    { field: 'canonicalUrl', max: 500 },
+    { field: 'googleAnalyticsId', max: 80 },
+    { field: 'googleTagManagerId', max: 80 },
+    { field: 'facebookPixelId', max: 80 },
+    { field: 'robotsTxt', max: 20000 },
+    { field: 'customCss', max: 100000 },
+    { field: 'customJs', max: 100000 },
   ];
 
-  for (const field of stringFields) {
+  for (const { field, max } of stringFields) {
     if (data[field] !== undefined && typeof data[field] === 'string') {
-      sanitized[field] = sanitizeInput(data[field] as string);
+      sanitized[field] = sanitizeInput(data[field] as string).slice(0, max);
     }
   }
 
-  // Boolean fields
   if (typeof data.sitemapEnabled === 'boolean') {
     sanitized.sitemapEnabled = data.sitemapEnabled;
   }
