@@ -29,6 +29,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { upsertCanonicalServices } from '@/lib/seed-services';
+import { upsertCanonicalTestimonials } from '@/lib/seed-testimonials';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -262,35 +263,8 @@ export async function GET(request: NextRequest) {
       ]);
     }
 
-    // Check and seed Testimonials
     const existingTestimonials = await prisma.testimonial.count();
-    let testimonials = [];
-    if (existingTestimonials === 0) {
-      testimonials = await Promise.all([
-        prisma.testimonial.create({
-          data: {
-            name: 'Fatma Ozturk',
-            location: 'Istanbul',
-            rating: 5,
-            content: 'Gunen Temizlik ile tanistik tanimadan evim cok daha temiz. Profesyonel ekip ve mukemmel hizmet.',
-            service: 'Ev Temizligi',
-            isActive: true,
-            order: 1,
-          },
-        }),
-        prisma.testimonial.create({
-          data: {
-            name: 'Ali Cetin',
-            location: 'Ankara',
-            rating: 5,
-            content: 'Ofis temizligi icin Gunen Temizlik\'i tercih ettik. Sonuc muhtesem!',
-            service: 'Ofis Temizligi',
-            isActive: true,
-            order: 2,
-          },
-        }),
-      ]);
-    }
+    const testimonialsUpserted = await upsertCanonicalTestimonials(prisma);
 
     // Check and seed FAQs
     const existingFaqs = await prisma.faq.count();
@@ -433,7 +407,7 @@ export async function GET(request: NextRequest) {
         services: servicesUpserted,
         blogPosts: blogPosts.length,
         teamMembers: teamMembers.length,
-        testimonials: testimonials.length,
+        testimonials: testimonialsUpserted,
         faqs: faqs.length,
         pricing: pricingItems.length,
         gallery: galleryItems.length,

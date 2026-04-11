@@ -124,10 +124,13 @@ model Testimonial {
   content   String
   avatar    String?
   service   String?
+  /// Kanonik seed yorumları için anahtar (upsert); panelden eklenenlerde boş. MongoDB’de null unique olamadığı için @unique kullanılmaz.
+  seedKey   String?
   isActive  Boolean  @default(true)
   order     Int      @default(0)
   createdAt DateTime @default(now())
 
+  @@index([seedKey])
   @@map("testimonials")
 }
 

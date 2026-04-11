@@ -245,6 +245,8 @@ export interface Testimonial {
   avatar?: string;
   /** İlgili hizmet (opsiyonel) */
   service?: string;
+  /** Seed ile gelen kanonik yorum anahtarı (panel kayıtlarında genelde yok) */
+  seedKey?: string | null;
   /** Yayın durumu */
   isActive: boolean;
   /** Sıralama indeksi */

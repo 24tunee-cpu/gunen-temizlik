@@ -276,7 +276,8 @@ export function Testimonials({
             transition={{ delay: 0.2 }}
             className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto"
           >
-            Binlerce müşterimizin güveni ve memnuniyeti ile hizmet veriyoruz
+            İstanbul’da ev temizliği, ofis temizliği, inşaat sonrası, halı ve koltuk yıkama gibi
+            profesyonel temizlik hizmetlerimizi deneyimleyen müşterilerimizin gerçek yorumları.
           </motion.p>
         </div>
 
