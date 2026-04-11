@@ -260,7 +260,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <main className="flex-1 bg-slate-900">
           <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
             <div
-              className="prose prose-lg prose-invert max-w-none prose-headings:text-white prose-p:text-slate-300 prose-a:text-emerald-400 prose-strong:text-white prose-li:text-slate-300 prose-blockquote:border-emerald-500/40 prose-blockquote:text-slate-400"
+              className="blog-post-body max-w-none text-lg"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -274,7 +274,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   {post.tags.map((tag: string) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-slate-800 px-4 py-2 text-sm text-slate-300"
+                      className="rounded-full border border-slate-600 bg-slate-800/80 px-4 py-2 text-sm text-slate-200"
                       role="listitem"
                     >
                       #{tag}

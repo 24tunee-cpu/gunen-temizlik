@@ -11,10 +11,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Loader2, Calendar, ArrowRight, User, FileText } from 'lucide-react';
+import { Loader2, Calendar, ArrowRight, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import logger from '@/lib/logger';
 
 // ============================================
@@ -45,12 +45,21 @@ interface BlogPostApiRow {
 
 /** BlogSection component props */
 interface BlogSectionProps {
-  /** Gösterilecek maksimum yazı sayısı */
+  /** Ana sayfa vb.: gösterilecek maksimum yazı (paginate false iken) */
   limit?: number;
   /** Başlık metni */
   title?: string;
   /** Açıklama metni */
   description?: string;
+  /** true: /blog tam listesi + ?page= ile sayfalama */
+  paginate?: boolean;
+  /** paginate iken sayfa başına kart sayısı (varsayılan 9) */
+  pageSize?: number;
+}
+
+function blogListingPath(page: number): string {
+  if (page <= 1) return '/blog';
+  return `/blog?page=${page}`;
 }
 
 /** BlogCard component props */
@@ -157,7 +166,7 @@ function BlogCard({ post, index }: BlogCardProps) {
               {post.title}
             </h3>
 
-            <p className="mb-4 line-clamp-3 text-slate-300">{post.excerpt}</p>
+            <p className="mb-4 line-clamp-3 text-slate-200">{post.excerpt}</p>
 
             <span className="inline-flex items-center font-medium text-emerald-400">
               Devamını Oku
@@ -183,15 +192,37 @@ function BlogCard({ post, index }: BlogCardProps) {
 export function BlogSection({
   limit = 6,
   title = "Blog",
-  description = "Temizlik ipuçları, haberler ve daha fazlası"
+  description = "Temizlik ipuçları, haberler ve daha fazlası",
+  paginate = false,
+  pageSize: pageSizeProp = 9,
 }: BlogSectionProps) {
   const pathname = usePathname();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const searchParams = useSearchParams();
+  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false); // SSR hydration fix
   const [isMounted, setIsMounted] = useState(false);
 
   const shouldReduceMotion = useReducedMotion();
   const showViewAllLink = pathname !== '/blog';
+
+  const pageFromUrl = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const perPage = paginate ? pageSizeProp : limit;
+  const totalPages = useMemo(() => {
+    if (!paginate) return 1;
+    return Math.max(1, Math.ceil(allPosts.length / perPage));
+  }, [allPosts.length, paginate, perPage]);
+
+  const currentPage = useMemo(() => {
+    if (!paginate) return 1;
+    return Math.min(pageFromUrl, totalPages);
+  }, [paginate, pageFromUrl, totalPages]);
+
+  const posts = useMemo(() => {
+    if (paginate) {
+      return allPosts.slice((currentPage - 1) * perPage, currentPage * perPage);
+    }
+    return allPosts.slice(0, limit);
+  }, [allPosts, paginate, currentPage, perPage, limit]);
 
   // ============================================
   // MOUNT CHECK (SSR hydration fix)
@@ -213,10 +244,10 @@ export function BlogSection({
         if (!res.ok) throw new Error('Failed to fetch posts');
         const data = await res.json();
         if (!Array.isArray(data)) {
-          setPosts([]);
+          setAllPosts([]);
           return;
         }
-        const mapped: BlogPost[] = data.slice(0, limit).map((p: BlogPostApiRow) => ({
+        const mapped: BlogPost[] = data.map((p: BlogPostApiRow) => ({
           id: p.id,
           title: p.title,
           slug: p.slug,
@@ -225,7 +256,7 @@ export function BlogSection({
           publishedAt: p.createdAt,
           author: p.author,
         }));
-        setPosts(mapped);
+        setAllPosts(mapped);
       } catch (error) {
         logger.error('Error fetching posts', {}, error instanceof Error ? error : undefined);
       } finally {
@@ -234,7 +265,7 @@ export function BlogSection({
     };
 
     fetchPosts();
-  }, [isMounted, limit]);
+  }, [isMounted]);
 
   // ============================================
   // LOADING / MOUNTING STATE
@@ -253,7 +284,7 @@ export function BlogSection({
 
           {/* Skeleton Grid */}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
-            {Array.from({ length: Math.min(limit, 6) }).map((_, index) => (
+            {Array.from({ length: paginate ? Math.min(pageSizeProp, 9) : Math.min(limit, 6) }).map((_, index) => (
               <BlogCardSkeleton key={index} index={index} />
             ))}
           </div>
@@ -265,7 +296,7 @@ export function BlogSection({
   // ============================================
   // EMPTY STATE (no posts at all)
   // ============================================
-  if (posts.length === 0) {
+  if (allPosts.length === 0) {
     return (
       <section
         className="relative flex-1 bg-slate-900 py-24"
@@ -321,6 +352,65 @@ export function BlogSection({
             <BlogCard key={post.id} post={post} index={index} />
           ))}
         </div>
+
+        {paginate && totalPages > 1 && (
+          <nav
+            className="mt-14 flex flex-col items-center gap-4"
+            aria-label="Blog sayfaları"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {currentPage > 1 ? (
+                <Link
+                  href={blogListingPath(currentPage - 1)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-emerald-500/50 hover:bg-slate-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+                  Önceki
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-slate-800 px-3 py-2 text-sm text-slate-600 select-none">
+                  <ChevronLeft className="h-4 w-4" aria-hidden />
+                  Önceki
+                </span>
+              )}
+
+              <div className="flex flex-wrap justify-center gap-1.5 px-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                  <Link
+                    key={n}
+                    href={blogListingPath(n)}
+                    className={
+                      n === currentPage
+                        ? 'flex h-10 min-w-10 items-center justify-center rounded-lg bg-emerald-500 px-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25'
+                        : 'flex h-10 min-w-10 items-center justify-center rounded-lg border border-slate-600 bg-slate-800 px-3 text-sm font-medium text-slate-200 transition-colors hover:border-emerald-500/40 hover:bg-slate-700'
+                    }
+                    aria-current={n === currentPage ? 'page' : undefined}
+                  >
+                    {n}
+                  </Link>
+                ))}
+              </div>
+
+              {currentPage < totalPages ? (
+                <Link
+                  href={blogListingPath(currentPage + 1)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:border-emerald-500/50 hover:bg-slate-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  Sonraki
+                  <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-slate-800 px-3 py-2 text-sm text-slate-600 select-none">
+                  Sonraki
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                </span>
+              )}
+            </div>
+            <p className="text-center text-sm text-slate-400">
+              Sayfa {currentPage} / {totalPages} · Toplam {allPosts.length} yazı
+            </p>
+          </nav>
+        )}
 
         {/* View All Button — ana sayfada; /blog sayfasında gizli */}
         {showViewAllLink && (

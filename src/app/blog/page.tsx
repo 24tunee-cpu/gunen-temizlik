@@ -165,7 +165,7 @@ export default function BlogPage() {
         {/* Blog Section with Suspense */}
         <div className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<BlogLoading />}>
-            <BlogSection />
+            <BlogSection paginate pageSize={9} />
           </Suspense>
         </div>
 
