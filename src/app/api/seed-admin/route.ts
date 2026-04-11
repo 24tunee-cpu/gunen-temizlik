@@ -28,6 +28,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { upsertCanonicalServices } from '@/lib/seed-services';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -175,91 +176,9 @@ export async function GET(request: NextRequest) {
       console.log('Admin user created successfully', { email: admin.email });
     }
 
-    // Check and seed Services
+    // Hizmetler — prisma seed ile aynı kanonik SEO metinleri (slug upsert)
     const existingServices = await prisma.service.count();
-    let services = [];
-    if (existingServices === 0) {
-      services = await Promise.all([
-        prisma.service.create({
-          data: {
-            title: 'Ev Temizligi',
-            slug: 'ev-temizligi',
-            shortDesc: 'Profesyonel ev temizlik hizmetleri',
-            description: 'Evleriniz icin kapsamli temizlik hizmetleri sunuyoruz. Duzenli temizlik, derin temizlik ve ozel temizlik secenekleriyle eviniz her zaman tertemiz kalsin.',
-            icon: 'Home',
-            features: ['Duzenli Temizlik', 'Derin Temizlik', 'Son Dakika Temizlik', 'Ozel Gun Temizlik'],
-            priceRange: '200-500 TL',
-            order: 1,
-            isActive: true,
-          },
-        }),
-        prisma.service.create({
-          data: {
-            title: 'Ofis Temizligi',
-            slug: 'ofis-temizligi',
-            shortDesc: 'Is yerleri icin profesyonel temizlik',
-            description: 'Ofisleriniz ve is yerleriniz icin profesyonel temizlik hizmetleri. Calisanlariniz icin saglikli ve temiz bir calisma ortami olusturuyoruz.',
-            icon: 'Building2',
-            features: ['Gunluk Temizlik', 'Haftalik Temizlik', 'Aylik Derin Temizlik', 'Cam Temizlik'],
-            priceRange: '500-1500 TL',
-            order: 2,
-            isActive: true,
-          },
-        }),
-        prisma.service.create({
-          data: {
-            title: 'Koltuk Yikama',
-            slug: 'koltuk-yikama',
-            shortDesc: 'Koltuk ve kanepe yikama hizmeti',
-            description: 'Koltuk, kanepe ve tum doseme temizlik hizmetleri. Profesyonel ekipmanlarla leke cikarma ve derin temizlik.',
-            icon: 'Sofa',
-            features: ['Leke Cikarma', 'Derin Temizlik', 'Hizli Kurutma', 'Kokus Giderme'],
-            priceRange: '150-400 TL',
-            order: 3,
-            isActive: true,
-          },
-        }),
-        prisma.service.create({
-          data: {
-            title: 'Hal Yikama',
-            slug: 'hali-yikama',
-            shortDesc: 'Hali ve kilim yikama hizmeti',
-            description: 'Hali ve kilimleriniz icin profesyonel yikama hizmetleri. El dokuma halilar icin ozel bakim.',
-            icon: 'Square',
-            features: ['Makine Yikama', 'El Yikama', 'Leke Cikarma', 'Alerjen Temizlik'],
-            priceRange: '50-150 TL/m2',
-            order: 4,
-            isActive: true,
-          },
-        }),
-        prisma.service.create({
-          data: {
-            title: 'Insaat Sonrasi Temizlik',
-            slug: 'insaat-sonrasi-temizlik',
-            shortDesc: 'Insaat sonrasi detayli temizlik',
-            description: 'Insaat ve tadilat sonrasi kapsamli temizlik hizmetleri. Toz, kir ve insaat atiklarindan kurtulun.',
-            icon: 'HardHat',
-            features: ['Toz Alma', 'Cam Temizlik', 'Zemin Temizlik', 'Atik Toplama'],
-            priceRange: '1000-3000 TL',
-            order: 5,
-            isActive: true,
-          },
-        }),
-        prisma.service.create({
-          data: {
-            title: 'Cam Temizligi',
-            slug: 'cam-temizligi',
-            shortDesc: 'Cam ve vitrin temizlik hizmeti',
-            description: 'Cam, vitrin ve ayna temizlik hizmetleri. Yuksek camlar icin profesyonel ekipman.',
-            icon: 'PanelTop',
-            features: ['Yuksek Cam Temizlik', 'Vitrin Temizlik', 'Ayna Temizlik', 'Cam Silme'],
-            priceRange: '10-30 TL/m2',
-            order: 6,
-            isActive: true,
-          },
-        }),
-      ]);
-    }
+    const servicesUpserted = await upsertCanonicalServices(prisma);
 
     // Check and seed Blog Posts
     const existingBlogs = await prisma.blogPost.count();
@@ -511,7 +430,7 @@ export async function GET(request: NextRequest) {
         created: adminCreated,
       },
       created: {
-        services: services.length,
+        services: servicesUpserted,
         blogPosts: blogPosts.length,
         teamMembers: teamMembers.length,
         testimonials: testimonials.length,

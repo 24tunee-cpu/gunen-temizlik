@@ -90,7 +90,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
             <h3 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
               {service.title}
             </h3>
-            <p className="text-slate-600 line-clamp-2">{service.shortDesc}</p>
+            <p className="text-slate-600 line-clamp-3">{service.shortDesc}</p>
             <div className="mt-4 flex items-center text-sm font-medium text-emerald-600">
               <span className="group-hover:mr-1 transition-all">Detaylar</span>
               <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 transition-all" aria-hidden="true" />

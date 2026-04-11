@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { upsertCanonicalServices } from '../src/lib/seed-services';
 
 const prisma = new PrismaClient();
 
@@ -88,93 +89,6 @@ const defaultGallery = [
     category: 'Endüstriyel',
     isActive: true,
     order: 6,
-  },
-];
-
-const defaultServices = [
-  {
-    title: 'İnşaat Sonrası Temizlik',
-    slug: 'insaat-sonrasi-temizlik',
-    description: 'Profesyonel inşaat sonrası temizlik hizmetimizle evinizi veya iş yerinizi yaşanabilir hale getiriyoruz. İnşaat tozu, boya lekeleri, kum-çimento kalıntıları ve tüm inşaat atıklarını profesyonel ekipmanlarla temizliyoruz. Detaylı temizlik sonrasında mekanınızı pırıl pırıl teslim ediyoruz.',
-    shortDesc: 'İnşaat sonrası detaylı temizlik ile mekanınızı yaşanabilir hale getiriyoruz.',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
-    icon: 'HardHat',
-    features: ['Toz Alma', 'Boya Lekesi Temizliği', 'Cam Temizliği', 'Zemin Temizliği', 'Dezenfeksiyon'],
-    priceRange: '500 TL - 5.000 TL',
-    order: 1,
-    isActive: true,
-    metaTitle: 'İnşaat Sonrası Temizlik İstanbul | Günen Temizlik',
-    metaDesc: 'Profesyonel inşaat sonrası temizlik hizmeti. İstanbul\'da 15+ yıl deneyim, uygun fiyatlar.',
-  },
-  {
-    title: 'Ofis Temizliği',
-    slug: 'ofis-temizligi',
-    description: 'Düzenli ofis temizliği ile iş ortamınızı hijyenik ve ferah tutuyoruz. Günlük, haftalık veya aylık periyodik temizlik seçenekleri ile ofisiniz her zaman temiz ve düzenli olsun. Çalışan verimliliğini artıran temiz iş ortamı sağlıyoruz.',
-    shortDesc: 'Düzenli ofis temizliği ile profesyonel iş ortamı sağlıyoruz.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
-    icon: 'Building2',
-    features: ['Günlük Temizlik', 'Haftalık Detaylı Temizlik', 'Aylık Derin Temizlik', 'Dezenfeksiyon', 'Cam Temizliği'],
-    priceRange: '300 TL - 3.000 TL',
-    order: 2,
-    isActive: true,
-    metaTitle: 'Ofis Temizliği İstanbul | Kurumsal Temizlik Hizmeti',
-    metaDesc: 'Profesyonel ofis temizliği ve kurumsal temizlik hizmetleri. Düzenli temizlik planları ile uygun fiyat.',
-  },
-  {
-    title: 'Koltuk Yıkama',
-    slug: 'koltuk-yikama',
-    description: 'Derinlemesine koltuk yıkama hizmetimizle mobilyalarınızı ilk günkü gibi temiz ve taze hale getiriyoruz. Profesyonel ekipman ve özel temizlik ürünleriyle lekeleri, lekeleri ve kokuları gideriyoruz. Kumaş tipine uygun temizlik yöntemi uyguluyoruz.',
-    shortDesc: 'Profesyonel koltuk yıkama ile mobilyalarınızı taze ve temiz yapıyoruz.',
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800',
-    icon: 'Sofa',
-    features: ['Leke Çıkarma', 'Koku Giderme', 'Derinlemesine Yıkama', 'Hızlı Kurutma', 'Dezenfeksiyon'],
-    priceRange: '150 TL - 500 TL',
-    order: 3,
-    isActive: true,
-    metaTitle: 'Koltuk Yıkama İstanbul | Mobilya Temizliği',
-    metaDesc: 'Profesyonel koltuk yıkama ve mobilya temizliği hizmeti. Derinlemesine temizlik ile uygun fiyat.',
-  },
-  {
-    title: 'Halı Temizliği',
-    slug: 'hali-temizligi',
-    description: 'Profesyonel halı temizliği ile halılarınızı derinlemesine temizliyoruz. Toz, lekeler, alerjenler ve kötü kokuları gidererek halınızın ömrünü uzatıyoruz. El dokuması ve makine halılar için özel temizlik yöntemleri uyguluyoruz.',
-    shortDesc: 'Derinlemesine halı temizliği ile halılarınızı taze ve hijyenik yapıyoruz.',
-    image: 'https://images.unsplash.com/photo-1558317374-a354d5f6d40b?w=800',
-    icon: 'Square',
-    features: ['Derinlemesine Yıkama', 'Leke Çıkarma', 'Alerjen Temizliği', 'Kurutma', 'Koku Giderme'],
-    priceRange: '100 TL - 1.000 TL',
-    order: 4,
-    isActive: true,
-    metaTitle: 'Halı Temizliği İstanbul | Profesyonel Halı Yıkama',
-    metaDesc: 'Profesyonel halı temizliği ve yıkama hizmeti. Derinlemesine temizlik ile uygun fiyatlar.',
-  },
-  {
-    title: 'Cam Temizliği',
-    slug: 'cam-temizligi',
-    description: 'Dış cephe ve iç mekan cam temizliği ile pırıl pırıl manzaralar sağlıyoruz. Yüksek katlarda güvenli çalışma ekipmanları ile profesyonel cam temizliği yapıyoruz. Ofis, ev, iş yeri ve camlarınızı lekesiz bırakıyoruz.',
-    shortDesc: 'Profesyonel cam temizliği ile pırıl pırıl camlara kavuşun.',
-    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800',
-    icon: 'PanelTop',
-    features: ['İç Mekan Cam', 'Dış Cephe Cam', 'Çerçeve Temizliği', 'Parlatma', 'Güvenli Çalışma'],
-    priceRange: '200 TL - 2.000 TL',
-    order: 5,
-    isActive: true,
-    metaTitle: 'Cam Temizliği İstanbul | Dış Cephe Cam Temizliği',
-    metaDesc: 'Profesyonel cam temizliği ve dış cephe temizlik hizmeti. Güvenli çalışma, uygun fiyatlar.',
-  },
-  {
-    title: 'Ev Temizliği',
-    slug: 'ev-temizligi',
-    description: 'Genel ev temizliği ile evinizi kısa sürede tertemiz yapıyoruz. Mutfak, banyo, tuvalet, salon ve yatak odalarını detaylı temizliyoruz. Düzenli temizlik paketleri ile eviniz her zaman temiz kalsın.',
-    shortDesc: 'Genel ev temizliği ile evinizi tertemiz ve hijyenik yapıyoruz.',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
-    icon: 'Home',
-    features: ['Mutfak Temizliği', 'Banyo Temizliği', 'Toz Alma', 'Zemin Temizliği', 'Dezenfeksiyon'],
-    priceRange: '300 TL - 1.500 TL',
-    order: 6,
-    isActive: true,
-    metaTitle: 'Ev Temizliği İstanbul | Ev Temizlik Şirketi',
-    metaDesc: 'Profesyonel ev temizliği hizmeti. Düzenli ve tek seferlik temizlik seçenekleri ile uygun fiyat.',
   },
 ];
 
@@ -484,14 +398,9 @@ async function seed() {
   console.log('Veritabanına veri ekleniyor...');
 
   try {
-    // Services ekle
-    const existingServices = await prisma.service.count();
-    if (existingServices === 0) {
-      await prisma.service.createMany({ data: defaultServices });
-      console.log(`${defaultServices.length} Hizmet eklendi`);
-    } else {
-      console.log(`Zaten ${existingServices} hizmet var, atlanıyor`);
-    }
+    // Hizmetler — her çalıştırmada slug ile upsert (SEO metinleri güncellenir)
+    const n = await upsertCanonicalServices(prisma);
+    console.log(`${n} hizmet upsert edildi (kanonik SEO metinleri)`);
 
     // BlogPosts ekle
     const existingBlogPosts = await prisma.blogPost.count();
