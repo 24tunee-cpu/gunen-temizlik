@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { upsertCanonicalServices } from '../src/lib/seed-services';
 import { upsertCanonicalTestimonials } from '../src/lib/seed-testimonials';
+import { upsertCanonicalBlogPosts } from '../src/lib/seed-blog';
 
 const prisma = new PrismaClient();
 
@@ -93,127 +94,6 @@ const defaultGallery = [
   },
 ];
 
-const defaultBlogPosts = [
-  {
-    title: 'Ev Temizliğinde 5 Altın Kural',
-    slug: 'ev-temizliginde-5-altin-kural',
-    content: `Ev temizliği düzenli yapıldığında hem sağlıklı bir yaşam alanı sağlar hem de evin ömrünü uzatır. İşte ev temizliğinde dikkat etmeniz gereken 5 altın kural:
-
-## 1. Düzenli Temizlik Planı Oluşturun
-
-Haftalık bir temizlik planı oluşturmak, işleri kolaylaştırır. Her gün farklı bir odayı temizleyerek bütün evi bir günde temizlemek zorunda kalmazsınız.
-
-## 2. Doğru Temizlik Malzemelerini Kullanın
-
-Her yüzey için uygun temizlik malzemesi kullanın. Ahşap, cam, metal ve kumaşlar için farklı ürünler gereklidir.
-
-## 3. Üsten Aşağıya Doğru Temizleyin
-
-Toz alma işlemini tavan ve yüksek yüzeylerden başlayarak aşağıya doğru ilerleyin. Böylelikle düşen tozlar tekrar temizlemeniz gerekmez.
-
-## 4. Dezenfeksiyonu Unutmayın
-
-Yüksek temas alanlar (kapı kolları, anahtarlar, tuvaletler) düzenli olarak dezenfekte edilmelidir.
-
-## 5. Profesyonel Yardım Alın
-
-Zorlu lekeler ve derinlemesine temizlik için profesyonel temizlik şirketlerinden destek alın.
-
-Bu kuralları uygulayarak evinizi her zaman temiz ve sağlıklı tutabilirsiniz.`,
-    excerpt: 'Ev temizliğinde dikkat etmeniz gereken 5 önemli kural ile evinizi her zaman temiz ve hijyenik tutabilirsiniz.',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
-    category: 'Temizlik İpuçları',
-    tags: ['ev temizliği', 'temizlik ipuçları', 'hijyen'],
-    author: 'Günen Temizlik',
-    published: true,
-  },
-  {
-    title: 'Ofis Temizliği İş Verimliliğini Nasıl Artırır?',
-    slug: 'ofis-temizligi-is-verimliligini-nasil-artirir',
-    content: `Temiz bir ofis sadece güzel görünmekle kalmaz, aynı zamanda iş verimliliğini de artırır. İşte ofis temizliğinin iş ortamına etkileri:
-
-## Sağlıklı İş Ortamı
-
-Düzenli temizlik ve dezenfeksiyon, hastalıkların yayılmasını önler. Çalışanlar daha az hastalanır ve iş gücü kaybı azalır.
-
-## Konsantrasyonu Artırır
-
-Temiz ve düzenli bir ortamda konsantrasyon daha yüksek olur. Dağınıklık ve kirlilik dikkati dağıtabilir.
-
-## Profesyonel İmaj
-
-Müşteriler ve ziyaretçiler için temiz bir ofis, şirketin profesyonelliğini yansıtır. İlk izlenim önemlidir.
-
-## Morali Yükseltir
-
-Temiz bir iş ortamı, çalışanların moralini yükseltir ve iş memnuniyetini artırır.
-
-Düzenli ofis temizliği için profesyonel temizlik hizmetleri almak, uzun vadede şirketinize çok şey kazandırır.`,
-    excerpt: 'Temiz bir ofis, iş verimliliğini artıran en önemli faktörlerden biridir. İşte ofis temizliğinin faydaları.',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
-    category: 'Kurumsal Temizlik',
-    tags: ['ofis temizliği', 'kurumsal temizlik', 'iş verimliliği'],
-    author: 'Günen Temizlik',
-    published: true,
-  },
-  {
-    title: 'Koltuk Yıkama: Ne Sıklıkla Yapılmalı?',
-    slug: 'koltuk-yikama-ne-siklikla-yapilmali',
-    content: `Koltuklarınızın temizliği hem sağlığınız hem de mobilyanızın ömrü için önemlidir. Peki koltuk yıkama ne sıklıkla yapılmalıdır?
-
-## Genel Kullanım İçin
-
-Normal kullanım için koltuklar yılda 1-2 kez profesyonel olarak yıkanmalıdır.
-
-## Evde Evcil Hayvan Varsa
-
-Evcil hayvanınız varsa, koltuklarınız 6 ayda bir yıkatmanız önerilir. Tüyler ve alerjenler birikebilir.
-
-## Çocuklu Aileler İçin
-
-Küçük çocuk varsa, yemek artıkları ve lekeler daha sık olabilir. 6 ayda bir temizlik yeterlidir.
-
-## Profesyonel vs. Kendiniz Yapma
-
-Evde yapabileceğiniz yüzey temizliği ile profesyonel derinlemesine temizlik farklıdır. Derin lekeler ve hijyen için profesyonel yardım önerilir.
-
-Koltuk yıkama için Günen Temizlik'in profesyonel hizmetinden yararlanabilirsiniz.`,
-    excerpt: 'Koltuklarınız ne sıklıkla yıkatmanız gerektiğini öğrenin. Evcil hayvan ve çocuk varsa daha sık temizlik gerekebilir.',
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800',
-    category: 'Mobilya Temizliği',
-    tags: ['koltuk yıkama', 'mobilya temizliği', 'ev temizliği'],
-    author: 'Günen Temizlik',
-    published: true,
-  },
-  {
-    title: 'İnşaat Sonrası Temizlik Neden Önemli?',
-    slug: 'insaat-sonrasi-temizlik-neden-onemli',
-    content: `İnşaat sonrası temizlik, yeni yapılan veya tadilat geçmiş mekanlar için çok önemlidir. İşte nedenleri:
-
-## Sağlık Riskleri
-
-İnşaat tozu, boya partikülleri ve kimyasal kalıntılar sağlık için risk oluşturur. Solunum problemleri ve alerjilere neden olabilir.
-
-## Estetik Görünüm
-
-İnşaat kalıntıları mekanın görünümünü bozar. Temiz bir mekan daha ferah ve yaşanabilir hissi verir.
-
-## Ekipman Ömrü
-
-İnşaat tozları elektronik cihazlara, havalandırma sistemlerine ve diğer ekipmanlara zarar verebilir.
-
-## Profesyonel İnşaat Sonrası Temizlik
-
-Profesyonel ekipler, özel ekipman ve deneyimle inşaat sonrası temizlik hızlı ve etkili şekilde yapar. Günen Temizlik olarak bu konuda profesyonel hizmet sunuyoruz.`,
-    excerpt: 'İnşaat sonrası temizlik, sağlık ve estetik açısından çok önemlidir. Profesyonel temizlik ile mekanınızı yaşanabilir hale getirin.',
-    image: 'https://images.unsplash.com/photo-1504307652540-d527ac683a69?w=800',
-    category: 'İnşaat Temizliği',
-    tags: ['inşaat sonrası temizlik', 'tadilat temizliği', 'profesyonel temizlik'],
-    author: 'Günen Temizlik',
-    published: true,
-  },
-];
-
 const defaultPricing = [
   {
     serviceName: 'İnşaat Sonrası Temizlik',
@@ -280,14 +160,8 @@ async function seed() {
     const n = await upsertCanonicalServices(prisma);
     console.log(`${n} hizmet upsert edildi (kanonik SEO metinleri)`);
 
-    // BlogPosts ekle
-    const existingBlogPosts = await prisma.blogPost.count();
-    if (existingBlogPosts === 0) {
-      await prisma.blogPost.createMany({ data: defaultBlogPosts });
-      console.log(`${defaultBlogPosts.length} Blog yazısı eklendi`);
-    } else {
-      console.log(`Zaten ${existingBlogPosts} blog yazısı var, atlanıyor`);
-    }
+    const bn = await upsertCanonicalBlogPosts(prisma);
+    console.log(`${bn} blog yazısı upsert edildi (20 trafik + 30 temizlik SEO)`);
 
     // Müşteri yorumları — seedKey ile upsert (22 SEO uyumlu kanonik yorum)
     const tn = await upsertCanonicalTestimonials(prisma);

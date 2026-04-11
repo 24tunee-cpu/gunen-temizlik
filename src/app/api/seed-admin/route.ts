@@ -30,6 +30,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { upsertCanonicalServices } from '@/lib/seed-services';
 import { upsertCanonicalTestimonials } from '@/lib/seed-testimonials';
+import { upsertCanonicalBlogPosts } from '@/lib/seed-blog';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -181,52 +182,8 @@ export async function GET(request: NextRequest) {
     const existingServices = await prisma.service.count();
     const servicesUpserted = await upsertCanonicalServices(prisma);
 
-    // Check and seed Blog Posts
     const existingBlogs = await prisma.blogPost.count();
-    let blogPosts = [];
-    if (existingBlogs === 0) {
-      blogPosts = await Promise.all([
-        prisma.blogPost.create({
-          data: {
-            title: 'Ev Temizliginde Dikkat Edilmesi Gerekenler',
-            slug: 'ev-temizliginde-dikkat-edilmesi-gerekenler',
-            excerpt: 'Ev temizligi yaparken nelere dikkat etmelisiniz? Iste size ipuclari.',
-            content: 'Ev temizligi yaparken dikkat edilmesi gereken bircok nokta vardir. Oncelikle dogru temizlik malzemelerini secmelisiniz. Kimyasal iceren urunler yerine dogal temizlik urunleri tercih etmeniz hem sagliginiz hem de cevre icin daha iyidir.\n\nTemizlik sirasinda yuksekten asagiya dogru ilerlemek daha verimli olacaktir. Once tavan ve duvarlar, sonra mobilyalar ve en son zemin temizlenmelidir.\n\nDuzenli temizlik yapmak, buyuk temizlikler yerine kucuk duzenli temizlikler daha kolay ve etkili olacaktir.',
-            category: 'Temizlik Ipuclari',
-            tags: ['ev temizligi', 'ipuclari', 'duzenli temizlik'],
-            author: 'Gunen Temizlik',
-            published: true,
-            views: 0,
-          },
-        }),
-        prisma.blogPost.create({
-          data: {
-            title: 'Ofis Temizliginin Onemi',
-            slug: 'ofis-temizliginin-onemi',
-            excerpt: 'Temiz bir ofis calisan verimliligini nasil etkiler?',
-            content: 'Temiz bir ofis ortami, calisanlarin verimliligini artiran en onemli faktorlerden biridir. Arastirmalara gore temiz bir calisma ortami, calisanlarin motivasyonunu ve uretkenligini artirmaktadir.\n\nOfis temizliginde dikkat edilmesi gereken noktalar:\n\n1. Duzenli dezenfeksiyon\n2. Hava kalitesinin korunmasi\n3. Ortak alanlarin temizligi\n4. Elektronik cihazlarin temizligi\n\nProfesyonel ofis temizlik hizmetleri almak, is yerinizin her zaman temiz ve saglikli kalmasini saglar.',
-            category: 'Isyeri Temizlik',
-            tags: ['ofis temizligi', 'isyeri', 'verimlilik'],
-            author: 'Gunen Temizlik',
-            published: true,
-            views: 0,
-          },
-        }),
-        prisma.blogPost.create({
-          data: {
-            title: 'Koltuk Yikama Neden Onemli?',
-            slug: 'koltuk-yikama-neden-onemli',
-            excerpt: 'Koltuklarinizi duzenli olarak yikamanin faydalari nelerdir?',
-            content: 'Koltuklar evimizin en cok kullanilan mobilyalarindan biridir. Gunluk kullanim nedeniyle koltuklar toz, kir, yag ve cesitli lekelerle kirlenir. Bu kirlilikler sadece goruntu acisindan degil, saglik acisindan da onemlidir.\n\nKoltuk yikamanin faydalari:\n\n1. Alerjenleri azaltir\n2. Kotu kokulari giderir\n3. Koltugun omrunu uzatir\n4. Ev hava kalitesini iyilestirir\n\nProfesyonel koltuk yikama hizmetleri, koltuklarinizin derinlemesine temizlenmesini saglar.',
-            category: 'Mobilya Temizlik',
-            tags: ['koltuk yikama', 'mobilya', 'hijyen'],
-            author: 'Gunen Temizlik',
-            published: true,
-            views: 0,
-          },
-        }),
-      ]);
-    }
+    const blogPostsUpserted = await upsertCanonicalBlogPosts(prisma);
 
     // Check and seed Team Members
     const existingTeam = await prisma.teamMember.count();
@@ -405,7 +362,7 @@ export async function GET(request: NextRequest) {
       },
       created: {
         services: servicesUpserted,
-        blogPosts: blogPosts.length,
+        blogPosts: blogPostsUpserted,
         teamMembers: teamMembers.length,
         testimonials: testimonialsUpserted,
         faqs: faqs.length,

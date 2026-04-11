@@ -21,8 +21,9 @@ import Image from 'next/image';
 import { prisma } from '@/lib/prisma';
 import SiteLayout from '../../site/layout';
 import { formatDate } from '@/lib/utils';
-import { Calendar, User, ArrowLeft, Share2, Clock, BookOpen } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { BlogShareButton } from '@/components/site/BlogShareButton';
 
 // ============================================
 // TYPES
@@ -296,7 +297,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <span className="text-sm text-slate-400">
                   {post.views} görüntülenme
                 </span>
-                <ShareButton title={post.title} slug={post.slug} />
+                <BlogShareButton title={post.title} slug={post.slug} />
               </div>
             </div>
           </article>
@@ -304,53 +305,5 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
       </SiteLayout>
     </>
-  );
-}
-
-// ============================================
-// CLIENT COMPONENT: Share Button
-// ============================================
-
-/**
- * Share Button Component (Client-side interactivity)
- * Web Share API ile paylaşım.
- */
-function ShareButton({ title, slug }: { title: string; slug: string }) {
-  'use client';
-
-  const handleShare = async () => {
-    const url = `https://gunentemizlik.com/blog/${slug}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: title,
-          url: url,
-        });
-      } catch (error) {
-        // User cancelled or share failed
-        console.log('Share cancelled');
-      }
-    } else {
-      // Fallback: Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(url);
-        alert('Link kopyalandı!');
-      } catch (error) {
-        console.error('Failed to copy:', error);
-      }
-    }
-  };
-
-  return (
-    <button
-      onClick={handleShare}
-      className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
-      aria-label="Yazıyı paylaş"
-    >
-      <Share2 size={18} aria-hidden="true" />
-      Paylaş
-    </button>
   );
 }
