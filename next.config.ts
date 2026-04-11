@@ -204,18 +204,8 @@ const nextConfig: NextConfig = {
   // ============================================
   async redirects() {
     return [
-      // WWW to non-WWW redirect (SEO)
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.gunentemizlik.com',
-          },
-        ],
-        permanent: true,
-        destination: 'https://gunentemizlik.com/:path*',
-      },
+      // www ↔ apex yönlendirmesini Vercel Domains üzerinden tek taraflı tutun.
+      // Burada www → apex tanımlanırsa ve Vercel'de apex → www varsa ERR_TOO_MANY_REDIRECTS oluşur.
       // HTTP to HTTPS redirect
       {
         source: '/:path*',
