@@ -34,7 +34,7 @@ export default function AdminLayout({
               /* w-full + margin-left taşır; lg’de genişlik sidebar kadar düşürülür */
               'ml-0 w-full max-w-full',
               sidebarOpen
-                ? 'lg:ml-64 lg:w-[calc(100%-16rem)] lg:max-w-[calc(100%-16rem)]'
+                ? 'lg:ml-[280px] lg:w-[calc(100%-280px)] lg:max-w-[calc(100%-280px)]'
                 : 'lg:ml-20 lg:w-[calc(100%-5rem)] lg:max-w-[calc(100%-5rem)]'
             )}
           >

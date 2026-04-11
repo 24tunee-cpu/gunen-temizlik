@@ -1,15 +1,10 @@
 /**
- * @fileoverview Admin Sidebar Component
- * @description Admin panel sidebar bileşeni.
- * Responsive navigation, collapsible menu, accessibility ve keyboard desteği ile.
- *
- * @example
- * <Sidebar />
+ * @fileoverview Admin Sidebar — gruplu menü, dar/geniş mod, mobil drawer
  */
 
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -17,87 +12,37 @@ import { useAdminStore } from '@/store/adminStore';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import {
-  LayoutDashboard,
-  Sparkles,
-  FileText,
-  MessageSquare,
-  Settings,
   Menu,
   X,
   LogOut,
-  Image as ImageIcon,
-  Quote,
   Loader2,
-  Mail,
-  Users,
-  Award,
-  HelpCircle,
-  DollarSign,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import Image from 'next/image';
+import {
+  ADMIN_MENU_GROUPS,
+  isAdminNavActive,
+} from '@/config/admin-menu';
 
-// ============================================
-// TYPES
-// ============================================
-
-/** Menu item tipi */
-interface MenuItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  ariaLabel?: string;
-}
-
-/** Sidebar props */
-interface SidebarProps {
-  /** Varsayılan açık/kapalı durum */
-  defaultOpen?: boolean;
-}
-
-// ============================================
-// CONSTANTS
-// ============================================
-
-const MENU_ITEMS: MenuItem[] = [
-  { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, ariaLabel: 'Yönetim paneli' },
-  { href: '/admin/hizmetler', label: 'Hizmetler', icon: Sparkles, ariaLabel: 'Hizmetler yönetimi' },
-  { href: '/admin/blog', label: 'Blog Yazıları', icon: FileText, ariaLabel: 'Blog yazıları yönetimi' },
-  { href: '/admin/referanslar', label: 'Referanslar', icon: Quote, ariaLabel: 'Müşteri referansları' },
-  { href: '/admin/talepler', label: 'Müşteri Talepleri', icon: MessageSquare, ariaLabel: 'Müşteri talepleri' },
-  { href: '/admin/ebulten', label: 'E-Bülten', icon: Mail, ariaLabel: 'E-bülten abonelikleri' },
-  { href: '/admin/galeri', label: 'Galeri', icon: ImageIcon, ariaLabel: 'Galeri yönetimi' },
-  { href: '/admin/ekip', label: 'Ekibimiz', icon: Users, ariaLabel: 'Ekip üyeleri yönetimi' },
-  { href: '/admin/sertifikalar', label: 'Sertifikalar', icon: Award, ariaLabel: 'Sertifikalar yönetimi' },
-  { href: '/admin/sss', label: 'SSS', icon: HelpCircle, ariaLabel: 'Sıkça sorulan sorular' },
-  { href: '/admin/fiyatlar', label: 'Fiyat Listesi', icon: DollarSign, ariaLabel: 'Fiyat listesi yönetimi' },
-  { href: '/admin/ayarlar', label: 'Site Ayarları', icon: Settings, ariaLabel: 'Site ayarları' },
-];
-
-const SIDEBAR_WIDTH_EXPANDED = 'w-64';
-const SIDEBAR_WIDTH_COLLAPSED = 'w-20';
-
-// ============================================
-// MAIN COMPONENT
-// ============================================
-
-/**
- * Admin Sidebar Component
- * @param defaultOpen Initial sidebar open state
- */
-export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
+export function Sidebar() {
   const pathname = usePathname();
   const { sidebarOpen, toggleSidebar, setSidebarOpen } = useAdminStore();
   const { logout, isLoading } = useAuth();
   const sidebarRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
+  const [isLg, setIsLg] = useState(true);
 
-  // ============================================
-  // HANDLERS
-  // ============================================
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const set = () => setIsLg(mq.matches);
+    set();
+    mq.addEventListener('change', set);
+    return () => mq.removeEventListener('change', set);
+  }, []);
+
   const handleLogout = useCallback(async () => {
-    console.log('Logout initiated from sidebar');
     await logout();
   }, [logout]);
 
@@ -107,9 +52,6 @@ export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
     }
   }, [setSidebarOpen]);
 
-  // ============================================
-  // CLICK OUTSIDE HANDLER
-  // ============================================
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -129,9 +71,6 @@ export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
     }
   }, [sidebarOpen, setSidebarOpen]);
 
-  // ============================================
-  // KEYBOARD NAVIGATION
-  // ============================================
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && sidebarOpen) {
@@ -143,9 +82,6 @@ export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [sidebarOpen, setSidebarOpen]);
 
-  // ============================================
-  // BODY SCROLL LOCK (mobile)
-  // ============================================
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -160,146 +96,212 @@ export function Sidebar({ defaultOpen = true }: SidebarProps = {}) {
     };
   }, [sidebarOpen]);
 
-  // ============================================
-  // RENDER
-  // ============================================
+  const drawerX = !isLg ? (sidebarOpen ? 0 : -280) : 0;
+
   return (
     <>
-      {/* Mobile Toggle */}
       <motion.button
+        type="button"
         onClick={toggleSidebar}
-        whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
-        className="fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-lg lg:hidden focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        whileTap={shouldReduceMotion ? {} : { scale: 0.96 }}
+        className="fixed left-4 top-4 z-[60] flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-900/20 ring-1 ring-white/10 lg:hidden"
         aria-label={sidebarOpen ? 'Menüyü kapat' : 'Menüyü aç'}
         aria-expanded={sidebarOpen}
         aria-controls="admin-sidebar"
       >
-        {sidebarOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+        {sidebarOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
       </motion.button>
 
-      {/* Overlay for mobile */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        <button
+          type="button"
+          className="fixed inset-0 z-[45] bg-slate-950/60 backdrop-blur-[2px] lg:hidden"
           onClick={closeSidebar}
-          aria-hidden="true"
+          aria-label="Menüyü kapat"
         />
       )}
 
-      {/* Sidebar */}
       <motion.aside
         ref={sidebarRef}
         id="admin-sidebar"
-        className={cn(
-          'fixed left-0 top-0 z-40 h-screen bg-slate-900 text-white lg:block',
-          sidebarOpen ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED
-        )}
+        className="fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden border-r border-slate-800/80 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white shadow-xl shadow-black/20 lg:shadow-none"
         initial={false}
         animate={{
-          width: sidebarOpen ? 256 : 80,
-          x: sidebarOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 1024 ? -256 : 0)
+          width: sidebarOpen ? 280 : 80,
+          x: drawerX,
         }}
-        transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: 'easeInOut' }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: [0.4, 0, 0.2, 1] }}
         role="navigation"
-        aria-label="Admin menü"
+        aria-label="Yönetim menüsü"
       >
-        <div className="flex h-full flex-col">
-          {/* Logo */}
-          <Link
-            href="/admin"
-            className="flex items-center gap-3 px-4 py-4 hover:bg-slate-800/50 transition-colors"
-            aria-label="Admin panel ana sayfa"
-          >
-            <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-white p-1 shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Günen Temizlik"
-                fill
-                className="object-contain"
-                priority
-                sizes="40px"
-              />
-            </div>
-            <motion.div
-              className="flex flex-col overflow-hidden"
-              animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? 'auto' : 0 }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="shrink-0 border-b border-slate-800/80 px-3 py-4">
+            <Link
+              href="/admin/dashboard"
+              onClick={closeSidebar}
+              className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-white/5"
+              aria-label="Dashboard’a git"
             >
-              <span className="text-lg font-bold text-white whitespace-nowrap">
-                Günen
-              </span>
-              <span className="text-xs font-medium text-emerald-400 whitespace-nowrap">
-                Admin Panel
-              </span>
-            </motion.div>
-          </Link>
+              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white p-1 ring-1 ring-white/20">
+                <Image
+                  src="/logo.png"
+                  alt=""
+                  fill
+                  className="object-contain"
+                  priority
+                  sizes="40px"
+                />
+              </div>
+              <motion.div
+                className="min-w-0 flex-1 overflow-hidden"
+                initial={false}
+                animate={{
+                  opacity: sidebarOpen ? 1 : 0,
+                  marginLeft: sidebarOpen ? 0 : -8,
+                }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+              >
+                {sidebarOpen && (
+                  <>
+                    <span className="block truncate text-base font-bold tracking-tight text-white">Günen Temizlik</span>
+                    <span className="block truncate text-xs font-medium text-emerald-400/90">Yönetim paneli</span>
+                  </>
+                )}
+              </motion.div>
+            </Link>
+          </div>
 
-          {/* Desktop Toggle */}
           <button
+            type="button"
             onClick={toggleSidebar}
-            className="hidden lg:flex items-center justify-center py-2 text-slate-400 hover:text-white transition-colors"
+            className="mx-2 mt-2 hidden shrink-0 items-center justify-center gap-2 rounded-lg py-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-200 lg:flex"
             aria-label={sidebarOpen ? 'Menüyü daralt' : 'Menüyü genişlet'}
           >
             {sidebarOpen ? (
-              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+              <ChevronLeft className="h-5 w-5" aria-hidden />
             ) : (
-              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+              <ChevronRight className="h-5 w-5" aria-hidden />
             )}
+            {sidebarOpen && <span className="text-xs font-medium">Daralt</span>}
           </button>
 
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-3 overflow-y-auto" role="menubar" aria-label="Admin menü">
-            {MENU_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={closeSidebar}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50',
-                    isActive
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                  )}
-                  role="menuitem"
-                  aria-label={item.ariaLabel || item.label}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                  <motion.span
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? 'auto' : 0 }}
-                    transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
-                  >
-                    {item.label}
-                  </motion.span>
-                </Link>
-              );
-            })}
+          <nav
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700"
+            aria-label="Sayfa bağlantıları"
+          >
+            {ADMIN_MENU_GROUPS.map((group) => (
+              <div key={group.id}>
+                {sidebarOpen && (
+                  <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    {group.label}
+                  </p>
+                )}
+                <ul className="space-y-0.5" role="list">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isAdminNavActive(pathname, item.href);
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={closeSidebar}
+                          title={!sidebarOpen ? item.label : undefined}
+                          className={cn(
+                            'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60',
+                            active
+                              ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/25'
+                              : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                          )}
+                          aria-current={active ? 'page' : undefined}
+                          aria-label={item.ariaLabel || item.label}
+                        >
+                          <span
+                            className={cn(
+                              'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+                              active
+                                ? 'bg-emerald-500/20 text-emerald-300'
+                                : 'bg-slate-800/80 text-slate-400 group-hover:bg-slate-800 group-hover:text-white'
+                            )}
+                          >
+                            <Icon className="h-[18px] w-[18px]" aria-hidden />
+                          </span>
+                          <motion.span
+                            className="truncate"
+                            initial={false}
+                            animate={{
+                              opacity: sidebarOpen ? 1 : 0,
+                              width: sidebarOpen ? 'auto' : 0,
+                              marginLeft: sidebarOpen ? 0 : -4,
+                            }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+                          >
+                            {item.label}
+                          </motion.span>
+                          {active && sidebarOpen && (
+                            <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" aria-hidden />
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
 
-          {/* Footer */}
-          <div className="border-t border-slate-800 p-3">
+          <div className="shrink-0 space-y-1 border-t border-slate-800/80 p-2">
+            {sidebarOpen && (
+              <Link
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={closeSidebar}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80">
+                  <ExternalLink className="h-[18px] w-[18px]" aria-hidden />
+                </span>
+                Ana siteyi aç
+              </Link>
+            )}
+            {!sidebarOpen && (
+              <Link
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Ana site"
+                className="flex justify-center rounded-xl py-2 text-slate-400 hover:bg-white/5 hover:text-white"
+                aria-label="Ana siteyi yeni sekmede aç"
+              >
+                <ExternalLink className="h-5 w-5" />
+              </Link>
+            )}
+
             <button
+              type="button"
               onClick={handleLogout}
               disabled={isLoading}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500/50"
-              aria-label={isLoading ? 'Çıkış yapılıyor' : 'Çıkış yap'}
+              title={!sidebarOpen ? 'Çıkış' : undefined}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-red-950/40 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+              aria-label={isLoading ? 'Çıkış yapılıyor' : 'Oturumu kapat'}
             >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden="true" />
-              ) : (
-                <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-              )}
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800/80">
+                {isLoading ? (
+                  <Loader2 className="h-[18px] w-[18px] animate-spin" aria-hidden />
+                ) : (
+                  <LogOut className="h-[18px] w-[18px]" aria-hidden />
+                )}
+              </span>
               <motion.span
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                animate={{ opacity: sidebarOpen ? 1 : 0, width: sidebarOpen ? 'auto' : 0 }}
+                className="truncate"
+                initial={false}
+                animate={{
+                  opacity: sidebarOpen ? 1 : 0,
+                  width: sidebarOpen ? 'auto' : 0,
+                }}
                 transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
               >
-                {isLoading ? 'Çıkış yapılıyor...' : 'Çıkış Yap'}
+                {isLoading ? 'Çıkılıyor…' : 'Çıkış yap'}
               </motion.span>
             </button>
           </div>
