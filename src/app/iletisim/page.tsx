@@ -138,11 +138,11 @@ const CONTACT_INFO = {
 
 function ContactLoading() {
   return (
-    <div className="py-16 animate-pulse">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="grid lg:grid-cols-2 gap-12">
-          <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
-          <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+    <div className="bg-slate-900 py-16 animate-pulse">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-2">
+          <div className="h-96 rounded-2xl bg-slate-800" />
+          <div className="h-96 rounded-2xl bg-slate-800" />
         </div>
       </div>
     </div>
@@ -187,7 +187,7 @@ export default function ContactPage() {
 
         {/* Contact Info Cards */}
         <section
-          className="bg-slate-50 dark:bg-slate-800 py-12"
+          className="border-t border-slate-800 bg-slate-900 py-12"
           aria-label="İletişim bilgileri"
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -198,28 +198,28 @@ export default function ContactPage() {
 
                 const CardContent = (
                   <>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50 mb-4 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900 transition-colors">
-                      <Icon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 transition-colors group-hover:bg-emerald-500/25">
+                      <Icon className="h-6 w-6 text-emerald-400" aria-hidden="true" />
                     </div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                    <h2 className="mb-1 text-lg font-semibold text-white">
                       {info.label}
                     </h2>
-                    <p className="text-emerald-600 dark:text-emerald-400 font-medium mb-2">
+                    <p className="mb-2 font-medium text-emerald-400">
                       {info.value}
                     </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+                    <p className="text-center text-sm text-slate-400">
                       {info.description}
                     </p>
                   </>
                 );
 
+                const cardClass =
+                  'group flex flex-col items-center rounded-xl border border-slate-700 bg-slate-800/80 p-6 shadow-sm backdrop-blur-sm';
+
                 // Hours item doesn't have href, render as div
                 if (!hasHref) {
                   return (
-                    <div
-                      key={key}
-                      className="group flex flex-col items-center p-6 bg-white dark:bg-slate-700 rounded-xl shadow-sm"
-                    >
+                    <div key={key} className={cardClass}>
                       {CardContent}
                     </div>
                   );
@@ -229,7 +229,7 @@ export default function ContactPage() {
                   <a
                     key={key}
                     href={info.href as string}
-                    className="group flex flex-col items-center p-6 bg-white dark:bg-slate-700 rounded-xl shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className={`${cardClass} transition-shadow hover:border-slate-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500`}
                   >
                     {CardContent}
                   </a>
@@ -241,7 +241,7 @@ export default function ContactPage() {
 
         {/* Contact Form with Suspense */}
         <Suspense fallback={<ContactLoading />}>
-          <ContactForm />
+          <ContactForm variant="dark" />
         </Suspense>
       </SiteLayout>
     </>

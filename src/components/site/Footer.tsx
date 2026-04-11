@@ -10,9 +10,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles, MapPin, Phone, Mail, Send, Globe, Share2, MessageCircle, ArrowUp } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // ============================================
 // TYPES
@@ -60,19 +62,11 @@ const FOOTER_LINKS: FooterLinkGroup = {
   ],
 };
 
-/** Sosyal medya linkleri */
-const SOCIAL_LINKS: SocialLink[] = [
-  { icon: Globe, href: '#', label: 'Instagram', color: 'hover:bg-pink-500' },
-  { icon: Share2, href: '#', label: 'Facebook', color: 'hover:bg-blue-600' },
-  { icon: MessageCircle, href: '#', label: 'Twitter', color: 'hover:bg-sky-500' },
-];
-
-/** Telefon numarası */
-const PHONE_NUMBER = '+905551234567';
-const PHONE_DISPLAY = '0555 123 45 67';
-
-/** E-posta adresi */
-const EMAIL_ADDRESS = 'info@gunentemizlik.com';
+/** tel: için sadece rakam ve + */
+function toTelHref(phone: string): string {
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  return cleaned ? `tel:${cleaned}` : 'tel:';
+}
 
 // ============================================
 // COMPONENT
@@ -83,10 +77,25 @@ const EMAIL_ADDRESS = 'info@gunentemizlik.com';
  * Site footer with newsletter, links, and contact info.
  */
 export function Footer() {
+  const { settings } = useSiteSettings();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
   const shouldReduceMotion = useReducedMotion();
+
+  const socialLinks = useMemo((): SocialLink[] => {
+    const links: SocialLink[] = [];
+    const ig = settings.instagram?.trim();
+    const fb = settings.facebook?.trim();
+    const tw = settings.twitter?.trim();
+    if (ig)
+      links.push({ icon: Globe, href: ig, label: 'Instagram', color: 'hover:bg-pink-500' });
+    if (fb)
+      links.push({ icon: Share2, href: fb, label: 'Facebook', color: 'hover:bg-blue-600' });
+    if (tw)
+      links.push({ icon: MessageCircle, href: tw, label: 'X (Twitter)', color: 'hover:bg-sky-500' });
+    return links;
+  }, [settings.instagram, settings.facebook, settings.twitter]);
 
   // ============================================
   // HANDLERS
@@ -176,35 +185,55 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 group" aria-label="Günen Temizlik - Ana sayfa">
-              <motion.div
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500"
-                whileHover={shouldReduceMotion ? {} : { scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                aria-hidden="true"
-              >
-                <Sparkles className="h-6 w-6 text-white" />
-              </motion.div>
-              <span className="text-xl font-bold group-hover:text-emerald-400 transition-colors">Günen Temizlik</span>
+            <Link href="/" className="flex items-center gap-2 group" aria-label={`${settings.siteName} - Ana sayfa`}>
+              {settings.logo ? (
+                <motion.div
+                  className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-white/10"
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <Image
+                    src={settings.logo}
+                    alt={settings.siteName}
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-contain p-1"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500"
+                  whileHover={shouldReduceMotion ? {} : { scale: 1.1, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  aria-hidden="true"
+                >
+                  <Sparkles className="h-6 w-6 text-white" />
+                </motion.div>
+              )}
+              <span className="text-xl font-bold group-hover:text-emerald-400 transition-colors">{settings.siteName}</span>
             </Link>
             <p className="text-slate-400">
-              İstanbul&apos;un her bölgesinde profesyonel temizlik hizmetleri.
-              Deneyimli ekibimiz ve modern ekipmanlarımızla yanınızdayız.
+              {settings.siteDescription ||
+                "İstanbul'un her bölgesinde profesyonel temizlik hizmetleri. Deneyimli ekibimiz ve modern ekipmanlarımızla yanınızdayız."}
             </p>
-            <div className="flex gap-3">
-              {SOCIAL_LINKS.map((social) => (
-                <motion.a
-                  key={social.label}
-                  href={social.href}
-                  whileHover={shouldReduceMotion ? {} : { scale: 1.1, y: -2 }}
-                  whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-all ${social.color} hover:text-white`}
-                  aria-label={social.label}
-                >
-                  <social.icon size={18} />
-                </motion.a>
-              ))}
-            </div>
+            {socialLinks.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {socialLinks.map((social) => (
+                  <motion.a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={shouldReduceMotion ? {} : { scale: 1.1, y: -2 }}
+                    whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-all ${social.color} hover:text-white`}
+                    aria-label={social.label}
+                  >
+                    <social.icon size={18} />
+                  </motion.a>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           {/* Hizmetler */}
@@ -246,22 +275,29 @@ export function Footer() {
             <h3 className="mb-4 text-lg font-semibold text-white">İletişim</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 group">
-                <MapPin className="mt-1 h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-400">
-                  Atatürk Mah. Turgut Özal Bulvarı<br />
-                  No:123 Ataşehir/İstanbul
+                <MapPin className="mt-1 h-5 w-5 shrink-0 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-400 whitespace-pre-line">
+                  {settings.address?.trim() || 'Ataşehir, İstanbul'}
                 </span>
               </li>
               <li className="flex items-center gap-3 group">
-                <Phone className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
-                <a href={`tel:${PHONE_NUMBER}`} className="text-slate-400 hover:text-emerald-400 transition-colors" aria-label={`Telefon: ${PHONE_DISPLAY}`}>
-                  {PHONE_DISPLAY}
+                <Phone className="h-5 w-5 shrink-0 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                <a
+                  href={toTelHref(settings.phone)}
+                  className="text-slate-400 hover:text-emerald-400 transition-colors"
+                  aria-label={`Telefon: ${settings.phone}`}
+                >
+                  {settings.phone}
                 </a>
               </li>
               <li className="flex items-center gap-3 group">
-                <Mail className="h-5 w-5 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
-                <a href={`mailto:${EMAIL_ADDRESS}`} className="text-slate-400 hover:text-emerald-400 transition-colors" aria-label={`E-posta: ${EMAIL_ADDRESS}`}>
-                  {EMAIL_ADDRESS}
+                <Mail className="h-5 w-5 shrink-0 text-emerald-500 group-hover:scale-110 transition-transform" aria-hidden="true" />
+                <a
+                  href={`mailto:${settings.email}`}
+                  className="text-slate-400 hover:text-emerald-400 transition-colors"
+                  aria-label={`E-posta: ${settings.email}`}
+                >
+                  {settings.email}
                 </a>
               </li>
             </ul>
@@ -271,7 +307,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500">
-            © {currentYear} Günen Temizlik. Tüm hakları saklıdır.
+            © {currentYear} {settings.siteName}. Tüm hakları saklıdır.
           </p>
           <div className="flex items-center gap-6">
             <Link href="/gizlilik" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">

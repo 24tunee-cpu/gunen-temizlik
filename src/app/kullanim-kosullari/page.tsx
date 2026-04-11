@@ -88,6 +88,7 @@ const TERMS_ITEMS = [
 export default function TermsPage() {
   return (
     <SiteLayout>
+      <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section
         className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 py-32"
@@ -110,8 +111,8 @@ export default function TermsPage() {
         </div>
       </section>
 
-      {/* Content */}
-      <section className="bg-slate-900 dark:bg-slate-950 py-20">
+      {/* Content — flex-1: footer öncesi boşlukta beyaz layout zemini görünmez */}
+      <section className="flex-1 bg-slate-900 py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <article className="space-y-8">
             {TERMS_ITEMS.map((item) => (
@@ -153,6 +154,7 @@ export default function TermsPage() {
           </footer>
         </div>
       </section>
+      </div>
     </SiteLayout>
   );
 }

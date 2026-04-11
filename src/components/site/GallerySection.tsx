@@ -54,10 +54,10 @@ function GallerySkeletonItem({ index }: { index: number }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: shouldReduceMotion ? 0 : index * 0.05 }}
-      className={`relative overflow-hidden rounded-2xl bg-slate-200 ${index % 3 === 0 ? 'aspect-[3/4]' : 'aspect-square'}`}
+      className={`relative overflow-hidden rounded-2xl bg-slate-700 ${index % 3 === 0 ? 'aspect-[3/4]' : 'aspect-square'}`}
       aria-hidden="true"
     >
-      <div className="absolute inset-0 bg-slate-300 animate-pulse" />
+      <div className="absolute inset-0 bg-slate-600 animate-pulse" />
     </motion.div>
   );
 }
@@ -165,17 +165,16 @@ export function GallerySection({
   if (!isMounted || loading) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative bg-slate-900 py-24"
         aria-label="Galeri yükleniyor"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 mb-6">
               <ImageIcon className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900">{title}</h2>
-            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">{description}</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white">{title}</h2>
+            <p className="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">{description}</p>
           </div>
 
           {/* Skeleton Grid */}
@@ -195,19 +194,18 @@ export function GallerySection({
   if (items.length === 0) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative bg-slate-900 py-24"
         aria-label="Galeri"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.6 }}
           >
-            <ImageIcon className="h-16 w-16 text-emerald-300 mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{title}</h2>
-            <p className="text-slate-600">Henüz galeri öğesi bulunmuyor.</p>
+            <ImageIcon className="h-16 w-16 text-emerald-400 mx-auto mb-4" aria-hidden="true" />
+            <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
+            <p className="text-slate-400">Henüz galeri öğesi bulunmuyor.</p>
           </motion.div>
         </div>
       </section>
@@ -219,17 +217,9 @@ export function GallerySection({
   // ============================================
   return (
     <section
-      className="relative py-24 overflow-hidden"
+      className="relative bg-slate-900 py-24"
       aria-label="Galeri"
     >
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-
-      {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" aria-hidden="true" />
-      <div className="absolute top-1/3 -left-32 w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl" aria-hidden="true" />
-      <div className="absolute bottom-1/3 -right-32 w-64 h-64 bg-emerald-300/20 rounded-full blur-3xl" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.header
@@ -250,10 +240,10 @@ export function GallerySection({
             <ImageIcon className="h-8 w-8 text-white" />
           </motion.div>
 
-          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-slate-900 via-emerald-900 to-slate-900 bg-clip-text text-transparent">
+          <h2 className="text-4xl sm:text-5xl font-bold text-white">
             {title}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
             {description}
           </p>
         </motion.header>
@@ -278,7 +268,7 @@ export function GallerySection({
               onClick={() => handleCategoryChange(category)}
               className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${selectedCategory === category
                 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200'
+                : 'bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-emerald-400 border border-slate-600'
                 }`}
               role="tab"
               aria-selected={selectedCategory === category}
@@ -374,8 +364,8 @@ export function GallerySection({
             role="status"
             aria-live="polite"
           >
-            <ImageIcon className="mx-auto h-16 w-16 text-slate-300 mb-4" aria-hidden="true" />
-            <p className="text-slate-500">Bu kategoride henüz görsel yok</p>
+            <ImageIcon className="mx-auto h-16 w-16 text-slate-500 mb-4" aria-hidden="true" />
+            <p className="text-slate-400">Bu kategoride henüz görsel yok</p>
           </motion.div>
         )}
 

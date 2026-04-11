@@ -231,6 +231,12 @@ const nextConfig: NextConfig = {
         destination: '/admin',
         permanent: true,
       },
+      // Public fiyat listesi kaldırıldı; eski bağlantılar iletişime yönlendirilir
+      {
+        source: '/fiyatlar',
+        destination: '/iletisim',
+        permanent: true,
+      },
     ];
   },
 

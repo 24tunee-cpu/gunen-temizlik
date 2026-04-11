@@ -202,9 +202,10 @@ export default async function BlogPostPage({ params }: PageProps) {
       />
 
       <SiteLayout>
+        <div className="flex min-h-full flex-1 flex-col bg-slate-900">
         {/* Article Header */}
         <header
-          className="bg-slate-900 pt-32 pb-16"
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
           aria-label="Yazı başlığı"
         >
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -255,24 +256,24 @@ export default async function BlogPostPage({ params }: PageProps) {
         </header>
 
         {/* Article Content */}
-        <main className="bg-white dark:bg-slate-900">
+        <main className="flex-1 bg-slate-900">
           <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
             <div
-              className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-a:text-emerald-600 dark:prose-a:text-emerald-400"
+              className="prose prose-lg prose-invert max-w-none prose-headings:text-white prose-p:text-slate-300 prose-a:text-emerald-400 prose-strong:text-white prose-li:text-slate-300 prose-blockquote:border-emerald-500/40 prose-blockquote:text-slate-400"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
             {/* Tags */}
             {post.tags.length > 0 && (
               <footer className="mt-12">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                <h2 className="mb-4 text-lg font-semibold text-white">
                   Etiketler
                 </h2>
                 <div className="flex flex-wrap gap-2" role="list" aria-label="Etiketler">
                   {post.tags.map((tag: string) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm text-slate-600 dark:text-slate-400"
+                      className="rounded-full bg-slate-800 px-4 py-2 text-sm text-slate-300"
                       role="listitem"
                     >
                       #{tag}
@@ -283,16 +284,16 @@ export default async function BlogPostPage({ params }: PageProps) {
             )}
 
             {/* Share & CTA */}
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-700 pt-8">
+            <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-700 pt-8 sm:flex-row">
               <Link
                 href="/iletisim"
-                className="w-full sm:w-auto text-center rounded-lg bg-emerald-500 px-6 py-3 text-white font-medium hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                className="w-full rounded-lg bg-emerald-500 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900 sm:w-auto"
               >
                 Profesyonel Hizmet Al
               </Link>
 
               <div className="flex items-center gap-4">
-                <span className="text-slate-500 dark:text-slate-400 text-sm">
+                <span className="text-sm text-slate-400">
                   {post.views} görüntülenme
                 </span>
                 <ShareButton title={post.title} slug={post.slug} />
@@ -300,6 +301,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           </article>
         </main>
+        </div>
       </SiteLayout>
     </>
   );
@@ -344,7 +346,7 @@ function ShareButton({ title, slug }: { title: string; slug: string }) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
+      className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
       aria-label="Yazıyı paylaş"
     >
       <Share2 size={18} aria-hidden="true" />

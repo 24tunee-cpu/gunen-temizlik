@@ -304,7 +304,8 @@ const defaultTestimonials = [
     name: 'Ahmet Yılmaz',
     location: 'Kadıköy, İstanbul',
     rating: 5,
-    content: 'İnşaat sonrası temizlik için Günen Temizlik\'i tercih ettik. Çok profesyonel bir çalışma sergilediler. Evimiz pırıl pırıl oldu, hiç beklemediğimiz kadar temiz bir şekilde teslim aldık. Kesinlikle tavsiye ederim.',
+    content:
+      'İstanbul’da inşaat sonrası temizlik arayanlara Günen Temizlik’i gönül rahatlığıyla öneririm. Toz, çimento ve boya lekeleri profesyonel ekipmanlarla alındı; daire teslime hazır hale geldi. Zamanında geldiler, fiyat şeffaftı.',
     service: 'İnşaat Sonrası Temizlik',
     isActive: true,
     order: 1,
@@ -313,7 +314,8 @@ const defaultTestimonials = [
     name: 'Elif Demir',
     location: 'Şişli, İstanbul',
     rating: 5,
-    content: 'Ofisimiz için düzenli temizlik hizmeti alıyoruz. Çalışanlar çok ilgili ve düzenli. Her hafta aynı kalitede hizmet alıyoruz. İş ortamımız çok daha ferah ve temiz.',
+    content:
+      'Ofis temizliği için anlaştık; haftalık düzenli hizmet alıyoruz. Ortak alanlar, mutfak ve WC hijyeni beklentimizin üzerinde. İstanbul’da kurumsal temizlik firması arayan işletmelere uygun bir ekip.',
     service: 'Ofis Temizliği',
     isActive: true,
     order: 2,
@@ -322,7 +324,8 @@ const defaultTestimonials = [
     name: 'Mehmet Kaya',
     location: 'Ataşehir, İstanbul',
     rating: 5,
-    content: 'Koltuk yıkama hizmeti aldık. Yıllardır temizlenmemiş koltuklarımız ilk günkü gibi oldular. Leke çıkarma konusunda gerçekten başarılılar. Fiyatlar da gayet makul.',
+    content:
+      'Koltuk yıkama hizmeti sipariş ettik; kumaştaki lekeler ve koku ciddi şekilde azaldı. Yerinde yıkama süreci düzenli ve hızlıydı. Ev ve ofis koltuk temizliği için tekrar tercih edeceğiz.',
     service: 'Koltuk Yıkama',
     isActive: true,
     order: 3,
@@ -330,8 +333,9 @@ const defaultTestimonials = [
   {
     name: 'Zeynep Arslan',
     location: 'Beşiktaş, İstanbul',
-    rating: 4,
-    content: 'Cam temizliği hizmeti aldık. 5 katlı binamızın tüm camlarını güvenli bir şekilde temizlediler. Sonuçtan çok memnunuz, manzaramız pırıl pırıl!',
+    rating: 5,
+    content:
+      'Dış cephe ve iç cam temizliği yaptırdık. Güvenlik ekipmanları ve iş disiplini iyiydi. Manzara ve ışık farkı hissedilir; özellikle kış öncesi cam temizliği için ideal bir İstanbul temizlik ekibi.',
     service: 'Cam Temizliği',
     isActive: true,
     order: 4,
@@ -340,10 +344,81 @@ const defaultTestimonials = [
     name: 'Can Özdemir',
     location: 'Üsküdar, İstanbul',
     rating: 5,
-    content: 'Ev temizliği hizmeti aldık. Artık evimiz her zaman tertemiz. Çalışanlar çok güler yüzlü ve düzenli. Ailecek çok memnunuz.',
+    content:
+      'Periyodik ev temizliği kullanıyoruz. Detaylara önem veriyorlar; mutfak, banyo ve zeminler hijyenik şekilde temizlendi. Güvenilir ev temizlik şirketi arayanlar için uygun fiyat-performans.',
     service: 'Ev Temizliği',
     isActive: true,
     order: 5,
+  },
+  {
+    name: 'Burcu Şahin',
+    location: 'Maltepe, İstanbul',
+    rating: 5,
+    content:
+      'Halı yıkama için Günen Temizlik’e ulaştık. Yün ve sentetik halılarda renk solması olmadan derinlemesine temizlik yapıldı. İstanbul Anadolu yakası halı temizliği ihtiyacımızda yine arayacağız.',
+    service: 'Halı Temizliği',
+    isActive: true,
+    order: 6,
+  },
+  {
+    name: 'Oğuz Çelik',
+    location: 'Bakırköy, İstanbul',
+    rating: 5,
+    content:
+      'Tadilat sonrası daire temizliği sipariş ettik. Fayans derzleri, dolap içleri ve ince toz temizliği gerçekten titiz yapıldı. Tadilat / renovasyon sonrası detaylı temizlik arayanlar için tavsiye ederim.',
+    service: 'İnşaat Sonrası Temizlik',
+    isActive: true,
+    order: 7,
+  },
+  {
+    name: 'Selin Aydın',
+    location: 'Sarıyer, İstanbul',
+    rating: 5,
+    content:
+      'Villamızın genel temizliği ve dezenfeksiyon odaklı hijyen uygulaması istedik. Özellikle mutfak ve banyo yüzeylerinde güven verici bir sonuç aldık. Büyük metrekârlı ev temizliği için planlı çalıştılar.',
+    service: 'Ev Temizliği',
+    isActive: true,
+    order: 8,
+  },
+  {
+    name: 'Emre Yıldız',
+    location: 'Kağıthane, İstanbul',
+    rating: 5,
+    content:
+      'Kısa süreli ofis taşıması sonrası eski ofisimizin detaylı temizliğini yaptırdık. Kablo kanalları, klima ızgaraları gibi gözden kaçan yerler de temizlendi. Ticari temizlik ve teslim öncesi temizlik için doğru adres.',
+    service: 'Ofis Temizliği',
+    isActive: true,
+    order: 9,
+  },
+  {
+    name: 'Deniz Koç',
+    location: 'Pendik, İstanbul',
+    rating: 4,
+    content:
+      'Mağaza vitrin camı ve iç mekân zemin temizliği için anlaştık. Yoğun saatler dışında esnek saat verebilmeleri işimizi kolaylaştırdı. Perakende ve AVM çevresi için profesyonel temizlik hizmeti sunuyorlar.',
+    service: 'Cam Temizliği',
+    isActive: true,
+    order: 10,
+  },
+  {
+    name: 'Ayşe Karaca',
+    location: 'Ümraniye, İstanbul',
+    rating: 5,
+    content:
+      'Çocuklu aile olarak düzenli ev temizliği arıyorduk. Kullandıkları ürünler konusunda bilgi verdiler; alerji hassasiyetimizi dikkate aldılar. İstanbul’da güvenilir periyodik temizlik için memnun kaldık.',
+    service: 'Ev Temizliği',
+    isActive: true,
+    order: 11,
+  },
+  {
+    name: 'Kerem Polat',
+    location: 'Beylikdüzü, İstanbul',
+    rating: 5,
+    content:
+      'Yeni teslim dairemizde ince işçilik tozu ve etiket kalıntıları vardı. Tüm oda ve balkon detaylı temizlendi; teslim öncesi kontrol listesiyle işi bitirdiler. Yeni ev / anahtar teslim sonrası temizlik için şiddetle öneririm.',
+    service: 'İnşaat Sonrası Temizlik',
+    isActive: true,
+    order: 12,
   },
 ];
 

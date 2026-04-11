@@ -90,13 +90,13 @@ const gallerySchema = {
 
 function GalleryLoading() {
   return (
-    <div className="py-16 animate-pulse">
+    <div className="bg-slate-900 py-16 animate-pulse">
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-lg"
+              className="aspect-square bg-slate-700 rounded-lg"
             />
           ))}
         </div>
@@ -125,6 +125,7 @@ export default function GalleryPage() {
       />
 
       <SiteLayout>
+        <div className="flex min-h-full flex-1 flex-col bg-slate-900">
         {/* Hero Section */}
         <section
           className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
@@ -149,23 +150,24 @@ export default function GalleryPage() {
         </Suspense>
 
         {/* CTA Section */}
-        <section className="py-16 bg-slate-50 dark:bg-slate-800">
+        <section className="flex-1 border-t border-slate-800 bg-slate-900 py-16">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-2xl font-bold text-white mb-4">
               Siz de memnun müşterilerimiz arasına katılın
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-2xl mx-auto">
+            <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
               Profesyonel temizlik hizmetimizi deneyimleyin ve farkı kendi gözlerinizle görün.
             </p>
             <Link
               href="/iletisim"
-              className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               Ücretsiz Keşif Talep Edin
               <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </Link>
           </div>
         </section>
+        </div>
       </SiteLayout>
     </>
   );

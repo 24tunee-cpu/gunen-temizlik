@@ -30,9 +30,10 @@ export default function PrivacyPage() {
 
   return (
     <SiteLayout>
+      <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent" aria-hidden="true" />
         
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -54,8 +55,8 @@ export default function PrivacyPage() {
         </div>
       </section>
 
-      {/* Content */}
-      <section className="bg-slate-900 py-20">
+      {/* Content — flex-1: footer öncesi boşlukta beyaz layout zemini görünmez */}
+      <section className="flex-1 bg-slate-900 py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -98,6 +99,7 @@ export default function PrivacyPage() {
           </motion.div>
         </div>
       </section>
+      </div>
     </SiteLayout>
   );
 }

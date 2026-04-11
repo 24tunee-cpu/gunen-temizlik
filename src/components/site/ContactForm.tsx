@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Send, CheckCircle, Phone, Mail, MapPin, Clock, AlertCircle } from 'lucide-react';
 import logger from '@/lib/logger';
+import { cn } from '@/lib/utils';
 import { toast } from '@/store/toastStore';
 
 // ============================================
@@ -39,6 +40,8 @@ interface FloatingLabelInputProps {
   error?: string;
   placeholder?: string;
   ariaDescribedBy?: string;
+  /** Sayfa teması — `/iletisim` için `dark` */
+  variant?: 'light' | 'dark';
 }
 
 /** İletişim bilgisi tipi */
@@ -133,12 +136,14 @@ function FloatingLabelInput({
   onBlur,
   error,
   placeholder,
-  ariaDescribedBy
+  ariaDescribedBy,
+  variant = 'light',
 }: FloatingLabelInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const isActive = isFocused || value.length > 0;
   const errorId = `${id}-error`;
+  const isDark = variant === 'dark';
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
@@ -160,7 +165,7 @@ function FloatingLabelInput({
         animate={{
           y: isActive ? -24 : 12,
           scale: isActive ? 0.85 : 1,
-          color: isActive ? '#059669' : '#64748b',
+          color: isActive ? (isDark ? '#34d399' : '#059669') : (isDark ? '#94a3b8' : '#64748b'),
         }}
         transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
         className="absolute left-4 font-medium pointer-events-none origin-left transition-colors"
@@ -176,12 +181,16 @@ function FloatingLabelInput({
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className={`w-full rounded-xl border-2 px-4 pt-6 pb-2 transition-all duration-300 outline-none
-          ${error
-            ? 'border-red-300 focus:border-red-500 bg-red-50/30'
-            : 'border-slate-200 focus:border-emerald-500 hover:border-emerald-300'
-          }
-        `}
+        className={cn(
+          'w-full rounded-xl border-2 px-4 pt-6 pb-2 transition-all duration-300 outline-none',
+          error
+            ? isDark
+              ? 'border-red-500/60 focus:border-red-400 bg-red-950/30 text-white'
+              : 'border-red-300 focus:border-red-500 bg-red-50/30'
+            : isDark
+              ? 'border-slate-600 bg-slate-800 text-white placeholder:text-slate-500 focus:border-emerald-500 hover:border-slate-500'
+              : 'border-slate-200 focus:border-emerald-500 hover:border-emerald-300',
+        )}
         placeholder={isActive ? placeholder : ''}
         aria-invalid={!!error}
         aria-describedby={error ? errorId : ariaDescribedBy}
@@ -211,11 +220,17 @@ function FloatingLabelInput({
 // MAIN COMPONENT
 // ============================================
 
+export interface ContactFormProps {
+  /** Ana sayfa: `light` (varsayılan). İletişim sayfası: `dark`. */
+  variant?: 'light' | 'dark';
+}
+
 /**
  * Contact Form Component
  * Full-featured contact form with validation and accessibility.
  */
-export function ContactForm() {
+export function ContactForm({ variant = 'light' }: ContactFormProps) {
+  const isDark = variant === 'dark';
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -321,9 +336,29 @@ export function ContactForm() {
   }, [formData, validationErrors, resetForm]);
 
   return (
-    <section className="relative bg-slate-50 py-24 overflow-hidden" aria-label="İletişim formu">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/50 via-slate-50 to-slate-50" aria-hidden="true" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-200/20 rounded-full blur-3xl" aria-hidden="true" />
+    <section
+      className={cn(
+        'relative py-24 overflow-hidden',
+        isDark ? 'bg-slate-900' : 'bg-slate-50',
+      )}
+      aria-label="İletişim formu"
+    >
+      <div
+        className={cn(
+          'absolute inset-0',
+          isDark
+            ? 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-slate-900 to-slate-900'
+            : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-100/50 via-slate-50 to-slate-50',
+        )}
+        aria-hidden="true"
+      />
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl',
+          isDark ? 'bg-emerald-500/10' : 'bg-emerald-200/20',
+        )}
+        aria-hidden="true"
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2">
@@ -335,16 +370,26 @@ export function ContactForm() {
             transition={{ duration: shouldReduceMotion ? 0.2 : 0.6 }}
           >
             <motion.span
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1 text-sm font-medium text-emerald-700"
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-4 py-1 text-sm font-medium',
+                isDark
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-emerald-100 text-emerald-700',
+              )}
               whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
               İletişim
             </motion.span>
-            <h2 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <h2
+              className={cn(
+                'mt-4 text-3xl font-bold sm:text-4xl',
+                isDark ? 'text-white' : 'text-slate-900',
+              )}
+            >
               Bize Ulaşın
             </h2>
-            <p className="mt-4 text-lg text-slate-600">
+            <p className={cn('mt-4 text-lg', isDark ? 'text-slate-300' : 'text-slate-600')}>
               Temizlik hizmetleri hakkında bilgi almak veya randevu oluşturmak için bize ulaşabilirsiniz.
             </p>
 
@@ -354,25 +399,38 @@ export function ContactForm() {
                 { icon: Mail, label: 'E-posta', value: 'info@gunentemizlik.com', href: 'mailto:info@gunentemizlik.com', color: 'from-blue-500 to-blue-600', ariaLabel: 'E-posta adresi' },
                 { icon: MapPin, label: 'Adres', value: 'Ataşehir, İstanbul', href: '#', color: 'from-amber-500 to-amber-600', ariaLabel: 'Adres' },
                 { icon: Clock, label: 'Çalışma Saatleri', value: '7/24 Hizmet', href: '#', color: 'from-purple-500 to-purple-600', ariaLabel: 'Çalışma saatleri' },
-              ].map((item) => (
+              ].map((item) => {
+                const gradient = isDark ? 'from-emerald-500 to-emerald-600' : item.color;
+                return (
                 <motion.a
                   key={item.label}
                   href={item.href}
                   whileHover={shouldReduceMotion ? {} : { scale: 1.02, x: 4 }}
-                  className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white transition-colors"
+                  className={cn(
+                    'flex items-center gap-4 group p-3 rounded-xl transition-colors',
+                    isDark ? 'hover:bg-slate-800/80' : 'hover:bg-white',
+                  )}
                   aria-label={item.ariaLabel}
                 >
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${item.color} text-white shadow-lg`} aria-hidden="true">
+                  <div className={cn('flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg', gradient)} aria-hidden="true">
                     <item.icon size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">{item.label}</p>
-                    <p className="font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                    <p className={cn('text-sm', isDark ? 'text-slate-400' : 'text-slate-500')}>{item.label}</p>
+                    <p
+                      className={cn(
+                        'font-semibold transition-colors',
+                        isDark
+                          ? 'text-white group-hover:text-emerald-400'
+                          : 'text-slate-900 group-hover:text-emerald-600',
+                      )}
+                    >
                       {item.value}
                     </p>
                   </div>
                 </motion.a>
-              ))}
+              );
+              })}
             </div>
           </motion.div>
 
@@ -386,7 +444,14 @@ export function ContactForm() {
           >
             <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 rounded-3xl blur-xl" aria-hidden="true" />
 
-            <div className="relative rounded-2xl bg-white p-8 shadow-xl border border-slate-100">
+            <div
+              className={cn(
+                'relative rounded-2xl p-8 shadow-xl border',
+                isDark
+                  ? 'bg-slate-800 border-slate-700'
+                  : 'bg-white border-slate-100',
+              )}
+            >
               <AnimatePresence mode="wait">
                 {success ? (
                   <motion.div
@@ -402,13 +467,18 @@ export function ContactForm() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 200, delay: shouldReduceMotion ? 0 : 0.2 }}
-                      className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mb-6"
+                      className={cn(
+                        'w-20 h-20 rounded-full flex items-center justify-center mb-6',
+                        isDark ? 'bg-emerald-500/20' : 'bg-emerald-100',
+                      )}
                       aria-hidden="true"
                     >
-                      <CheckCircle className="h-10 w-10 text-emerald-600" />
+                      <CheckCircle className={cn('h-10 w-10', isDark ? 'text-emerald-400' : 'text-emerald-600')} />
                     </motion.div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Mesajınız Gönderildi!</h3>
-                    <p className="text-slate-600 mb-6">
+                    <h3 className={cn('text-2xl font-bold mb-2', isDark ? 'text-white' : 'text-slate-900')}>
+                      Mesajınız Gönderildi!
+                    </h3>
+                    <p className={cn('mb-6', isDark ? 'text-slate-300' : 'text-slate-600')}>
                       En kısa sürede size dönüş yapacağız.
                     </p>
                     <motion.button
@@ -438,6 +508,7 @@ export function ContactForm() {
                         onBlur={() => handleBlur('name')}
                         error={errors.name}
                         placeholder="Adınız Soyadınız"
+                        variant={variant}
                       />
                       <FloatingLabelInput
                         id="email"
@@ -449,6 +520,7 @@ export function ContactForm() {
                         onBlur={() => handleBlur('email')}
                         error={errors.email}
                         placeholder="ornek@email.com"
+                        variant={variant}
                       />
                     </div>
 
@@ -462,16 +534,25 @@ export function ContactForm() {
                         onBlur={() => handleBlur('phone')}
                         error={errors.phone}
                         placeholder="0555 123 45 67"
+                        variant={variant}
                       />
                       <div className="relative">
-                        <label htmlFor="service" className="block text-sm font-medium text-slate-700 mb-2">
+                        <label
+                          htmlFor="service"
+                          className={cn('block text-sm font-medium mb-2', isDark ? 'text-slate-300' : 'text-slate-700')}
+                        >
                           Hizmet Seçin
                         </label>
                         <select
                           id="service"
                           value={formData.service}
                           onChange={(e) => handleFieldChange('service', e.target.value)}
-                          className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 focus:border-emerald-500 outline-none transition-colors"
+                          className={cn(
+                            'w-full rounded-xl border-2 px-4 py-3 focus:border-emerald-500 outline-none transition-colors',
+                            isDark
+                              ? 'border-slate-600 bg-slate-800 text-white'
+                              : 'border-slate-200 bg-white text-slate-900',
+                          )}
                         >
                           {SERVICE_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -481,7 +562,10 @@ export function ContactForm() {
                     </div>
 
                     <div className="relative">
-                      <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">
+                      <label
+                        htmlFor="message"
+                        className={cn('block text-sm font-medium mb-2', isDark ? 'text-slate-300' : 'text-slate-700')}
+                      >
                         Mesajınız <span className="text-red-500" aria-hidden="true">*</span>
                       </label>
                       <textarea
@@ -491,11 +575,16 @@ export function ContactForm() {
                         value={formData.message}
                         onChange={(e) => handleFieldChange('message', e.target.value)}
                         onBlur={() => handleBlur('message')}
-                        className={`w-full rounded-xl border-2 px-4 py-3 outline-none resize-none
-                          ${errors.message
-                            ? 'border-red-300 focus:border-red-500 bg-red-50/30'
-                            : 'border-slate-200 focus:border-emerald-500 hover:border-emerald-300'
-                          }`}
+                        className={cn(
+                          'w-full rounded-xl border-2 px-4 py-3 outline-none resize-none',
+                          errors.message
+                            ? isDark
+                              ? 'border-red-500/60 focus:border-red-400 bg-red-950/30 text-white'
+                              : 'border-red-300 focus:border-red-500 bg-red-50/30'
+                            : isDark
+                              ? 'border-slate-600 bg-slate-800 text-white placeholder:text-slate-500 focus:border-emerald-500 hover:border-slate-500'
+                              : 'border-slate-200 focus:border-emerald-500 hover:border-emerald-300',
+                        )}
                         placeholder="Nasıl yardımcı olabiliriz?"
                         aria-invalid={!!errors.message}
                         aria-required="true"

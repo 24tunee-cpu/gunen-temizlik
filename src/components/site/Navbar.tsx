@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Menu, X, Phone } from 'lucide-react';
 import Image from 'next/image';
@@ -34,30 +35,11 @@ const navLinks: NavLink[] = [
   { href: '/', label: 'Ana Sayfa' },
   { href: '/hizmetler', label: 'Hizmetlerimiz' },
   { href: '/galeri', label: 'Galeri' },
-  { href: '/fiyatlar', label: 'Fiyatlar' },
   { href: '/sss', label: 'SSS' },
   { href: '/blog', label: 'Blog' },
   { href: '/referanslar', label: 'Referanslar' },
   { href: '/iletisim', label: 'İletişim' },
 ];
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-/**
- * Throttle fonksiyonu
- */
-function throttle<T extends (...args: unknown[]) => void>(fn: T, wait: number) {
-  let lastTime = 0;
-  return (...args: Parameters<T>) => {
-    const now = Date.now();
-    if (now - lastTime >= wait) {
-      lastTime = now;
-      fn(...args);
-    }
-  };
-}
 
 // ============================================
 // COMPONENT
@@ -67,11 +49,22 @@ function throttle<T extends (...args: unknown[]) => void>(fn: T, wait: number) {
  * Navbar Component
  * Responsive navigation with mobile menu, scroll progress, and keyboard support.
  */
+function readDocumentScrollTop(): number {
+  if (typeof window === 'undefined') return 0;
+  return (
+    window.scrollY ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
+}
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
 
   const { scrollYProgress } = useScroll();
   const shouldReduceMotion = useReducedMotion();
@@ -84,19 +77,37 @@ export function Navbar() {
   );
 
   // ============================================
-  // SCROLL HANDLER (throttled)
+  // SCROLL → header arka planı (rAF: son konumu asla kaçırmaz)
   // ============================================
-  const handleScroll = useCallback(
-    throttle(() => {
-      setScrolled(window.scrollY > 50);
-    }, 100),
-    []
-  );
+  const syncScrolledFromDocument = useCallback(() => {
+    setScrolled(readDocumentScrollTop() > 50);
+  }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+    let rafId = 0;
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        syncScrolledFromDocument();
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    syncScrolledFromDocument();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [syncScrolledFromDocument]);
+
+  // Route değişince scroll sıfırlanır; scroll event her zaman gelmez
+  useEffect(() => {
+    syncScrolledFromDocument();
+    const id = window.requestAnimationFrame(() => {
+      syncScrolledFromDocument();
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [pathname, syncScrolledFromDocument]);
 
   // ============================================
   // MOBILE MENU HANDLERS

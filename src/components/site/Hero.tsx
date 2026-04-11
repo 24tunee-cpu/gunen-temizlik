@@ -10,6 +10,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Shield, Clock, Award, ChevronDown } from 'lucide-react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -328,7 +329,16 @@ export function Hero() {
                     transition={{ duration: 3, repeat: Infinity }}
                     className="absolute w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl"
                   />
-                  <Sparkles className="h-32 w-32 text-emerald-500/70 relative z-10" aria-hidden="true" />
+                  <div className="relative z-10 h-36 w-36 sm:h-40 sm:w-40">
+                    <Image
+                      src="/logo.png"
+                      alt=""
+                      fill
+                      className="object-contain drop-shadow-[0_0_28px_rgba(16,185,129,0.35)]"
+                      priority
+                      sizes="(min-width: 640px) 160px, 144px"
+                    />
+                  </div>
                 </div>
 
                 {/* Floating Stats Cards */}

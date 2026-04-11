@@ -50,12 +50,12 @@ function FAQSkeletonItem({ index }: { index: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: shouldReduceMotion ? 0 : index * 0.05 }}
-      className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+      className="rounded-2xl border border-slate-700 bg-slate-800 p-6 shadow-sm"
       aria-hidden="true"
     >
       <div className="flex items-center gap-4">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 animate-pulse" />
-        <div className="flex-1 h-5 bg-slate-200 rounded animate-pulse" />
+        <div className="flex h-8 w-8 flex-shrink-0 animate-pulse rounded-full bg-slate-600" />
+        <div className="h-5 flex-1 animate-pulse rounded bg-slate-600" />
       </div>
     </motion.div>
   );
@@ -160,17 +160,16 @@ export function FAQSection({
   if (!isMounted || loading) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative flex-1 bg-slate-900 py-24"
         aria-label="SSS yükleniyor"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 mb-6">
+          <div className="mb-12 text-center">
+            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600">
               <HelpCircle className="h-8 w-8 text-white" />
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900">{title}</h2>
-            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">{description}</p>
+            <h2 className="text-4xl font-bold text-white sm:text-5xl">{title}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">{description}</p>
           </div>
 
           {/* Skeleton FAQ Items */}
@@ -190,19 +189,18 @@ export function FAQSection({
   if (faqs.length === 0) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative flex-1 bg-slate-900 py-24"
         aria-label="Sıkça sorulan sorular"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.6 }}
           >
-            <HelpCircle className="h-16 w-16 text-emerald-300 mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{title}</h2>
-            <p className="text-slate-600">Henüz SSS öğesi bulunmuyor.</p>
+            <HelpCircle className="mx-auto mb-4 h-16 w-16 text-emerald-400" aria-hidden="true" />
+            <h2 className="mb-2 text-2xl font-bold text-white">{title}</h2>
+            <p className="text-slate-400">Henüz SSS öğesi bulunmuyor.</p>
           </motion.div>
         </div>
       </section>
@@ -214,17 +212,9 @@ export function FAQSection({
   // ============================================
   return (
     <section
-      className="relative py-24 overflow-hidden"
+      className="relative flex-1 bg-slate-900 py-24"
       aria-label="Sıkça sorulan sorular"
     >
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-
-      {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" aria-hidden="true" />
-      <div className="absolute top-1/4 -left-32 w-64 h-64 bg-emerald-200/20 rounded-full blur-3xl" aria-hidden="true" />
-      <div className="absolute bottom-1/4 -right-32 w-64 h-64 bg-emerald-300/20 rounded-full blur-3xl" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.header
@@ -245,10 +235,10 @@ export function FAQSection({
             <HelpCircle className="h-8 w-8 text-white" />
           </motion.div>
 
-          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-slate-900 via-emerald-900 to-slate-900 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-white sm:text-5xl">
             {title}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
             {description}
           </p>
         </motion.header>
@@ -262,13 +252,13 @@ export function FAQSection({
           className="relative mb-8"
         >
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" aria-hidden="true" />
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="Soru ara..."
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              className="w-full rounded-2xl border border-slate-600 bg-slate-800 py-4 pl-12 pr-4 text-white shadow-sm placeholder:text-slate-500 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               aria-label="Soru ara"
               aria-describedby="faq-search-desc"
             />
@@ -296,9 +286,9 @@ export function FAQSection({
               viewport={{ once: true }}
               transition={{ delay: shouldReduceMotion ? 0 : 0.1 + index * 0.05 }}
               onClick={() => handleCategoryChange(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${selectedCategory === category
-                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200'
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${selectedCategory === category
+                ? 'scale-105 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+                : 'border border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-emerald-400'
                 }`}
               role="tab"
               aria-selected={selectedCategory === category}
@@ -323,24 +313,24 @@ export function FAQSection({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: shouldReduceMotion ? -10 : -20 }}
                 transition={{ delay: shouldReduceMotion ? 0 : index * 0.05 }}
-                className="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow"
+                className="group overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-sm transition-shadow hover:shadow-md"
               >
                 <button
                   onClick={() => toggleFAQ(faq.id)}
                   onKeyDown={(e) => handleKeyDown(e, faq.id)}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-slate-50/50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-inset"
+                  className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:ring-inset"
                   aria-expanded={expandedId === faq.id}
                   aria-controls={`faq-answer-${faq.id}`}
                   id={`faq-question-${faq.id}`}
                 >
                   <div className="flex items-center gap-4">
                     <span
-                      className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-emerald-600 font-semibold text-sm"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold text-emerald-400"
                       aria-hidden="true"
                     >
                       {index + 1}
                     </span>
-                    <span className="font-semibold text-slate-900 pr-8">{faq.question}</span>
+                    <span className="pr-8 font-semibold text-white">{faq.question}</span>
                   </div>
                   <motion.div
                     animate={{ rotate: expandedId === faq.id ? 180 : 0 }}
@@ -351,7 +341,7 @@ export function FAQSection({
                     {expandedId === faq.id ? (
                       <ChevronUp className="h-5 w-5 text-emerald-500" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-slate-400" />
+                      <ChevronDown className="h-5 w-5 text-slate-500" />
                     )}
                   </motion.div>
                 </button>
@@ -368,8 +358,8 @@ export function FAQSection({
                       aria-labelledby={`faq-question-${faq.id}`}
                     >
                       <div className="px-6 pb-6 pl-[4.5rem]">
-                        <div className="h-px w-full bg-gradient-to-r from-emerald-200 to-transparent mb-4" aria-hidden="true" />
-                        <p className="text-slate-600 leading-relaxed">
+                        <div className="mb-4 h-px w-full bg-gradient-to-r from-emerald-500/40 to-transparent" aria-hidden="true" />
+                        <p className="leading-relaxed text-slate-300">
                           {faq.answer}
                         </p>
                       </div>
@@ -390,8 +380,8 @@ export function FAQSection({
             role="status"
             aria-live="polite"
           >
-            <MessageCircle className="mx-auto h-16 w-16 text-slate-300 mb-4" aria-hidden="true" />
-            <p className="text-slate-500">Sonuç bulunamadı. Farklı bir arama deneyin.</p>
+            <MessageCircle className="mx-auto mb-4 h-16 w-16 text-slate-500" aria-hidden="true" />
+            <p className="text-slate-400">Sonuç bulunamadı. Farklı bir arama deneyin.</p>
           </motion.div>
         )}
       </div>

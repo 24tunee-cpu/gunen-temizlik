@@ -82,8 +82,8 @@ export function Testimonials({
         const res = await fetch('/api/testimonials');
         if (!res.ok) throw new Error('Failed to fetch testimonials');
         const data = await res.json();
-        // Only show active testimonials
-        setTestimonials(Array.isArray(data) ? data.filter((t: Testimonial) => t.isActive) : []);
+        // API zaten yalnızca isActive kayıtları döner; isActive alanı eski yanıtlarda eksik olabildiği için burada filtre kullanmıyoruz
+        setTestimonials(Array.isArray(data) ? data : []);
       } catch (error) {
         logger.error('Error fetching testimonials', {}, error instanceof Error ? error : undefined);
         setTestimonials([]);

@@ -93,14 +93,11 @@ const blogSchema = {
 
 function BlogLoading() {
   return (
-    <div className="py-16 animate-pulse">
+    <div className="bg-slate-900 py-16 animate-pulse">
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="h-80 bg-slate-100 dark:bg-slate-800 rounded-2xl"
-            />
+            <div key={i} className="h-80 rounded-2xl bg-slate-800" />
           ))}
         </div>
       </div>
@@ -128,9 +125,10 @@ export default function BlogPage() {
       />
 
       <SiteLayout>
+        <div className="flex min-h-full flex-1 flex-col bg-slate-900">
         {/* Hero Section */}
         <section
-          className="bg-slate-900 pt-32 pb-16"
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-32 pb-16"
           aria-label="Sayfa başlığı"
         >
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
@@ -147,15 +145,15 @@ export default function BlogPage() {
         </section>
 
         {/* Search Hint */}
-        <section className="bg-slate-50 dark:bg-slate-800 py-8 border-b border-slate-200 dark:border-slate-700">
+        <section className="border-b border-slate-800 bg-slate-900 py-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
-              <Search className="h-5 w-5" aria-hidden="true" />
+            <div className="flex flex-wrap items-center justify-center gap-2 text-center text-slate-300">
+              <Search className="h-5 w-5 shrink-0 text-slate-500" aria-hidden="true" />
               <span>
                 Belirli bir konu hakkında bilgi mi arıyorsunuz?
                 <Link
                   href="/sss"
-                  className="ml-1 text-emerald-600 dark:text-emerald-400 hover:underline"
+                  className="ml-1 text-emerald-400 hover:underline"
                 >
                   SSS sayfamıza göz atın
                 </Link>
@@ -165,31 +163,32 @@ export default function BlogPage() {
         </section>
 
         {/* Blog Section with Suspense */}
-        <section className="py-16 bg-white dark:bg-slate-900">
+        <div className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<BlogLoading />}>
             <BlogSection />
           </Suspense>
-        </section>
+        </div>
 
         {/* CTA Section */}
-        <section className="py-16 bg-emerald-50 dark:bg-emerald-900/20">
+        <section className="flex-1 border-t border-slate-800 bg-slate-900 py-16">
           <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="mb-4 text-2xl font-bold text-white">
               Profesyonel yardıma mı ihtiyacınız var?
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-2xl mx-auto">
+            <p className="mx-auto mb-6 max-w-2xl text-slate-300">
               Blog yazılarımızda bahsettiğimiz profesyonel temizlik hizmetlerimizden
               yararlanmak için hemen iletişime geçin.
             </p>
             <Link
               href="/iletisim"
-              className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               Ücretsiz Keşif Talep Edin
               <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </Link>
           </div>
         </section>
+        </div>
       </SiteLayout>
     </>
   );

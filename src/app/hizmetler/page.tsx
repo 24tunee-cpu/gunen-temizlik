@@ -196,6 +196,7 @@ export default function ServicesPage() {
 
   return (
     <SiteLayout>
+      <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section
         className="bg-slate-900 pt-32 pb-16"
@@ -214,7 +215,7 @@ export default function ServicesPage() {
 
       {/* Services Grid */}
       <section
-        className="py-16 bg-slate-50 dark:bg-slate-900"
+        className="flex-1 border-t border-slate-800 py-16 bg-slate-50 dark:bg-slate-900"
         aria-label="Hizmetler listesi"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -240,24 +241,25 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-white dark:bg-slate-950">
+      {/* CTA */}
+      <section className="border-t border-slate-800 bg-slate-900 py-16">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-white mb-4">
             Size özel bir çözüm mü arıyorsunuz?
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
+          <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
             İhtiyaçlarınıza özel temizlik paketleri oluşturabiliriz.
           </p>
           <Link
             href="/iletisim"
-            className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center px-6 py-3 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
           >
             Bizimle İletişime Geçin
             <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
           </Link>
         </div>
       </section>
+      </div>
     </SiteLayout>
   );
 }

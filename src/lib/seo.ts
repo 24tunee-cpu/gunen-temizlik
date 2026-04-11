@@ -30,6 +30,20 @@ import type { SEOProps } from '@/types';
 /** Site domain - ortama göre değişebilir */
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gunentemizlik.com';
 
+/**
+ * Kanonik site kökü (sonunda `/` yok). Sitemap, robots ve Vercel önizleme URL’leri için.
+ */
+export function getSiteUrl(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, '');
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    const host = vercel.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    return `https://${host}`;
+  }
+  return 'https://gunentemizlik.com';
+}
+
 /** Varsayılan OG görseli */
 const DEFAULT_OG_IMAGE = '/og-image.jpg';
 

@@ -181,6 +181,7 @@ export async function GET(request: NextRequest) {
         content: true,
         avatar: true,
         service: true,
+        isActive: true,
         order: true,
         createdAt: true,
       },

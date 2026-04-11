@@ -14,13 +14,14 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Loader2, Calendar, ArrowRight, User, FileText } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import logger from '@/lib/logger';
 
 // ============================================
 // TYPES
 // ============================================
 
-/** Blog post veri tipi */
+/** Blog post veri tipi (API: image, createdAt) */
 interface BlogPost {
   id: string;
   title: string;
@@ -29,6 +30,17 @@ interface BlogPost {
   coverImage?: string;
   publishedAt: string;
   author?: string;
+}
+
+/** /api/blog yanıtı (Prisma alan adları) */
+interface BlogPostApiRow {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  image?: string | null;
+  author?: string;
+  createdAt: string;
 }
 
 /** BlogSection component props */
@@ -62,18 +74,18 @@ function BlogCardSkeleton({ index }: { index: number }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: shouldReduceMotion ? 0 : index * 0.05 }}
-      className="relative h-full bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-100"
+      className="relative h-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-lg"
       aria-hidden="true"
     >
-      <div className="h-48 bg-slate-200 animate-pulse" />
-      <div className="p-6 space-y-3">
+      <div className="h-48 animate-pulse bg-slate-700" />
+      <div className="space-y-3 p-6">
         <div className="flex gap-4">
-          <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
-          <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+          <div className="h-4 w-20 animate-pulse rounded bg-slate-600" />
+          <div className="h-4 w-24 animate-pulse rounded bg-slate-600" />
         </div>
-        <div className="h-6 bg-slate-200 rounded animate-pulse" />
-        <div className="h-4 bg-slate-200 rounded animate-pulse" />
-        <div className="h-4 w-3/4 bg-slate-200 rounded animate-pulse" />
+        <div className="h-6 animate-pulse rounded bg-slate-600" />
+        <div className="h-4 animate-pulse rounded bg-slate-600" />
+        <div className="h-4 w-3/4 animate-pulse rounded bg-slate-600" />
       </div>
     </motion.div>
   );
@@ -90,10 +102,10 @@ function BlogCardSkeleton({ index }: { index: number }) {
 function BlogCard({ post, index }: BlogCardProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  const formattedDate = useMemo(() =>
-    new Date(post.publishedAt).toLocaleDateString('tr-TR'),
-    [post.publishedAt]
-  );
+  const formattedDate = useMemo(() => {
+    const d = new Date(post.publishedAt);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('tr-TR');
+  }, [post.publishedAt]);
 
   return (
     <motion.article
@@ -107,7 +119,7 @@ function BlogCard({ post, index }: BlogCardProps) {
         className="group block h-full"
         aria-label={`${post.title} - ${post.author || 'Yazar'} - ${formattedDate}`}
       >
-        <div className="relative h-full bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-100 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
+        <div className="relative h-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-lg transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl group-hover:shadow-emerald-900/20">
           {/* Image */}
           <div className="relative h-48 overflow-hidden">
             {post.coverImage ? (
@@ -119,8 +131,8 @@ function BlogCard({ post, index }: BlogCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (
-              <div className="h-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center" aria-hidden="true">
-                <span className="text-emerald-500 text-4xl font-bold">Blog</span>
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 via-slate-800 to-emerald-950/80" aria-hidden="true">
+                <span className="text-4xl font-bold text-emerald-400/90">Blog</span>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
@@ -128,7 +140,7 @@ function BlogCard({ post, index }: BlogCardProps) {
 
           {/* Content */}
           <div className="p-6">
-            <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
+            <div className="mb-3 flex flex-wrap items-center gap-4 text-sm text-slate-400">
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" aria-hidden="true" />
                 <time dateTime={post.publishedAt}>{formattedDate}</time>
@@ -141,13 +153,13 @@ function BlogCard({ post, index }: BlogCardProps) {
               )}
             </div>
 
-            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">
+            <h3 className="mb-2 line-clamp-2 text-xl font-bold text-white transition-colors group-hover:text-emerald-400">
               {post.title}
             </h3>
 
-            <p className="text-slate-600 line-clamp-3 mb-4">{post.excerpt}</p>
+            <p className="mb-4 line-clamp-3 text-slate-300">{post.excerpt}</p>
 
-            <span className="inline-flex items-center text-emerald-600 font-medium">
+            <span className="inline-flex items-center font-medium text-emerald-400">
               Devamını Oku
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </span>
@@ -173,11 +185,13 @@ export function BlogSection({
   title = "Blog",
   description = "Temizlik ipuçları, haberler ve daha fazlası"
 }: BlogSectionProps) {
+  const pathname = usePathname();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false); // SSR hydration fix
   const [isMounted, setIsMounted] = useState(false);
 
   const shouldReduceMotion = useReducedMotion();
+  const showViewAllLink = pathname !== '/blog';
 
   // ============================================
   // MOUNT CHECK (SSR hydration fix)
@@ -198,7 +212,20 @@ export function BlogSection({
         const res = await fetch('/api/blog');
         if (!res.ok) throw new Error('Failed to fetch posts');
         const data = await res.json();
-        setPosts(Array.isArray(data) ? data.slice(0, limit) : []);
+        if (!Array.isArray(data)) {
+          setPosts([]);
+          return;
+        }
+        const mapped: BlogPost[] = data.slice(0, limit).map((p: BlogPostApiRow) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          excerpt: p.excerpt,
+          coverImage: p.image ?? undefined,
+          publishedAt: p.createdAt,
+          author: p.author,
+        }));
+        setPosts(mapped);
       } catch (error) {
         logger.error('Error fetching posts', {}, error instanceof Error ? error : undefined);
       } finally {
@@ -215,16 +242,13 @@ export function BlogSection({
   if (!isMounted || loading) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative flex-1 bg-slate-900 py-24"
         aria-label="Blog yazıları yükleniyor"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" aria-hidden="true" />
-
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900">{title}</h2>
-            <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">{description}</p>
+          <div className="mb-16 text-center">
+            <h2 className="text-4xl font-bold text-white sm:text-5xl">{title}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">{description}</p>
           </div>
 
           {/* Skeleton Grid */}
@@ -244,19 +268,18 @@ export function BlogSection({
   if (posts.length === 0) {
     return (
       <section
-        className="relative py-24 overflow-hidden"
+        className="relative flex-1 bg-slate-900 py-24"
         aria-label="Blog"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.6 }}
           >
-            <FileText className="h-16 w-16 text-emerald-300 mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">{title}</h2>
-            <p className="text-slate-600">Henüz blog yazısı bulunmuyor.</p>
+            <FileText className="mx-auto mb-4 h-16 w-16 text-emerald-400" aria-hidden="true" />
+            <h2 className="mb-2 text-2xl font-bold text-white">{title}</h2>
+            <p className="text-slate-400">Henüz blog yazısı bulunmuyor.</p>
           </motion.div>
         </div>
       </section>
@@ -268,13 +291,9 @@ export function BlogSection({
   // ============================================
   return (
     <section
-      className="relative py-24 overflow-hidden"
+      className="relative flex-1 bg-slate-900 py-24"
       aria-label="Blog"
     >
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" aria-hidden="true" />
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" aria-hidden="true" />
-
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.header
@@ -282,12 +301,12 @@ export function BlogSection({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: shouldReduceMotion ? 0.2 : 0.6 }}
-          className="text-center mb-16"
+          className="mb-16 text-center"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-slate-900 via-emerald-900 to-slate-900 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold text-white sm:text-5xl">
             {title}
           </h2>
-          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
             {description}
           </p>
         </motion.header>
@@ -303,22 +322,24 @@ export function BlogSection({
           ))}
         </div>
 
-        {/* View All Button */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: shouldReduceMotion ? 0 : 0.4 }}
-          className="mt-12 text-center"
-        >
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-white font-medium shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600"
+        {/* View All Button — ana sayfada; /blog sayfasında gizli */}
+        {showViewAllLink && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: shouldReduceMotion ? 0 : 0.4 }}
+            className="mt-12 text-center"
           >
-            Tüm Yazılar
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </motion.div>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-medium text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-600"
+            >
+              Tüm Yazılar
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </motion.div>
+        )}
       </div>
     </section>
   );
