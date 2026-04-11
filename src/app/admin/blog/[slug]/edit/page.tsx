@@ -14,12 +14,12 @@ interface BlogPost {
   excerpt: string;
   content: string;
   category: string;
-  image: string;
+  image?: string | null;
   author: string;
   tags: string[];
   published: boolean;
-  metaTitle: string;
-  metaDesc: string;
+  metaTitle?: string | null;
+  metaDesc?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -47,7 +47,10 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`/api/blog/${slug}`);
+        const res = await fetch(`/api/blog/${slug}`, { credentials: 'include' });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
         const post: BlogPost = await res.json();
         setFormData({
           title: post.title || '',
@@ -58,8 +61,8 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
           image: post.image || '',
           author: post.author || 'Gunen Temizlik',
           published: post.published ?? false,
-          metaTitle: post.metaTitle || '',
-          metaDesc: post.metaDesc || '',
+          metaTitle: post.metaTitle?.trim() || '',
+          metaDesc: post.metaDesc?.trim() || '',
         });
         setTags(post.tags || []);
       } catch (error) {
@@ -268,26 +271,41 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Meta Title</label>
-            <input
-              type="text"
-              disabled={saving}
-              value={formData.metaTitle}
-              onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-4 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            />
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Meta Description</label>
-            <input
-              type="text"
-              disabled={saving}
-              value={formData.metaDesc}
-              onChange={(e) => setFormData({ ...formData, metaDesc: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-4 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            />
+          <div className="space-y-2 md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-600 dark:bg-slate-900/40">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">SEO (Google / paylaşım)</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Boş bırakırsanız kayıtta başlık ve özetten otomatik üretilir; giriş yapmış admin için önerilen metin yüklenebilir.
+            </p>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Meta başlık
+                </label>
+                <input
+                  type="text"
+                  disabled={saving}
+                  value={formData.metaTitle}
+                  onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-4 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  placeholder="Örn: Başlık | Günen Temizlik Blog"
+                  maxLength={200}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Meta açıklama
+                </label>
+                <textarea
+                  rows={3}
+                  disabled={saving}
+                  value={formData.metaDesc}
+                  onChange={(e) => setFormData({ ...formData, metaDesc: e.target.value })}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-4 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  placeholder="Arama sonuçlarında görünecek kısa açıklama"
+                  maxLength={300}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-3 md:col-span-2">

@@ -25,6 +25,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
@@ -180,6 +181,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     console.log('Fetching blog post by slug', { slug, ip });
 
+    const secret =
+      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    const isAdmin = token?.role === 'ADMIN';
+
     // Fetch post with selective fields
     const post = await prisma.blogPost.findUnique({
       where: { slug },
@@ -209,7 +215,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only return published posts for public endpoint
+    // Admin panel: taslak dahil, görüntülenme artırılmaz; meta boşsa önerilen değerler
+    if (isAdmin) {
+      const metaTitle =
+        post.metaTitle?.trim() ||
+        resolveBlogMetaTitle(post.title, null);
+      const metaDesc =
+        post.metaDesc?.trim() ||
+        resolveBlogMetaDesc(post.excerpt, null);
+      console.log('Blog post admin fetch', { slug });
+      return NextResponse.json(
+        { ...post, metaTitle, metaDesc },
+        { headers }
+      );
+    }
+
+    // Ziyaretçi: yalnızca yayında
     if (!post.published) {
       return NextResponse.json(
         { error: 'Blog yazısı bulunamadı' },
@@ -223,7 +244,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       data: { views: { increment: 1 } },
     });
 
-    // Increment the views count in the response
     const postWithUpdatedViews = { ...post, views: post.views + 1 };
 
     console.log('Blog post retrieved and view incremented', { slug, views: postWithUpdatedViews.views });
