@@ -31,16 +31,13 @@ import type { SEOProps } from '@/types';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gunentemizlik.com';
 
 /**
- * Kanonik site kökü (sonunda `/` yok). Sitemap, robots ve Vercel önizleme URL’leri için.
+ * Kanonik site kökü (sonunda `/` yok). Sitemap ve robots için kullanılır.
+ * `VERCEL_URL` kullanılmaz: önizleme/proje adresi (*.vercel.app) olsa bile GSC
+ * yalnızca mülk alan adıyla eşleşen URL’lere izin verir.
  */
 export function getSiteUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, '');
-  const vercel = process.env.VERCEL_URL?.trim();
-  if (vercel) {
-    const host = vercel.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    return `https://${host}`;
-  }
   return 'https://gunentemizlik.com';
 }
 
