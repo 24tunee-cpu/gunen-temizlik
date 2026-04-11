@@ -33,6 +33,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 // ============================================
 // TYPES
@@ -101,11 +102,11 @@ const defaultSettings: SiteSettings = {
   favicon: '/favicon.ico',
   accentColor: '#34d399',
 
-  phone: '+90 555 123 4567',
-  email: 'info@gunentemizlik.com',
+  phone: SITE_CONTACT.phoneDisplay,
+  email: SITE_CONTACT.email,
   address: 'Ataşehir, İstanbul',
   workingHours: '7/24 Hizmet',
-  whatsapp: '+905551234567',
+  whatsapp: SITE_CONTACT.whatsappDigits,
 
   seoTitle: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24",
   seoDescription:

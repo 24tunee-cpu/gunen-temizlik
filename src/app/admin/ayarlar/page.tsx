@@ -644,7 +644,7 @@ export default function SiteSettingsPage() {
                     <input
                       value={form.whatsapp}
                       onChange={field('whatsapp')}
-                      placeholder="+90 555 123 45 67 veya https://wa.me/905551234567"
+                      placeholder="+90 546 715 28 44 veya https://wa.me/905467152844"
                       className="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                     />
                   </div>

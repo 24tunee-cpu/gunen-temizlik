@@ -19,6 +19,7 @@ import { Suspense } from 'react';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import SiteLayout from '../site/layout';
 import { ContactForm } from '@/components/site/ContactForm';
+import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 
 // ============================================
 // METADATA (SEO)
@@ -26,7 +27,7 @@ import { ContactForm } from '@/components/site/ContactForm';
 
 export const metadata: Metadata = {
   title: "İletişim | Günen Temizlik - İstanbul",
-  description: "Günen Temizlik ile iletişime geçin. İstanbul'un her bölgesinde profesyonel temizlik hizmetleri için hemen arayın: 0555 123 45 67. Ücretsiz keşif, uygun fiyatlar.",
+  description: `Günen Temizlik ile iletişime geçin. İstanbul'un her bölgesinde profesyonel temizlik hizmetleri için hemen arayın: ${SITE_CONTACT.phoneDisplay}. Ücretsiz keşif, uygun fiyatlar.`,
   keywords: [
     'istanbul temizlik iletişim',
     'günen temizlik telefon',
@@ -75,7 +76,8 @@ const contactStructuredData = {
   "contactPoint": [
     {
       "@type": "ContactPoint",
-      "telephone": "+90-555-123-4567",
+      "telephone": SITE_CONTACT.phoneE164,
+      "email": SITE_CONTACT.email,
       "contactType": "customer service",
       "availableLanguage": ["Turkish"],
       "areaServed": "TR",
@@ -105,15 +107,15 @@ const contactStructuredData = {
 const CONTACT_INFO = {
   phone: {
     label: 'Telefon',
-    value: '0555 123 45 67',
-    href: 'tel:+905551234567',
+    value: SITE_CONTACT.phoneDisplay,
+    href: toTelHref(SITE_CONTACT.phoneE164),
     icon: Phone,
     description: '7/24 ulaşabilirsiniz',
   },
   email: {
     label: 'E-posta',
-    value: 'info@gunentemizlik.com',
-    href: 'mailto:info@gunentemizlik.com',
+    value: SITE_CONTACT.email,
+    href: `mailto:${SITE_CONTACT.email}`,
     icon: Mail,
     description: '24 saat içinde dönüş yapıyoruz',
   },

@@ -10,13 +10,14 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X, Clock, MessageCircle, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 interface FloatingWhatsAppProps {
   phoneNumber?: string;
   defaultMessage?: string;
 }
 
-const ENV_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '905551234567';
+const ENV_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || SITE_CONTACT.whatsappDigits;
 const DEFAULT_MESSAGE =
   process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ||
   'Merhaba, Günen Temizlik hizmetleri hakkında bilgi almak istiyorum.';

@@ -17,6 +17,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
 import { faqPageJsonLdObject } from "@/lib/seed-faq";
+import { SITE_CONTACT } from "@/config/site-contact";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
@@ -142,8 +143,8 @@ const LOCAL_BUSINESS_SCHEMA = {
     "https://gunentemizlik.com/og-image.jpg",
   ],
   "url": "https://gunentemizlik.com",
-  "telephone": "+905551234567",
-  "email": "info@gunentemizlik.com",
+  "telephone": SITE_CONTACT.phoneE164,
+  "email": SITE_CONTACT.email,
   "priceRange": "₺₺",
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev temizliği ve koltuk yıkama hizmetleri.",
   "foundingDate": "2010",

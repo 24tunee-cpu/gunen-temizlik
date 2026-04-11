@@ -154,8 +154,8 @@ model SiteSettings {
   primaryColor    String   @default("#10b981")
   secondaryColor  String   @default("#059669")
   accentColor     String   @default("#34d399")
-  phone           String   @default("0555 123 45 67")
-  email           String   @default("info@gunentemizlik.com")
+  phone           String   @default("0546 715 2844")
+  email           String   @default("iletisim@gunentemizlik.com")
   address         String?
   workingHours    String   @default("7/24 Hizmet")
   whatsapp        String?

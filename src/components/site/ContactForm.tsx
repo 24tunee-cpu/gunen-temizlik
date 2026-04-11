@@ -15,6 +15,8 @@ import { Send, CheckCircle, Phone, Mail, MapPin, Clock, AlertCircle } from 'luci
 import logger from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { toast } from '@/store/toastStore';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 
 // ============================================
 // TYPES
@@ -44,16 +46,6 @@ interface FloatingLabelInputProps {
   variant?: 'light' | 'dark';
 }
 
-/** İletişim bilgisi tipi */
-interface ContactInfoItem {
-  icon: React.ComponentType<{ size: number; className?: string }>;
-  label: string;
-  value: string;
-  href: string;
-  color: string;
-  ariaLabel: string;
-}
-
 /** Form veri tipi */
 interface FormData {
   name: string;
@@ -66,42 +58,6 @@ interface FormData {
 // ============================================
 // CONSTANTS
 // ============================================
-
-/** İletişim bilgileri */
-const CONTACT_INFO: ContactInfoItem[] = [
-  {
-    icon: Phone,
-    label: 'Telefon',
-    value: '0555 123 45 67',
-    href: 'tel:+905551234567',
-    color: 'from-emerald-500 to-emerald-600',
-    ariaLabel: 'Telefon et: 0555 123 45 67'
-  },
-  {
-    icon: Mail,
-    label: 'E-posta',
-    value: 'info@gunentemizlik.com',
-    href: 'mailto:info@gunentemizlik.com',
-    color: 'from-blue-500 to-blue-600',
-    ariaLabel: 'E-posta gönder: info@gunentemizlik.com'
-  },
-  {
-    icon: MapPin,
-    label: 'Adres',
-    value: 'Ataşehir, İstanbul',
-    href: '#',
-    color: 'from-amber-500 to-amber-600',
-    ariaLabel: 'Adres: Ataşehir, İstanbul'
-  },
-  {
-    icon: Clock,
-    label: 'Çalışma Saatleri',
-    value: '7/24 Hizmet',
-    href: '#',
-    color: 'from-purple-500 to-purple-600',
-    ariaLabel: 'Çalışma saatleri: 7/24 Hizmet'
-  },
-];
 
 /** Hizmet seçenekleri */
 const SERVICE_OPTIONS = [
@@ -231,6 +187,52 @@ export interface ContactFormProps {
  */
 export function ContactForm({ variant = 'light' }: ContactFormProps) {
   const isDark = variant === 'dark';
+  const { settings } = useSiteSettings();
+
+  const contactCards = useMemo(
+    () => {
+      const phone = settings.phone?.trim() || SITE_CONTACT.phoneDisplay;
+      const email = settings.email?.trim() || SITE_CONTACT.email;
+      const addr = settings.address?.trim() || 'Ataşehir, İstanbul';
+      const hours = settings.workingHours?.trim() || '7/24 Hizmet';
+      return [
+        {
+          icon: Phone,
+          label: 'Telefon',
+          value: phone,
+          href: toTelHref(settings.phone?.trim() || SITE_CONTACT.phoneE164),
+          color: 'from-emerald-500 to-emerald-600',
+          ariaLabel: `Telefon: ${phone}`,
+        },
+        {
+          icon: Mail,
+          label: 'E-posta',
+          value: email,
+          href: `mailto:${email}`,
+          color: 'from-blue-500 to-blue-600',
+          ariaLabel: `E-posta: ${email}`,
+        },
+        {
+          icon: MapPin,
+          label: 'Adres',
+          value: addr,
+          href: '#',
+          color: 'from-amber-500 to-amber-600',
+          ariaLabel: `Adres: ${addr}`,
+        },
+        {
+          icon: Clock,
+          label: 'Çalışma Saatleri',
+          value: hours,
+          href: '#',
+          color: 'from-purple-500 to-purple-600',
+          ariaLabel: `Çalışma saatleri: ${hours}`,
+        },
+      ];
+    },
+    [settings.phone, settings.email, settings.address, settings.workingHours]
+  );
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -394,12 +396,7 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
             </p>
 
             <div className="mt-8 space-y-4">
-              {[
-                { icon: Phone, label: 'Telefon', value: '0555 123 45 67', href: 'tel:+905551234567', color: 'from-emerald-500 to-emerald-600', ariaLabel: 'Telefon numarası' },
-                { icon: Mail, label: 'E-posta', value: 'info@gunentemizlik.com', href: 'mailto:info@gunentemizlik.com', color: 'from-blue-500 to-blue-600', ariaLabel: 'E-posta adresi' },
-                { icon: MapPin, label: 'Adres', value: 'Ataşehir, İstanbul', href: '#', color: 'from-amber-500 to-amber-600', ariaLabel: 'Adres' },
-                { icon: Clock, label: 'Çalışma Saatleri', value: '7/24 Hizmet', href: '#', color: 'from-purple-500 to-purple-600', ariaLabel: 'Çalışma saatleri' },
-              ].map((item) => {
+              {contactCards.map((item) => {
                 const gradient = isDark ? 'from-emerald-500 to-emerald-600' : item.color;
                 return (
                 <motion.a
@@ -533,7 +530,7 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
                         onChange={(value) => handleFieldChange('phone', value)}
                         onBlur={() => handleBlur('phone')}
                         error={errors.phone}
-                        placeholder="0555 123 45 67"
+                        placeholder="0546 715 2844"
                         variant={variant}
                       />
                       <div className="relative">

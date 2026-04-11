@@ -15,6 +15,8 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Menu, X, Phone } from 'lucide-react';
 import Image from 'next/image';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 
 // ============================================
 // TYPES & CONSTANTS
@@ -25,10 +27,6 @@ interface NavLink {
   href: string;
   label: string;
 }
-
-/** Telefon numarası (güncellenebilir) */
-const PHONE_NUMBER = '+905551234567';
-const PHONE_DISPLAY = '0555 123 45 67';
 
 /** Navigasyon linkleri */
 const navLinks: NavLink[] = [
@@ -60,6 +58,10 @@ function readDocumentScrollTop(): number {
 }
 
 export function Navbar() {
+  const { settings } = useSiteSettings();
+  const phoneDisplay = settings.phone?.trim() || SITE_CONTACT.phoneDisplay;
+  const telHref = toTelHref(settings.phone?.trim() || SITE_CONTACT.phoneE164);
+
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -217,12 +219,12 @@ export function Navbar() {
             {/* CTA Button */}
             <div className="hidden lg:flex items-center gap-4">
               <a
-                href={`tel:${PHONE_NUMBER}`}
+                href={telHref}
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${scrolled ? 'text-slate-700' : 'text-white'}`}
-                aria-label={`Telefon: ${PHONE_DISPLAY}`}
+                aria-label={`Telefon: ${phoneDisplay}`}
               >
                 <Phone size={16} />
-                {PHONE_DISPLAY}
+                {phoneDisplay}
               </a>
               <Link
                 href="/iletisim"
@@ -305,12 +307,12 @@ export function Navbar() {
                   </Link>
                 ))}
                 <a
-                  href={`tel:${PHONE_NUMBER}`}
+                  href={telHref}
                   onClick={closeMenu}
                   className="flex items-center gap-3 border-b border-slate-100 py-3.5 text-base font-medium text-slate-800 sm:py-4 sm:text-lg"
                 >
                   <Phone size={20} className="shrink-0 text-emerald-600" aria-hidden />
-                  {PHONE_DISPLAY}
+                  {phoneDisplay}
                 </a>
                 <Link
                   href="/iletisim"

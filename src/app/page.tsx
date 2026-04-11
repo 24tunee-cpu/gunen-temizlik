@@ -14,6 +14,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import SiteLayout from './site/layout';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 // ============================================
 // DYNAMIC IMPORTS (Code Splitting)
@@ -109,8 +110,8 @@ const structuredData = {
     "https://gunentemizlik.com/og-image.jpg",
     "https://gunentemizlik.com/logo.png"
   ],
-  "telephone": "+905551234567",
-  "email": "info@gunentemizlik.com",
+  "telephone": SITE_CONTACT.phoneE164,
+  "email": SITE_CONTACT.email,
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev temizliği ve koltuk yıkama hizmetleri.",
   "address": {
     "@type": "PostalAddress",

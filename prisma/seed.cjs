@@ -204,20 +204,14 @@ async function seed() {
         data: {
           siteName: 'Günen Temizlik',
           siteDescription: 'Profesyonel temizlik hizmetleri',
-          contactEmail: 'info@gunentemizlik.com',
-          contactPhone: '+90 212 123 4567',
+          phone: '0546 715 2844',
+          email: 'iletisim@gunentemizlik.com',
+          whatsapp: '905467152844',
           address: 'İstanbul, Türkiye',
-          socialMedia: {
-            facebook: 'https://facebook.com/gunentemizlik',
-            instagram: 'https://instagram.com/gunentemizlik',
-            twitter: 'https://twitter.com/gunentemizlik'
-          },
-          seo: {
-            title: 'Günen Temizlik - Profesyonel Temizlik Hizmetleri',
-            description: 'Ev ve ofis temizliği, inşaat sonrası temizlik, halı yıkama ve daha fazlası için bize ulaşın.',
-            keywords: ['temizlik', 'ofis temizliği', 'ev temizliği', 'istanbul temizlik']
-          }
-        }
+          facebook: 'https://facebook.com/gunentemizlik',
+          instagram: 'https://instagram.com/gunentemizlik',
+          twitter: 'https://twitter.com/gunentemizlik',
+        },
       });
       logger.success('Site ayarları eklendi');
       results.created++;

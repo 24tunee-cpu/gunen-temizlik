@@ -19,6 +19,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { TeamSection } from '../../components/site/TeamSection';
+import { SITE_CONTACT } from '@/config/site-contact';
 import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide-react';
 
 // ============================================
@@ -91,7 +92,8 @@ const organizationSchema = {
   },
   "contactPoint": {
     "@type": "ContactPoint",
-    "telephone": "+90-555-123-4567",
+    "telephone": SITE_CONTACT.phoneE164,
+    "email": SITE_CONTACT.email,
     "contactType": "customer service",
     "availableLanguage": ["Turkish"]
   },

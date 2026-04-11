@@ -9,6 +9,7 @@ import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 import type { SiteSettings as SiteSettingsRow } from '@prisma/client';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -37,11 +38,11 @@ function defaultCreateData(): Omit<SiteSettingsRow, 'id' | 'updatedAt'> {
     primaryColor: '#10b981',
     secondaryColor: '#059669',
     accentColor: '#34d399',
-    phone: '0555 123 45 67',
-    email: 'info@gunentemizlik.com',
+    phone: SITE_CONTACT.phoneDisplay,
+    email: SITE_CONTACT.email,
     address: 'İstanbul, Türkiye',
     workingHours: '7/24 Hizmet',
-    whatsapp: null,
+    whatsapp: SITE_CONTACT.whatsappDigits,
     facebook: null,
     instagram: null,
     twitter: null,

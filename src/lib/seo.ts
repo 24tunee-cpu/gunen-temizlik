@@ -22,6 +22,7 @@
 
 import { Metadata } from 'next';
 import type { SEOProps } from '@/types';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 // ============================================
 // SITE CONFIGURATION
@@ -50,8 +51,8 @@ const SITE_CONFIG = {
   description: 'İstanbul\'un önde gelen profesyonel temizlik şirketi',
   locale: 'tr_TR',
   language: 'tr',
-  telephone: '+905551234567',
-  email: 'info@gunentemizlik.com',
+  telephone: SITE_CONTACT.phoneE164,
+  email: SITE_CONTACT.email,
   address: {
     street: 'Atatürk Mah. Turgut Özal Bulvarı No:123',
     locality: 'Ataşehir',

@@ -15,6 +15,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles, MapPin, Phone, Mail, Send, Globe, Share2, MessageCircle, ArrowUp } from 'lucide-react';
 import { useState, useCallback, useMemo } from 'react';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { toTelHref } from '@/config/site-contact';
 
 // ============================================
 // TYPES
@@ -61,12 +62,6 @@ const FOOTER_LINKS: FooterLinkGroup = {
     { label: 'İletişim', href: '/iletisim' },
   ],
 };
-
-/** tel: için sadece rakam ve + */
-function toTelHref(phone: string): string {
-  const cleaned = phone.replace(/[^\d+]/g, '');
-  return cleaned ? `tel:${cleaned}` : 'tel:';
-}
 
 // ============================================
 // COMPONENT

@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { FAQ_SEED_DATA } from './seed-faq';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 // ============================================
 // GÜNEN TEMİZLİK - ULTIMATE SEO STRATEGY
@@ -209,8 +210,8 @@ export function generateLocalBusinessSchema() {
       'https://gunentemizlik.com/team-photo.jpg',
     ],
     url: 'https://gunentemizlik.com',
-    telephone: '+905551234567',
-    email: 'info@gunentemizlik.com',
+    telephone: SITE_CONTACT.phoneE164,
+    email: SITE_CONTACT.email,
     priceRange: '₺₺',
     currenciesAccepted: 'TRY',
     paymentAccepted: 'Cash, Credit Card, Bank Transfer',

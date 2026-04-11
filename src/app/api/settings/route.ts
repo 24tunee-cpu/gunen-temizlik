@@ -29,6 +29,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { SITE_CONTACT } from '@/config/site-contact';
 
 // ============================================
 // CONFIGURATION
@@ -46,11 +47,11 @@ const DEFAULT_SETTINGS = {
   primaryColor: '#10b981',
   secondaryColor: '#059669',
   accentColor: '#34d399',
-  phone: '+90 555 123 4567',
-  email: 'info@gunentemizlik.com',
+  phone: SITE_CONTACT.phoneDisplay,
+  email: SITE_CONTACT.email,
   address: 'Ataşehir, İstanbul',
   workingHours: '7/24 Hizmet',
-  whatsapp: '+905551234567',
+  whatsapp: SITE_CONTACT.whatsappDigits,
   facebook: 'https://facebook.com/gunentemizlik',
   instagram: 'https://instagram.com/gunentemizlik',
   twitter: '',
