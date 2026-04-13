@@ -10,17 +10,25 @@ git add .
 git commit -m "Initial commit"
 git branch -M main
 
-# GitHub reposu oluştur (örn: gunen-temizlik)
-git remote add origin https://github.com/KULLANICI_ADI/gunen-temizlik.git
+# Kanonik repo (org/user adı: 24tunee-cpu — tun**ee**, çift e)
+git remote add origin https://github.com/24tunee-cpu/gunen-temizlik.git
 git push -u origin main
 ```
 
 ### Adım 2: Vercel'e Bağla
 1. https://vercel.com adresine git
 2. GitHub ile login ol
-3. "Add New Project" → GitHub reposunu seç
+3. "Add New Project" → **`24tunee-cpu/gunen-temizlik`** reposunu seç (aşağıdaki uyarıya dikkat)
 4. Framework Preset: **Next.js** (otomatik seçilecek)
 5. "Deploy" butonuna tıkla
+
+#### Git deposu adı (sık hata)
+Push’lar **yalnızca** şu repoya gidiyorsa Vercel otomatik build alır: **[24tunee-cpu/gunen-temizlik](https://github.com/24tunee-cpu/gunen-temizlik)**.
+
+- **Doğru:** `24tunee-cpu` → `tun` + `ee` + `-cpu`
+- **Yanlış:** `24tunes-cpu` → `tunes` (**s** ile); bu **başka** bir kullanıcı/org gibi görünür, repo farklıdır. Vercel yanlışlıkla buna bağlıysa `main`’e push yapsanız bile deployment oluşmaz.
+
+Kontrol: `git remote -v` çıktısı `github.com/24tunee-cpu/gunen-temizlik` olmalı. Vercel’de **Settings → Git → Connected Git Repository** aynı repoyu göstermeli; değilse **Disconnect** → tekrar **Connect** ile `24tunee-cpu/gunen-temizlik` seçin.
 
 ### Adım 3: Environment Variables Ekle
 Vercel Dashboard → Project Settings → Environment Variables:
@@ -28,7 +36,7 @@ Vercel Dashboard → Project Settings → Environment Variables:
 ```
 NEXTAUTH_URL=https://gunentemizlik.com
 NEXTAUTH_SECRET=your-secret-here
-DATABASE_URL=mongodb+srv://kronigaz_db_user:PYa2o2LUy2kWpX2C@cluster0.bhabjmw.mongodb.net/gunentemizlik?retryWrites=true&w=majority&appName=Cluster0
+DATABASE_URL=mongodb+srv://USER:PASSWORD@cluster.mongodb.net/DATABASE?retryWrites=true&w=majority
 ```
 
 ### Adım 4: Domain Bağla
