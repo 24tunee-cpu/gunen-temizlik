@@ -5,9 +5,12 @@ import SiteLayout from '../../../site/layout';
 import {
   DISTRICT_LANDINGS,
   SERVICE_LANDINGS,
+  buildProgrammaticContentVariant,
   getDistrictBySlug,
+  getNearbyDistrictSlugs,
   getServiceBySlug,
 } from '@/config/programmatic-seo';
+import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
 
 type Props = {
   params: Promise<{ district: string; service: string }>;
@@ -34,6 +37,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${districtData.name} ${serviceData.name} | Günen Temizlik`;
   const description = `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
   const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
+  const contentVariant = buildProgrammaticContentVariant(districtData, serviceData);
+  const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
+    .map((slug) => getDistrictBySlug(slug))
+    .filter((d): d is NonNullable<typeof d> => !!d);
 
   return {
     title,
@@ -58,6 +65,10 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
   if (!districtData || !serviceData) notFound();
 
   const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
+  const contentVariant = buildProgrammaticContentVariant(districtData, serviceData);
+  const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
+    .map((slug) => getDistrictBySlug(slug))
+    .filter((d): d is NonNullable<typeof d> => !!d);
 
   const serviceSchema = {
     '@context': 'https://schema.org',
@@ -71,7 +82,7 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
       url: 'https://gunentemizlik.com',
     },
     url: canonical,
-    description: `${districtData.name} bölgesinde ${serviceData.shortPitch}`,
+    description: `${districtData.name} bölgesinde ${contentVariant.heroLead}`,
   };
 
   const faqSchema = {
@@ -115,18 +126,27 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold sm:text-4xl">{districtData.name} {serviceData.name}</h1>
             <p className="mt-4 text-slate-300">
-              {districtData.name} bölgesinde {serviceData.name.toLowerCase()} hizmeti arayan kullanıcılar için bu sayfayı
-              hazırladık. {serviceData.shortPitch}
+              {contentVariant.heroLead}
             </p>
 
             <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
               <h2 className="text-xl font-semibold">Neden bu bölgede bizi tercih ediyorlar?</h2>
               <ul className="mt-4 space-y-2 text-slate-300">
-                <li>- {districtData.populationNote} yapısına uygun planlama</li>
-                <li>- Bölgeye yakın ekip yönlendirmesi ile hızlı randevu</li>
-                <li>- Şeffaf fiyat ve keşif sonrası net iş kapsamı</li>
+                {contentVariant.trustPoints.map((point) => (
+                  <li key={point}>- {point}</li>
+                ))}
               </ul>
+              <p className="mt-4 text-sm text-slate-400">{contentVariant.localAngle}</p>
             </div>
+
+            <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
+              <h2 className="text-xl font-semibold">Hizmet Süreci</h2>
+              <ol className="mt-4 list-decimal space-y-2 pl-5 text-slate-300">
+                {contentVariant.processSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </section>
 
             <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
               <h2 className="text-xl font-semibold">Sık Sorulan Sorular</h2>
@@ -136,6 +156,28 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
                     <h3 className="font-medium text-white">{faq.q}</h3>
                     <p className="mt-1 text-sm text-slate-300">{faq.a}</p>
                   </div>
+                ))}
+              </div>
+            </section>
+
+            <ProgrammaticCtaExperiment
+              districtName={districtData.name}
+              districtSlug={districtData.slug}
+              serviceName={serviceData.name}
+              serviceSlug={serviceData.slug}
+            />
+
+            <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/30 p-6">
+              <h2 className="text-xl font-semibold">Yakın Bölge Sayfaları</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {nearbyDistricts.map((nearby) => (
+                  <Link
+                    key={nearby.slug}
+                    href={`/bolgeler/${nearby.slug}/${serviceData.slug}`}
+                    className="rounded-full border border-slate-600 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-emerald-500/60 hover:text-emerald-300"
+                  >
+                    {nearby.name} {serviceData.name}
+                  </Link>
                 ))}
               </div>
             </section>

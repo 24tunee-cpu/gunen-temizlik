@@ -13,6 +13,13 @@ export type ServiceLanding = {
   faq: Array<{ q: string; a: string }>;
 };
 
+export type ProgrammaticContentVariant = {
+  heroLead: string;
+  trustPoints: string[];
+  processSteps: string[];
+  localAngle: string;
+};
+
 export const DISTRICT_LANDINGS: DistrictLanding[] = [
   {
     slug: 'atasehir',
@@ -164,4 +171,76 @@ export function allProgrammaticLandingPaths(): string[] {
     }
   }
   return paths;
+}
+
+const HERO_TEMPLATES = [
+  '{district} bölgesinde {serviceLower} ihtiyacında hızlı ekip yönlendirmesi ve net iş planı sunuyoruz.',
+  '{district} için planlı {serviceLower} hizmetinde keşif sonrası kapsamı şeffaf biçimde paylaşıyoruz.',
+  '{district} içinde {serviceLower} arayan kullanıcılar için hızlı randevu ve profesyonel uygulama sağlıyoruz.',
+];
+
+const LOCAL_ANGLES = [
+  '{district} bölgesindeki {neighborhood} çevresinde yoğun talep saatlerine göre ekip planlaması yapıyoruz.',
+  '{district} için mahalle bazlı rota planı ile bekleme süresini azaltıyoruz ({neighborhood} dahil).',
+  '{district} tarafında özellikle {neighborhood} hattında düzenli operasyon tecrübemiz bulunuyor.',
+];
+
+const TRUST_POINT_TEMPLATES = [
+  'İş öncesi kapsam netliği: hangi alanların temizleneceği baştan belirlenir.',
+  'Yüzeye uygun ürün seçimi ve kontrol listesi ile standart kalite sağlanır.',
+  'Tamamlanan iş sonrası kontrol adımı ile eksik noktalar hızlıca kapatılır.',
+];
+
+const PROCESS_STEP_TEMPLATES = [
+  'İhtiyaç bilgisi alınır ve keşif/brief ile iş kapsamı netleştirilir.',
+  'Ekip planlaması yapılarak bölgeye en uygun saat aralığı belirlenir.',
+  'Uygulama tamamlandıktan sonra kalite kontrol ile teslim yapılır.',
+];
+
+function hashKey(input: string): number {
+  let h = 0;
+  for (let i = 0; i < input.length; i++) {
+    h = (h * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+function fillTemplate(template: string, district: DistrictLanding, service: ServiceLanding): string {
+  const neighborhood = district.neighborhoods[0] ?? district.name;
+  return template
+    .replaceAll('{district}', district.name)
+    .replaceAll('{service}', service.name)
+    .replaceAll('{serviceLower}', service.name.toLowerCase())
+    .replaceAll('{neighborhood}', neighborhood);
+}
+
+export function buildProgrammaticContentVariant(
+  district: DistrictLanding,
+  service: ServiceLanding
+): ProgrammaticContentVariant {
+  const seed = hashKey(`${district.slug}:${service.slug}`);
+
+  const heroLead = fillTemplate(HERO_TEMPLATES[seed % HERO_TEMPLATES.length], district, service);
+  const localAngle = fillTemplate(LOCAL_ANGLES[(seed + 1) % LOCAL_ANGLES.length], district, service);
+
+  const trustPoints = TRUST_POINT_TEMPLATES.map((t) => fillTemplate(t, district, service));
+  const processSteps = PROCESS_STEP_TEMPLATES.map((t) => fillTemplate(t, district, service));
+
+  return {
+    heroLead,
+    trustPoints,
+    processSteps,
+    localAngle,
+  };
+}
+
+export function getNearbyDistrictSlugs(currentSlug: string, count = 3): string[] {
+  const index = DISTRICT_LANDINGS.findIndex((d) => d.slug === currentSlug);
+  if (index === -1) return DISTRICT_LANDINGS.slice(0, count).map((d) => d.slug);
+  const results: string[] = [];
+  for (let i = 1; i <= DISTRICT_LANDINGS.length && results.length < count; i++) {
+    const d = DISTRICT_LANDINGS[(index + i) % DISTRICT_LANDINGS.length];
+    if (d.slug !== currentSlug) results.push(d.slug);
+  }
+  return results;
 }
