@@ -39,6 +39,16 @@ type ChecklistRow = {
   note: string | null;
 };
 
+type SyncInfo = {
+  id: string;
+  source: string;
+  status: string;
+  message: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  stats?: Record<string, unknown> | null;
+};
+
 type Recommendation = {
   id: string;
   priority: 'high' | 'medium' | 'low';
@@ -79,6 +89,7 @@ export default function SeoAutomationPage() {
   const [rows, setRows] = useState<OverrideRow[]>([]);
   const [checklist, setChecklist] = useState<ChecklistRow[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [latestSync, setLatestSync] = useState<SyncInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -88,6 +99,7 @@ export default function SeoAutomationPage() {
   const [importLoading, setImportLoading] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [checklistSavingKey, setChecklistSavingKey] = useState<string | null>(null);
+  const [syncingChecklist, setSyncingChecklist] = useState(false);
 
   const [form, setForm] = useState(emptyForm);
 
@@ -113,11 +125,12 @@ export default function SeoAutomationPage() {
       if (!recoRes.ok) throw new Error(`Öneriler yüklenemedi (${recoRes.status})`);
 
       const metaData = (await metaRes.json()) as OverrideRow[];
-      const checklistData = (await checklistRes.json()) as { rows?: ChecklistRow[] };
+      const checklistData = (await checklistRes.json()) as { rows?: ChecklistRow[]; latestSync?: SyncInfo };
       const recoData = (await recoRes.json()) as { recommendations?: Recommendation[] };
 
       setRows(Array.isArray(metaData) ? metaData : []);
       setChecklist(Array.isArray(checklistData.rows) ? checklistData.rows : []);
+      setLatestSync(checklistData.latestSync || null);
       setRecommendations(Array.isArray(recoData.recommendations) ? recoData.recommendations : []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Yüklenemedi.');
@@ -241,6 +254,24 @@ export default function SeoAutomationPage() {
     }
   };
 
+  const runChecklistAutomation = async () => {
+    try {
+      setSyncingChecklist(true);
+      const res = await fetch('/api/admin/seo-checklist/auto-sync', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      if (!res.ok) throw new Error(body?.message || `Checklist otomasyon hatası (${res.status})`);
+      setImportMsg(body?.message || 'Checklist otomasyon tamamlandı.');
+      await load();
+    } catch (e) {
+      setImportMsg(e instanceof Error ? e.message : 'Checklist otomasyon çalıştırılamadı.');
+    } finally {
+      setSyncingChecklist(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -267,12 +298,27 @@ export default function SeoAutomationPage() {
             <p className="mt-1 text-sm text-emerald-700/90 dark:text-emerald-200/80">
               Checklist ilerlemesi: {checklistSummary.completed}/{checklistSummary.total} ({checklistSummary.percent}%)
             </p>
+            {latestSync?.finishedAt && (
+              <p className="mt-1 text-xs text-emerald-700/80 dark:text-emerald-200/70">
+                Son otomatik sync: {new Date(latestSync.finishedAt).toLocaleString('tr-TR')} ({latestSync.status})
+              </p>
+            )}
           </div>
-          <div className="h-3 w-full max-w-[260px] overflow-hidden rounded-full bg-emerald-200 dark:bg-emerald-900/50">
-            <div
-              className="h-full bg-emerald-500 transition-all"
-              style={{ width: `${checklistSummary.percent}%` }}
-            />
+          <div className="flex w-full max-w-[320px] flex-col gap-2">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-emerald-200 dark:bg-emerald-900/50">
+              <div
+                className="h-full bg-emerald-500 transition-all"
+                style={{ width: `${checklistSummary.percent}%` }}
+              />
+            </div>
+            <button
+              type="button"
+              disabled={syncingChecklist}
+              onClick={() => void runChecklistAutomation()}
+              className="rounded-lg border border-emerald-300 bg-white/70 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-white disabled:opacity-50 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+            >
+              {syncingChecklist ? 'Checklist otomasyonu çalışıyor...' : 'Checklist Otomasyonunu Çalıştır'}
+            </button>
           </div>
         </div>
       </section>

@@ -1,42 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SEO_CHECKLIST_SEED } from '@/config/seo-checklist';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
-
-async function ensureSeedRows() {
-  for (const item of SEO_CHECKLIST_SEED) {
-    await prisma.seoChecklistStatus.upsert({
-      where: { key: item.key },
-      create: {
-        key: item.key,
-        section: item.section,
-        label: item.label,
-        sortOrder: item.sortOrder,
-      },
-      update: {
-        section: item.section,
-        label: item.label,
-        sortOrder: item.sortOrder,
-      },
-    });
-  }
-}
+import { ensureSeoChecklistSeedRows } from '@/lib/seo-checklist';
 
 export async function GET(request: NextRequest) {
   const authError = await requireAdminAuth(request);
   if (authError) return authError;
 
-  await ensureSeedRows();
+  await ensureSeoChecklistSeedRows();
 
-  const rows = await prisma.seoChecklistStatus.findMany({
-    orderBy: [{ sortOrder: 'asc' }, { section: 'asc' }],
-  });
+  const [rows, latestSync] = await Promise.all([
+    prisma.seoChecklistStatus.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { section: 'asc' }],
+    }),
+    prisma.seoAutomationSyncLog.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        source: true,
+        status: true,
+        message: true,
+        startedAt: true,
+        finishedAt: true,
+        stats: true,
+      },
+    }),
+  ]);
   const summary = {
     total: rows.length,
     completed: rows.filter((r) => r.completed).length,
   };
 
-  return NextResponse.json({ summary, rows });
+  return NextResponse.json({ summary, rows, latestSync });
 }
 
 export async function PUT(request: NextRequest) {

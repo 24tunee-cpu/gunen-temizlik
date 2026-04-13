@@ -312,6 +312,38 @@ model SeoChecklistStatus {
   @@map("seo_checklist_statuses")
 }
 
+model GscLandingMetric {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String
+  pagePath    String
+  date        DateTime
+  clicks      Float    @default(0)
+  impressions Float    @default(0)
+  ctr         Float    @default(0)
+  position    Float    @default(99)
+  topQuery    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([key, date])
+  @@index([date, impressions])
+  @@map("gsc_landing_metrics")
+}
+
+model SeoAutomationSyncLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  source     String   @default("manual")
+  status     String
+  message    String?
+  stats      Json?
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt, status])
+  @@map("seo_automation_sync_logs")
+}
+
 enum Role {
   USER
   ADMIN
