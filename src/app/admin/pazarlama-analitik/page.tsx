@@ -61,6 +61,43 @@ export default function MarketingAnalyticsPage() {
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   }, [data]);
 
+  const ctaVariantStats = useMemo(() => {
+    const buckets = {
+      A: { total: 0, phone: 0, whatsapp: 0, email: 0 },
+      B: { total: 0, phone: 0, whatsapp: 0, email: 0 },
+    };
+    for (const evt of data?.events || []) {
+      const source = evt.source || '';
+      let variant: 'A' | 'B' | null = null;
+      if (source.includes('programmatic-cta-A')) variant = 'A';
+      if (source.includes('programmatic-cta-B')) variant = 'B';
+      if (!variant) continue;
+      buckets[variant].total += 1;
+      if (evt.eventType === 'phone_click') buckets[variant].phone += 1;
+      if (evt.eventType === 'whatsapp_click') buckets[variant].whatsapp += 1;
+      if (evt.eventType === 'email_click') buckets[variant].email += 1;
+    }
+    return buckets;
+  }, [data]);
+
+  const landingPerformance = useMemo(() => {
+    const map = new Map<string, { total: number; phone: number; whatsapp: number; email: number }>();
+    for (const evt of data?.events || []) {
+      const page = evt.pagePath || '';
+      if (!page.startsWith('/bolgeler/')) continue;
+      const bucket = map.get(page) || { total: 0, phone: 0, whatsapp: 0, email: 0 };
+      bucket.total += 1;
+      if (evt.eventType === 'phone_click') bucket.phone += 1;
+      if (evt.eventType === 'whatsapp_click') bucket.whatsapp += 1;
+      if (evt.eventType === 'email_click') bucket.email += 1;
+      map.set(page, bucket);
+    }
+    return [...map.entries()]
+      .map(([page, stat]) => ({ page, ...stat }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 12);
+  }, [data]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -174,6 +211,67 @@ export default function MarketingAnalyticsPage() {
                       <tr>
                         <td colSpan={4} className="px-2 py-6 text-center text-slate-500">
                           Henüz event kaydı yok.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">CTA A/B Sonuçları</h2>
+              <div className="mt-3 overflow-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="px-2 py-2">Varyant</th>
+                      <th className="px-2 py-2">Toplam</th>
+                      <th className="px-2 py-2">Telefon</th>
+                      <th className="px-2 py-2">WhatsApp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(['A', 'B'] as const).map((variant) => (
+                      <tr key={variant} className="border-b border-slate-100 dark:border-slate-800">
+                        <td className="px-2 py-2 font-medium text-slate-900 dark:text-slate-100">{variant}</td>
+                        <td className="px-2 py-2">{ctaVariantStats[variant].total}</td>
+                        <td className="px-2 py-2">{ctaVariantStats[variant].phone}</td>
+                        <td className="px-2 py-2">{ctaVariantStats[variant].whatsapp}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Landing Performansı</h2>
+              <div className="mt-3 max-h-[280px] overflow-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="px-2 py-2">Sayfa</th>
+                      <th className="px-2 py-2">Toplam</th>
+                      <th className="px-2 py-2">Ara</th>
+                      <th className="px-2 py-2">WA</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {landingPerformance.map((row) => (
+                      <tr key={row.page} className="border-b border-slate-100 dark:border-slate-800">
+                        <td className="px-2 py-2 text-slate-700 dark:text-slate-300">{row.page}</td>
+                        <td className="px-2 py-2">{row.total}</td>
+                        <td className="px-2 py-2">{row.phone}</td>
+                        <td className="px-2 py-2">{row.whatsapp}</td>
+                      </tr>
+                    ))}
+                    {landingPerformance.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-2 py-6 text-center text-slate-500">
+                          Programatik landing event verisi yok.
                         </td>
                       </tr>
                     )}

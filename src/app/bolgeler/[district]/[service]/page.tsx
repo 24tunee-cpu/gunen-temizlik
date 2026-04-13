@@ -9,7 +9,6 @@ import {
   buildProgrammaticContentVariant,
   getDistrictBySlug,
   getNearbyDistrictSlugs,
-  getProgrammaticMetaOverride,
   getServiceBySlug,
 } from '@/config/programmatic-seo';
 import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
@@ -18,6 +17,8 @@ import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 type Props = {
   params: Promise<{ district: string; service: string }>;
 };
+
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return DISTRICT_LANDINGS.flatMap((district) =>
@@ -37,11 +38,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Sayfa Bulunamadı | Günen Temizlik' };
   }
 
-  const override = getProgrammaticMetaOverride(districtData.slug, serviceData.slug);
+  const key = `${districtData.slug}/${serviceData.slug}`;
+  const override = await prisma.programmaticMetaOverride.findUnique({
+    where: { key },
+    select: { title: true, description: true, isActive: true },
+  });
   const title =
-    override?.title?.trim() || `${districtData.name} ${serviceData.name} | Günen Temizlik`;
+    (override?.isActive && override?.title?.trim()) ||
+    `${districtData.name} ${serviceData.name} | Günen Temizlik`;
   const description =
-    override?.description?.trim() ||
+    (override?.isActive && override?.description?.trim()) ||
     `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
   const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
 

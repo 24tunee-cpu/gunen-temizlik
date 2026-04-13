@@ -279,6 +279,22 @@ model MarketingEvent {
   @@map("marketing_events")
 }
 
+model ProgrammaticMetaOverride {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  district    String
+  service     String
+  title       String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([district, service])
+  @@index([isActive, updatedAt])
+  @@map("programmatic_meta_overrides")
+}
+
 enum Role {
   USER
   ADMIN

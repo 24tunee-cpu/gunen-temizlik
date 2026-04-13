@@ -16,6 +16,7 @@ import {
   DollarSign,
   FolderOpen,
   BarChart3,
+  WandSparkles,
 } from 'lucide-react';
 
 export type AdminMenuItem = {
@@ -66,6 +67,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { href: '/admin/talepler', label: 'Müşteri talepleri', icon: MessageSquare, ariaLabel: 'İletişim talepleri' },
       { href: '/admin/ebulten', label: 'E-bülten', icon: Mail, ariaLabel: 'Bülten aboneleri' },
       { href: '/admin/pazarlama-analitik', label: 'Pazarlama analitik', icon: BarChart3, ariaLabel: 'Pazarlama performansı' },
+      { href: '/admin/seo-otomasyon', label: 'SEO otomasyon', icon: WandSparkles, ariaLabel: 'Programatik SEO otomasyon' },
     ],
   },
   {
