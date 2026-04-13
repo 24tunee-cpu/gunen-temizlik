@@ -10,6 +10,7 @@ export type ServiceLanding = {
   name: string;
   shortPitch: string;
   intentKeywords: string[];
+  blogTagHints: string[];
   faq: Array<{ q: string; a: string }>;
 };
 
@@ -19,6 +20,13 @@ export type ProgrammaticContentVariant = {
   processSteps: string[];
   localAngle: string;
 };
+
+type ProgrammaticMetaOverride = {
+  title?: string;
+  description?: string;
+};
+
+import metaOverrides from '@/config/programmatic-meta-overrides.json';
 
 export const DISTRICT_LANDINGS: DistrictLanding[] = [
   {
@@ -77,6 +85,7 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     name: 'İnşaat Sonrası Temizlik',
     shortPitch: 'İnce inşaat tozu, moloz kalıntısı ve yüzey detay temizliğini profesyonel ekip ile tamamlarız.',
     intentKeywords: ['inşaat sonrası temizlik fiyatı', 'inşaat sonrası detay temizlik', 'taşınma öncesi temizlik'],
+    blogTagHints: ['inşaat', 'temizlik', 'ev temizliği'],
     faq: [
       {
         q: 'İnşaat sonrası temizlik ne kadar sürer?',
@@ -93,6 +102,7 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     name: 'Ofis Temizliği',
     shortPitch: 'Günlük, haftalık ve aylık planlarla ofisinizde hijyen standardını kesintisiz koruruz.',
     intentKeywords: ['ofis temizlik şirketi', 'kurumsal ofis temizliği', 'düzenli ofis temizlik hizmeti'],
+    blogTagHints: ['ofis', 'kurumsal', 'hijyen'],
     faq: [
       {
         q: 'Mesai dışı ofis temizliği yapıyor musunuz?',
@@ -109,6 +119,7 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     name: 'Koltuk Yıkama',
     shortPitch: 'Yerinde koltuk yıkama ile kumaşa uygun uygulama yapar, kuruma süresini optimize ederiz.',
     intentKeywords: ['yerinde koltuk yıkama', 'koltuk yıkama fiyatları', 'profesyonel koltuk temizliği'],
+    blogTagHints: ['koltuk', 'ev temizliği', 'hijyen'],
     faq: [
       {
         q: 'Koltuk yıkama sonrası kuruma süresi ne kadar?',
@@ -125,6 +136,7 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     name: 'Halı Temizliği',
     shortPitch: 'Halı tipine göre doğru ürün ve teknikle derinlemesine hijyen sağlarız.',
     intentKeywords: ['halı temizliği istanbul', 'profesyonel halı yıkama', 'yerinde halı temizleme'],
+    blogTagHints: ['halı', 'ev temizliği', 'hijyen'],
     faq: [
       {
         q: 'Her halı türü için aynı yöntem mi uygulanıyor?',
@@ -141,6 +153,7 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     name: 'Dış Cephe Temizliği',
     shortPitch: 'Cam ve cephe yüzeylerinde iş güvenliği odaklı, ekipmanlı dış cephe temizliği sunarız.',
     intentKeywords: ['dış cephe temizliği', 'plaza cam temizliği', 'yüksek kat cam temizliği'],
+    blogTagHints: ['cam', 'dış cephe', 'ofis'],
     faq: [
       {
         q: 'Yüksek kat cephe temizliği güvenli mi?',
@@ -243,4 +256,16 @@ export function getNearbyDistrictSlugs(currentSlug: string, count = 3): string[]
     if (d.slug !== currentSlug) results.push(d.slug);
   }
   return results;
+}
+
+export function getProgrammaticMetaOverride(
+  districtSlug: string,
+  serviceSlug: string
+): ProgrammaticMetaOverride | null {
+  const key = `${districtSlug}/${serviceSlug}`;
+  const map = metaOverrides as Record<string, ProgrammaticMetaOverride>;
+  if (!map[key]) return null;
+  const raw = map[key];
+  const hasValue = Boolean(raw?.title?.trim() || raw?.description?.trim());
+  return hasValue ? raw : null;
 }

@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteLayout from '../../../site/layout';
+import { prisma } from '@/lib/prisma';
 import {
   DISTRICT_LANDINGS,
   SERVICE_LANDINGS,
   buildProgrammaticContentVariant,
   getDistrictBySlug,
   getNearbyDistrictSlugs,
+  getProgrammaticMetaOverride,
   getServiceBySlug,
 } from '@/config/programmatic-seo';
 import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
@@ -34,13 +36,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Sayfa Bulunamadı | Günen Temizlik' };
   }
 
-  const title = `${districtData.name} ${serviceData.name} | Günen Temizlik`;
-  const description = `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
+  const override = getProgrammaticMetaOverride(districtData.slug, serviceData.slug);
+  const title =
+    override?.title?.trim() || `${districtData.name} ${serviceData.name} | Günen Temizlik`;
+  const description =
+    override?.description?.trim() ||
+    `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
   const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
-  const contentVariant = buildProgrammaticContentVariant(districtData, serviceData);
-  const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
-    .map((slug) => getDistrictBySlug(slug))
-    .filter((d): d is NonNullable<typeof d> => !!d);
 
   return {
     title,
@@ -69,6 +71,25 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
   const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
     .map((slug) => getDistrictBySlug(slug))
     .filter((d): d is NonNullable<typeof d> => !!d);
+  const relatedBlogs = await prisma.blogPost.findMany({
+    where: {
+      published: true,
+      OR: [
+        { tags: { hasSome: serviceData.blogTagHints } },
+        { title: { contains: districtData.name, mode: 'insensitive' } },
+        { excerpt: { contains: districtData.name, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: [{ updatedAt: 'desc' }, { views: 'desc' }],
+    take: 4,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      category: true,
+    },
+  });
 
   const serviceSchema = {
     '@context': 'https://schema.org',
@@ -181,6 +202,28 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
                 ))}
               </div>
             </section>
+
+            {relatedBlogs.length > 0 && (
+              <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/30 p-6">
+                <h2 className="text-xl font-semibold">İlgili Blog Rehberleri</h2>
+                <p className="mt-2 text-sm text-slate-400">
+                  Bu hizmete karar verirken işinize yarayacak içerikler:
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {relatedBlogs.map((post) => (
+                    <Link
+                      key={post.id}
+                      href={`/blog/${post.slug}`}
+                      className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 transition-colors hover:border-emerald-500/40 hover:bg-slate-800"
+                    >
+                      <p className="text-xs text-emerald-300">{post.category}</p>
+                      <p className="mt-1 font-medium text-white">{post.title}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-400">{post.excerpt}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
