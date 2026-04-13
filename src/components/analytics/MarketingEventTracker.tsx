@@ -15,6 +15,24 @@ function pushEvent(eventName: string, params: Record<string, unknown>) {
   window.gtag?.('event', eventName, params);
 }
 
+function sendToBackend(payload: Record<string, unknown>) {
+  if (typeof window === 'undefined') return;
+  const body = JSON.stringify(payload);
+
+  if (navigator.sendBeacon) {
+    const blob = new Blob([body], { type: 'application/json' });
+    navigator.sendBeacon('/api/marketing-events', blob);
+    return;
+  }
+
+  void fetch('/api/marketing-events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+  });
+}
+
 export default function MarketingEventTracker() {
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -32,32 +50,38 @@ export default function MarketingEventTracker() {
       const location = window.location.pathname;
 
       if (href.startsWith('tel:')) {
-        pushEvent('phone_click', {
+        const payload = {
           link_url: href,
           link_text: text,
           source,
           location,
-        });
+        };
+        pushEvent('phone_click', payload);
+        sendToBackend({ eventType: 'phone_click', ...payload });
         return;
       }
 
       if (href.includes('wa.me') || href.includes('whatsapp.com')) {
-        pushEvent('whatsapp_click', {
+        const payload = {
           link_url: href,
           link_text: text,
           source,
           location,
-        });
+        };
+        pushEvent('whatsapp_click', payload);
+        sendToBackend({ eventType: 'whatsapp_click', ...payload });
         return;
       }
 
       if (href.startsWith('mailto:')) {
-        pushEvent('email_click', {
+        const payload = {
           link_url: href,
           link_text: text,
           source,
           location,
-        });
+        };
+        pushEvent('email_click', payload);
+        sendToBackend({ eventType: 'email_click', ...payload });
       }
     };
 

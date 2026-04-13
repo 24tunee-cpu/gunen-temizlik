@@ -261,6 +261,24 @@ model TeamMember {
   @@map("team_members")
 }
 
+model MarketingEvent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventType String
+  source    String?
+  linkUrl   String?
+  linkText  String?
+  pagePath  String?
+  userAgent String?
+  ipHash    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([source, createdAt])
+  @@index([createdAt])
+  @@map("marketing_events")
+}
+
 enum Role {
   USER
   ADMIN

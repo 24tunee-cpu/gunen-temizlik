@@ -15,6 +15,7 @@ import {
   HelpCircle,
   DollarSign,
   FolderOpen,
+  BarChart3,
 } from 'lucide-react';
 
 export type AdminMenuItem = {
@@ -64,6 +65,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { href: '/admin/referanslar', label: 'Referanslar', icon: Quote, ariaLabel: 'Müşteri yorumları' },
       { href: '/admin/talepler', label: 'Müşteri talepleri', icon: MessageSquare, ariaLabel: 'İletişim talepleri' },
       { href: '/admin/ebulten', label: 'E-bülten', icon: Mail, ariaLabel: 'Bülten aboneleri' },
+      { href: '/admin/pazarlama-analitik', label: 'Pazarlama analitik', icon: BarChart3, ariaLabel: 'Pazarlama performansı' },
     ],
   },
   {
