@@ -68,6 +68,7 @@ const FOOTER_LINKS: FooterLinkGroup = {
   kurumsal: [
     { label: 'Hakkımızda', href: '/hakkimizda' },
     { label: 'Ekibimiz', href: '/ekibimiz' },
+    { label: 'Bölgeler', href: '/bolgeler' },
     { label: 'Blog', href: '/blog' },
     { label: 'Referanslar', href: '/referanslar' },
     { label: 'İletişim', href: '/iletisim' },

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getSiteUrl } from '@/lib/seo';
+import { allProgrammaticLandingPaths } from '@/config/programmatic-seo';
 
 type StaticEntry = {
   path: string;
@@ -12,6 +13,7 @@ type StaticEntry = {
 const STATIC_PAGES: StaticEntry[] = [
   { path: '', changeFrequency: 'weekly', priority: 1 },
   { path: '/hizmetler', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/bolgeler', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/iletisim', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/blog', changeFrequency: 'daily', priority: 0.85 },
   { path: '/galeri', changeFrequency: 'weekly', priority: 0.8 },
@@ -42,6 +44,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency,
     priority,
   }));
+  const programmaticEntries: MetadataRoute.Sitemap = allProgrammaticLandingPaths()
+    .filter((p) => p !== '/bolgeler')
+    .map((path) => ({
+      url: toAbsoluteUrl(base, path),
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
 
   let dynamicEntries: MetadataRoute.Sitemap = [];
 
@@ -77,5 +87,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Örn. build sırasında DB yoksa yalnızca statik URL'ler döner.
   }
 
-  return [...staticEntries, ...dynamicEntries];
+  return [...staticEntries, ...programmaticEntries, ...dynamicEntries];
 }

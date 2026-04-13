@@ -6,6 +6,7 @@ import { Sparkles, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import logger from '@/lib/logger';
+import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
 
 interface Service {
   id: string;
@@ -134,6 +135,17 @@ export default function ServicesPageClient() {
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
               Profesyonel temizlik çözümleri ile yaşam alanlarınızı pırıl pırıl yapıyoruz. Size özel hizmetlerimizi keşfedin.
             </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              {DISTRICT_LANDINGS.slice(0, 4).map((district) => (
+                <Link
+                  key={district.slug}
+                  href={`/bolgeler/${district.slug}`}
+                  className="rounded-full border border-slate-600 px-3 py-1 text-sm text-slate-200 transition-colors hover:border-emerald-500/60 hover:text-emerald-300"
+                >
+                  {district.name} hizmet sayfaları
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
