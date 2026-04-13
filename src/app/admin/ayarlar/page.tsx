@@ -289,8 +289,15 @@ export default function SiteSettingsPage() {
         throw new Error(err?.error || 'Yükleme başarısız');
       }
       const { url } = await res.json();
-      setForm((p) => ({ ...p, [type]: url }));
-      toast.success('Yükleme tamam', type === 'logo' ? 'Logo güncellendi.' : 'Favicon güncellendi.');
+      setForm((p) =>
+        type === 'logo'
+          ? { ...p, logo: url, favicon: url }
+          : { ...p, favicon: url }
+      );
+      toast.success(
+        'Yükleme tamam',
+        type === 'logo' ? 'Logo ve sekme ikonu (favicon) aynı adrese ayarlandı.' : 'Favicon güncellendi.'
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Dosya yüklenemedi';
       toast.error('Yükleme', msg);
@@ -502,8 +509,9 @@ export default function SiteSettingsPage() {
               <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Logo ve favicon</h2>
                 <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-                  URL girebilir veya dosya yükleyebilirsiniz. Görseller için tam adres veya{' '}
-                  <code className="text-xs">/uploads/...</code> yolu kullanılabilir.
+                  Logo yüklediğinizde favicon otomatik aynı dosyaya ayarlanır (sekme ikonu). İsterseniz sağdan ayrı
+                  favicon da yükleyebilirsiniz. PNG veya ICO önerilir; kayıttan sonra site kökündeki metadata ile
+                  tarayıcı sekmesinde görünür.
                 </p>
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
@@ -533,7 +541,7 @@ export default function SiteSettingsPage() {
                       )}
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
                         className="hidden"
                         id="logo-up"
                         onChange={(e) => e.target.files?.[0] && void handleImageUpload('logo', e.target.files[0])}
@@ -573,7 +581,7 @@ export default function SiteSettingsPage() {
                       )}
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
                         className="hidden"
                         id="fav-up"
                         onChange={(e) => e.target.files?.[0] && void handleImageUpload('favicon', e.target.files[0])}

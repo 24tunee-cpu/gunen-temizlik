@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
@@ -304,6 +305,19 @@ export async function PUT(request: NextRequest) {
     }
 
     const existing = await prisma.siteSettings.findFirst();
+    const nextLogo =
+      patch.logo !== undefined ? patch.logo : existing?.logo ?? null;
+    let nextFavicon =
+      patch.favicon !== undefined ? patch.favicon : existing?.favicon ?? '/favicon.ico';
+    if (
+      nextFavicon === null ||
+      (typeof nextFavicon === 'string' && nextFavicon.trim() === '')
+    ) {
+      const fromLogo = nextLogo && String(nextLogo).trim();
+      nextFavicon = fromLogo || '/favicon.ico';
+    }
+    patch = { ...patch, favicon: nextFavicon };
+
     let row: SiteSettingsRow;
     if (existing) {
       row = await prisma.siteSettings.update({
@@ -315,6 +329,8 @@ export async function PUT(request: NextRequest) {
         data: { ...defaultCreateData(), ...patch },
       });
     }
+
+    revalidatePath('/', 'layout');
 
     return NextResponse.json(row, { headers });
   } catch (e) {

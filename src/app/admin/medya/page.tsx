@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/store/toastStore';
 import {
   Upload,
-  Image,
+  Image as ImageIcon,
   File,
   X,
   Copy,
@@ -16,7 +17,18 @@ import {
   List,
   Check,
   Loader2,
+  ExternalLink,
+  Link2,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
 } from 'lucide-react';
+
+type MediaUsage = {
+  kind: string;
+  label: string;
+  href?: string;
+};
 
 interface MediaItem {
   id: string;
@@ -24,10 +36,11 @@ interface MediaItem {
   url: string;
   type: 'image' | 'video' | 'document';
   size: string;
+  sizeBytes?: number;
   uploadedAt: string;
   dimensions?: string;
+  usages: MediaUsage[];
 }
-
 
 export default function MediaLibraryPage() {
   useAuth();
@@ -38,140 +51,183 @@ export default function MediaLibraryPage() {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch media on mount
   useEffect(() => {
-    fetchMedia();
+    void fetchMedia();
   }, []);
 
   const fetchMedia = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/media');
+      const res = await fetch('/api/media', { credentials: 'include' });
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        let errorMessage = 'Medya dosyalari yuklenirken bir hata olustu.';
-        if (res.status === 401) {
-          errorMessage = 'Yetkiniz bulunmuyor.';
-        } else if (res.status >= 500) {
-          errorMessage = 'Sunucu hatasi. Lutfen daha sonra tekrar deneyin.';
-        } else if (errorData?.error) {
-          errorMessage = errorData.error;
-        }
+        const errorData = (await res.json().catch(() => null)) as { error?: string } | null;
+        let errorMessage = 'Medya dosyaları yüklenirken bir hata oluştu.';
+        if (res.status === 401) errorMessage = 'Oturum gerekli veya yetkiniz yok. Tekrar giriş yapın.';
+        else if (res.status >= 500) errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
+        else if (errorData?.error) errorMessage = errorData.error;
         throw new Error(errorMessage);
       }
-      const data = await res.json();
-      setMedia(data);
+      const data = (await res.json()) as MediaItem[];
+      setMedia(Array.isArray(data) ? data : []);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Yukleme hatasi';
+      const errorMsg = err instanceof Error ? err.message : 'Yükleme hatası';
       setError(errorMsg);
-      console.error('Error fetching media', {}, err instanceof Error ? err : undefined);
+      console.error('Error fetching media', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredMedia = media.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMedia = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return media;
+    return media.filter(
+      (item) =>
+        item.name.toLowerCase().includes(q) ||
+        item.usages.some((u) => `${u.kind} ${u.label}`.toLowerCase().includes(q))
+    );
+  }, [media, searchQuery]);
+
+  const usageSummary = (item: MediaItem) => {
+    const real = item.usages.filter((u) => !u.label.includes('Kayıtlı referans yok'));
+    if (real.length === 0) return 'Referans yok';
+    if (real.length <= 2) return real.map((u) => `${u.kind}: ${u.label}`).join(' · ');
+    return `${real.length} kayıtta kullanılıyor`;
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploading(true);
-
     try {
-      const uploadPromises = Array.from(files).map(async (file) => {
+      for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append('file', file);
-
         const res = await fetch('/api/upload', {
           method: 'POST',
+          credentials: 'include',
           body: formData,
         });
-
         if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          let errorMessage = `Dosya yuklenirken hata: ${file.name}`;
-          if (res.status === 413) {
-            errorMessage = `Dosya cok buyuk: ${file.name}`;
-          } else if (errorData?.error) {
-            errorMessage = errorData.error;
-          }
+          const errorData = (await res.json().catch(() => null)) as { error?: string } | null;
+          let errorMessage = `Dosya yüklenirken hata: ${file.name}`;
+          if (res.status === 413) errorMessage = `Dosya çok büyük: ${file.name}`;
+          else if (errorData?.error) errorMessage = errorData.error;
           throw new Error(errorMessage);
         }
-
-        return await res.json();
-      });
-
-      const uploadedItems = await Promise.all(uploadPromises);
-      setMedia(prev => [...uploadedItems, ...prev]);
-      toast.success('Yukleme Basarili', `${files.length} dosya basariyla yuklendi.`);
+      }
+      toast.success('Yükleme tamam', `${files.length} dosya yüklendi. Kullanım bilgisi güncellendi.`);
+      await fetchMedia();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Dosya yuklenirken hata olustu.';
-      console.error('Error uploading files', {}, err instanceof Error ? err : undefined);
-      toast.error('Yukleme Hatasi', errorMsg);
+      const errorMsg = err instanceof Error ? err.message : 'Dosya yüklenirken hata oluştu.';
+      console.error('Error uploading files', err);
+      toast.error('Yükleme hatası', errorMsg);
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   const toggleSelection = (id: string) => {
-    setSelectedItems(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+    setSelectedItems((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  };
+
+  const deleteOne = async (id: string, force: boolean) => {
+    const q = force ? '?force=true' : '';
+    const res = await fetch(`/api/media/${encodeURIComponent(id)}${q}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (res.status === 409) {
+      const body = (await res.json().catch(() => null)) as { usages?: MediaUsage[]; error?: string } | null;
+      return { ok: false as const, blocked: true as const, id, message: body?.error };
+    }
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null;
+      return {
+        ok: false as const,
+        blocked: false as const,
+        id,
+        message: body?.error || `Silinemedi (${res.status})`,
+      };
+    }
+    return { ok: true as const, id };
   };
 
   const deleteSelected = async () => {
     if (selectedItems.length === 0) return;
-
     try {
-      const deletePromises = selectedItems.map(async (id) => {
-        const res = await fetch(`/api/media/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          let errorMessage = 'Silme hatasi';
-          if (res.status === 404) {
-            errorMessage = 'Dosya bulunamadi';
-          } else if (res.status === 401) {
-            errorMessage = 'Silme yetkiniz yok';
-          } else if (errorData?.error) {
-            errorMessage = errorData.error;
-          }
-          throw new Error(errorMessage);
+      const blockedIds: string[] = [];
+      let firstBlockMessage = '';
+      let removed = 0;
+      for (const id of selectedItems) {
+        const r = await deleteOne(id, false);
+        if (r.ok) {
+          removed++;
+          continue;
         }
-      });
+        if (r.blocked) {
+          blockedIds.push(id);
+          if (!firstBlockMessage) firstBlockMessage = r.message || '';
+        } else {
+          throw new Error(r.message || id);
+        }
+      }
 
-      await Promise.all(deletePromises);
-      setMedia(prev => prev.filter(item => !selectedItems.includes(item.id)));
+      if (blockedIds.length > 0) {
+        const ok = window.confirm(
+          `${firstBlockMessage || 'Bazı dosyalar veritabanında kullanılıyor.'}\n\n` +
+            `Kilitli (${blockedIds.length}): ${blockedIds.join(', ')}\n\n` +
+            (removed > 0 ? `${removed} dosya zaten silindi.\n\n` : '') +
+            `Zorla silmek sunucudan kaldırır; sitede kırık görsel bırakabilir. Devam edilsin mi?`
+        );
+        if (ok) {
+          for (const id of blockedIds) {
+            const r2 = await deleteOne(id, true);
+            if (!r2.ok) {
+              throw new Error('message' in r2 ? String(r2.message) : id);
+            }
+            removed++;
+          }
+          toast.success('Silindi', `${removed} dosya kaldırıldı (zorla silinenler dahil). Kayıtları kontrol edin.`);
+        } else if (removed > 0) {
+          toast.success('Kısmen silindi', `${removed} dosya kaldırıldı; kilitli olanlar duruyor.`);
+        }
+      } else {
+        toast.success('Silindi', `${removed} dosya kaldırıldı.`);
+      }
+
       setSelectedItems([]);
-      toast.success('Silindi', `${selectedItems.length} dosya basariyla silindi.`);
+      await fetchMedia();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Dosyalar silinirken hata olustu.';
-      console.error('Error deleting media', {}, err instanceof Error ? err : undefined);
-      toast.error('Silme Hatasi', errorMsg);
+      const errorMsg = err instanceof Error ? err.message : 'Dosyalar silinirken hata oluştu.';
+      console.error('Error deleting media', err);
+      toast.error('Silme hatası', errorMsg);
     }
   };
 
   const copyUrl = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(url);
-      toast.success('Kopyalandi', 'URL panoya kopyalandi.');
+      const absolute =
+        typeof window !== 'undefined' && url.startsWith('/')
+          ? `${window.location.origin}${url}`
+          : url;
+      await navigator.clipboard.writeText(absolute);
+      toast.success('Kopyalandı', 'Tam URL panoya alındı.');
     } catch (err) {
-      console.error('Error copying to clipboard', {}, err instanceof Error ? err : undefined);
-      toast.error('Kopyalama Hatasi', 'URL kopyalanirken hata olustu.');
+      console.error('Error copying to clipboard', err);
+      toast.error('Kopyalama hatası', 'URL kopyalanamadı.');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 bg-white dark:bg-slate-900 rounded-xl">
+      <div className="flex h-64 items-center justify-center rounded-xl bg-white dark:bg-slate-900">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-500 dark:text-emerald-400" />
       </div>
     );
@@ -179,13 +235,14 @@ export default function MediaLibraryPage() {
 
   if (error) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-4 bg-white dark:bg-slate-900 rounded-xl">
-        <p className="text-red-500 dark:text-red-400">{error}</p>
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-xl bg-white dark:bg-slate-900">
+        <p className="max-w-md text-center text-red-500 dark:text-red-400">{error}</p>
         <button
-          onClick={() => fetchMedia()}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg transition-colors"
+          type="button"
+          onClick={() => void fetchMedia()}
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-white transition-colors hover:bg-emerald-600"
         >
-          Tekrar Dene
+          Tekrar dene
         </button>
       </div>
     );
@@ -193,12 +250,15 @@ export default function MediaLibraryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Medya Kütüphanesi</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {media.length} dosya • {selectedItems.length} seçili
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Medya kütüphanesi</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Tüm yüklemeler <code className="text-xs">/public/uploads</code> altında. Veritabanında nerede geçtiği
+            otomatik taranır (site ayarları, blog, hizmet, galeri, sertifika, ekip, referans).
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {media.length} dosya · {selectedItems.length} seçili
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -207,209 +267,290 @@ export default function MediaLibraryPage() {
             ref={fileInputRef}
             onChange={handleFileSelect}
             multiple
-            accept="image/*,.pdf,.doc,.docx"
+            accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
             className="hidden"
           />
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-lg disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-white transition-colors hover:bg-emerald-600 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700"
           >
             <Upload size={20} />
-            {uploading ? 'Yükleniyor...' : 'Dosya Yükle'}
+            {uploading ? 'Yükleniyor…' : 'Dosya yükle'}
           </button>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={20} />
-            <input
-              type="text"
-              placeholder="Dosya ara..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
-            />
-          </div>
+      <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative max-w-md flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Dosya adı veya kullanım yeri ara…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           {selectedItems.length > 0 && (
             <button
-              onClick={deleteSelected}
-              aria-label="Secili dosyalari sil"
-              className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              type="button"
+              onClick={() => void deleteSelected()}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               <Trash2 size={18} />
               Sil ({selectedItems.length})
             </button>
           )}
-        </div>
-        <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-4">
-          <button
-            onClick={() => setViewMode('grid')}
-            aria-label="Grid gorunumu"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-          >
-            <Grid size={20} />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            aria-label="List gorunumu"
-            className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
-          >
-            <List size={20} />
-          </button>
+          <div className="flex items-center gap-2 border-slate-200 pl-0 sm:border-l sm:pl-4 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              aria-label="Izgara"
+              className={`rounded-lg p-2 transition-colors ${viewMode === 'grid' ? 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+            >
+              <Grid size={20} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              aria-label="Liste"
+              className={`rounded-lg p-2 transition-colors ${viewMode === 'list' ? 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+            >
+              <List size={20} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Media Grid */}
-      {
-        viewMode === 'grid' ? (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filteredMedia.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`group relative rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${selectedItems.includes(item.id)
+      {viewMode === 'grid' ? (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {filteredMedia.map((item) => (
+            <motion.div
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`group relative cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${
+                selectedItems.includes(item.id)
                   ? 'border-emerald-500 ring-2 ring-emerald-500/20'
                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
-                onClick={() => toggleSelection(item.id)}
-              >
-                {/* Preview */}
-                <div className="aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  {item.type === 'image' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
-                      <Image size={48} className="text-slate-400 dark:text-slate-500" />
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                      <File size={48} className="text-blue-400" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyUrl(item.url);
-                    }}
-                    className="p-2 bg-white rounded-lg hover:bg-slate-100"
-                    title="URL Kopyala"
-                  >
-                    <Copy size={18} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSelection(item.id);
-                    }}
-                    className={`p-2 rounded-lg ${selectedItems.includes(item.id) ? 'bg-emerald-500 text-white' : 'bg-white hover:bg-slate-100'}`}
-                  >
-                    <Check size={18} />
-                  </button>
-                </div>
-
-                {/* Info */}
-                <div className="p-3 bg-white dark:bg-slate-800">
-                  <p className="font-medium text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
-                  <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    <span>{item.size}</span>
-                    <span>{item.dimensions || '-'}</span>
-                  </div>
-                </div>
-
-                {/* Selection Badge */}
-                {selectedItems.includes(item.id) && (
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                    <Check size={14} className="text-white" />
+              }`}
+              onClick={() => toggleSelection(item.id)}
+            >
+              <div className="aspect-square bg-slate-100 dark:bg-slate-800">
+                {item.type === 'image' ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 dark:from-slate-700 dark:to-slate-600">
+                    <File size={48} className="text-blue-400 dark:text-slate-400" />
                   </div>
                 )}
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          /* List View */
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="px-4 py-3 text-left">
+              </div>
+
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void copyUrl(item.url);
+                  }}
+                  className="rounded-lg bg-white p-2 hover:bg-slate-100"
+                  title="URL kopyala"
+                >
+                  <Copy size={18} />
+                </button>
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-lg bg-white p-2 hover:bg-slate-100"
+                  title="Yeni sekmede aç"
+                >
+                  <ExternalLink size={18} />
+                </a>
+              </div>
+
+              <div className="bg-white p-3 dark:bg-slate-800">
+                <p className="truncate font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{usageSummary(item)}</p>
+                <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+                  <span>{item.size}</span>
+                  <span>{new Date(item.uploadedAt).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedId((id) => (id === item.id ? null : item.id));
+                  }}
+                  className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-slate-200 py-1.5 text-xs text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  <Link2 className="h-3.5 w-3.5" />
+                  Kullanım detayı
+                  {expandedId === item.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                </button>
+                {expandedId === item.id && (
+                  <ul
+                    className="mt-2 space-y-1.5 rounded-lg bg-slate-50 p-2 text-left text-xs dark:bg-slate-900/50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {item.usages.map((u, i) => (
+                      <li key={i} className="text-slate-600 dark:text-slate-300">
+                        <span className="font-medium text-slate-800 dark:text-slate-200">{u.kind}:</span> {u.label}
+                        {u.href && (
+                          <Link
+                            href={u.href}
+                            className="ml-1 inline-flex items-center gap-0.5 text-emerald-600 hover:underline"
+                          >
+                            Aç <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {selectedItems.includes(item.id) && (
+                <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500">
+                  <Check size={14} className="text-white" />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-700/50">
+              <tr>
+                <th className="px-3 py-3">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedItems.length === filteredMedia.length && filteredMedia.length > 0
+                    }
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedItems(filteredMedia.map((i) => i.id));
+                      else setSelectedItems([]);
+                    }}
+                    className="rounded border-slate-300 dark:border-slate-600"
+                  />
+                </th>
+                <th className="px-3 py-3 font-medium text-slate-700 dark:text-slate-300">Önizleme</th>
+                <th className="px-3 py-3 font-medium text-slate-700 dark:text-slate-300">Dosya</th>
+                <th className="px-3 py-3 font-medium text-slate-700 dark:text-slate-300">Kullanım</th>
+                <th className="px-3 py-3 font-medium text-slate-700 dark:text-slate-300">Boyut</th>
+                <th className="px-3 py-3 font-medium text-slate-700 dark:text-slate-300">Tarih</th>
+                <th className="px-3 py-3 text-right font-medium text-slate-700 dark:text-slate-300">İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMedia.map((item) => (
+                <tr
+                  key={item.id}
+                  className={`border-b border-slate-100 dark:border-slate-700 ${
+                    selectedItems.includes(item.id) ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''
+                  }`}
+                >
+                  <td className="px-3 py-2 align-top">
                     <input
                       type="checkbox"
-                      checked={selectedItems.length === filteredMedia.length && filteredMedia.length > 0}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedItems(filteredMedia.map(i => i.id));
-                        } else {
-                          setSelectedItems([]);
-                        }
-                      }}
-                      className="rounded border-slate-300 dark:border-slate-600 dark:bg-slate-700"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() => toggleSelection(item.id)}
+                      className="rounded border-slate-300 dark:border-slate-600"
                     />
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Dosya</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Tür</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Boyut</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Tarih</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-slate-700 dark:text-slate-300">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMedia.map((item) => (
-                  <tr
-                    key={item.id}
-                    className={`border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 ${selectedItems.includes(item.id) ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}`}
-                  >
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.includes(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="rounded border-slate-300 dark:border-slate-600 dark:bg-slate-700"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                          {item.type === 'image' ? <Image size={20} className="text-slate-400 dark:text-slate-500" /> : <File size={20} className="text-slate-400 dark:text-slate-500" />}
+                  </td>
+                  <td className="px-3 py-2 align-top">
+                    <div className="h-12 w-12 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-700">
+                      {item.type === 'image' ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <File size={20} className="text-slate-400" />
                         </div>
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 capitalize">{item.type}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{item.size}</td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{item.uploadedAt}</td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => copyUrl(item.url)}
-                        aria-label="URL kopyala"
-                        className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                        title="URL Kopyala"
-                      >
-                        <Copy size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      }
+                      )}
+                    </div>
+                  </td>
+                  <td className="max-w-[200px] px-3 py-2 align-top">
+                    <p className="truncate font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
+                    <p className="text-xs capitalize text-slate-500">{item.type}</p>
+                  </td>
+                  <td className="max-w-xs px-3 py-2 align-top text-xs text-slate-600 dark:text-slate-400">
+                    <ul className="space-y-1">
+                      {item.usages.slice(0, 4).map((u, i) => (
+                        <li key={i}>
+                          <span className="font-medium">{u.kind}:</span> {u.label}
+                          {u.href && (
+                            <Link href={u.href} className="ml-1 text-emerald-600 hover:underline">
+                              →
+                            </Link>
+                          )}
+                        </li>
+                      ))}
+                      {item.usages.length > 4 && (
+                        <li className="text-slate-400">+{item.usages.length - 4} satır…</li>
+                      )}
+                    </ul>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 align-top text-slate-600 dark:text-slate-400">
+                    {item.size}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 align-top text-slate-600 dark:text-slate-400">
+                    {new Date(item.uploadedAt).toLocaleString('tr-TR')}
+                  </td>
+                  <td className="px-3 py-2 align-top text-right">
+                    <button
+                      type="button"
+                      onClick={() => void copyUrl(item.url)}
+                      className="p-2 text-slate-400 hover:text-emerald-600"
+                      title="URL kopyala"
+                    >
+                      <Copy size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {
-        filteredMedia.length === 0 && (
-          <div className="text-center py-12">
-            <Image size={64} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">Dosya bulunamadı</p>
-          </div>
-        )
-      }
-    </div >
+      {filteredMedia.length === 0 && (
+        <div className="rounded-xl border border-dashed border-slate-300 py-16 text-center dark:border-slate-600">
+          <ImageIcon size={48} className="mx-auto text-slate-300 dark:text-slate-600" />
+          <p className="mt-4 text-slate-500 dark:text-slate-400">
+            {media.length === 0
+              ? 'Henüz yükleme yok. Yukarıdan dosya ekleyin.'
+              : 'Aramanızla eşleşen dosya yok.'}
+          </p>
+        </div>
+      )}
+
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+        <div>
+          <p className="font-medium">Silme kuralları</p>
+          <p className="mt-1 text-amber-800/90 dark:text-amber-200/80">
+            Veritabanında kullanılan dosyalar önce uyarı verilir; onaylarsanız zorla silinebilir. Zorla silinen
+            görseller sayfada kırık link olarak kalır — önce ilgili admin ekranından kaldırmanız en güvenlisi.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

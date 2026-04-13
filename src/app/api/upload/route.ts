@@ -6,7 +6,7 @@
  * @security
  * - Admin authentication required (JWT token)
  * - Rate limiting: 10 requests per minute per IP
- * - File type validation (JPEG, PNG, GIF, WebP only)
+ * - File type validation (JPEG, PNG, GIF, WebP, ICO)
  * - File size limit: 5MB
  * - Filename sanitization (path traversal protection)
  * - CORS headers for admin domain
@@ -34,6 +34,8 @@ const ALLOWED_TYPES = [
   'image/png',
   'image/gif',
   'image/webp',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
 ] as const;
 
 /** Maximum file size: 5MB */
@@ -122,9 +124,36 @@ function getExtensionFromMimeType(mimeType: string): string {
     'image/png': 'png',
     'image/gif': 'gif',
     'image/webp': 'webp',
+    'image/x-icon': 'ico',
+    'image/vnd.microsoft.icon': 'ico',
   };
 
   return extensionMap[mimeType] || 'jpg';
+}
+
+function extensionFromFilename(filename: string): string | null {
+  const n = filename.toLowerCase();
+  if (n.endsWith('.png')) return 'png';
+  if (n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'jpg';
+  if (n.endsWith('.webp')) return 'webp';
+  if (n.endsWith('.gif')) return 'gif';
+  if (n.endsWith('.ico')) return 'ico';
+  return null;
+}
+
+function isAllowedImageFile(file: File): boolean {
+  if (ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) return true;
+  const ext = extensionFromFilename(file.name);
+  return ext === 'ico' && (!file.type || file.type === 'application/octet-stream');
+}
+
+function resolveFileExtension(file: File): string {
+  if (ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
+    return getExtensionFromMimeType(file.type);
+  }
+  const fromName = extensionFromFilename(file.name);
+  if (fromName) return fromName;
+  return 'jpg';
 }
 
 /**
@@ -132,10 +161,10 @@ function getExtensionFromMimeType(mimeType: string): string {
  * @param mimeType File MIME type
  * @returns Unique filename
  */
-function generateUniqueFilename(mimeType: string): string {
+function generateUniqueFilename(file: File): string {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 10);
-  const extension = getExtensionFromMimeType(mimeType);
+  const extension = resolveFileExtension(file);
 
   return `${timestamp}-${randomString}.${extension}`;
 }
@@ -211,12 +240,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type
-    if (!ALLOWED_TYPES.includes(file.type as typeof ALLOWED_TYPES[number])) {
-      console.warn('Invalid file type attempted', { type: file.type, ip });
+    // Validate file type (bazı tarayıcılar .ico için type göndermez — uzantı ile kabul)
+    if (!isAllowedImageFile(file)) {
+      console.warn('Invalid file type attempted', { type: file.type, name: file.name, ip });
       return NextResponse.json(
         {
-          error: 'Gecersiz dosya turu. Sadece JPEG, PNG, GIF ve WebP dosyalari yuklenebilir.'
+          error:
+            'Geçersiz dosya türü. JPEG, PNG, GIF, WebP veya ICO yükleyebilirsiniz; logo/favicon için PNG de kullanılabilir.',
         },
         { status: 400, headers }
       );
@@ -242,7 +272,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate safe filename
-    const fileName = generateUniqueFilename(file.type);
+    const fileName = generateUniqueFilename(file);
 
     // Ensure uploads directory exists
     if (!existsSync(UPLOADS_DIR)) {

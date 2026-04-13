@@ -17,6 +17,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
 import { SITE_CONTACT } from "@/config/site-contact";
+import { getSiteIconHref } from "@/lib/site-branding";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
@@ -42,7 +43,7 @@ const geistMono = Geist_Mono({
   fallback: ["monospace"],
 });
 
-export const metadata: Metadata = {
+const rootMetadataBase: Metadata = {
   title: {
     default: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24 Hizmet",
     template: "%s | Günen Temizlik",
@@ -114,6 +115,18 @@ export const metadata: Metadata = {
     "msapplication-TileColor": "#10b981",
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const iconHref = await getSiteIconHref();
+  return {
+    ...rootMetadataBase,
+    icons: {
+      icon: [{ url: iconHref }],
+      shortcut: iconHref,
+      apple: [{ url: iconHref }],
+    },
+  };
+}
 
 // Viewport metadata (separate export for Next.js 14+)
 export const viewport: Viewport = {
