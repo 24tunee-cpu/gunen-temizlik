@@ -147,12 +147,6 @@ const LOCAL_BUSINESS_SCHEMA = {
   "priceRange": "₺₺",
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev temizliği ve koltuk yıkama hizmetleri.",
   "foundingDate": "2010",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "527",
-    "bestRating": "5",
-  },
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Atatürk Mah. Turgut Özal Bulvarı No:123",

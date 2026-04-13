@@ -142,12 +142,6 @@ const structuredData = {
   ],
   "priceRange": "₺₺",
   "areaServed": ["İstanbul"],
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "527",
-    "bestRating": "5"
-  },
   "foundingDate": "2010"
 };
 
