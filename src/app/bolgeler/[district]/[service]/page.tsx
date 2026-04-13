@@ -13,6 +13,7 @@ import {
   getServiceBySlug,
 } from '@/config/programmatic-seo';
 import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
+import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 
 type Props = {
   params: Promise<{ district: string; service: string }>;
@@ -90,6 +91,7 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
       category: true,
     },
   });
+  const callHref = toTelHref(SITE_CONTACT.phoneE164);
 
   const serviceSchema = {
     '@context': 'https://schema.org',
@@ -226,6 +228,13 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
             )}
 
             <div className="mt-10 flex flex-wrap gap-3">
+              <a
+                href={callHref}
+                data-source="programmatic-landing-call"
+                className="rounded-lg bg-emerald-500 px-5 py-2.5 font-medium text-white transition-colors hover:bg-emerald-600"
+              >
+                Hemen Ara: {SITE_CONTACT.phoneDisplay}
+              </a>
               <Link
                 href="/iletisim"
                 className="rounded-lg bg-emerald-500 px-5 py-2.5 font-medium text-white transition-colors hover:bg-emerald-600"

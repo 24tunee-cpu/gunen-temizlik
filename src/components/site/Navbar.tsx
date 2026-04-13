@@ -220,6 +220,7 @@ export function Navbar() {
             <div className="hidden lg:flex items-center gap-4">
               <a
                 href={telHref}
+                data-source="navbar-desktop"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${scrolled ? 'text-slate-700' : 'text-white'}`}
                 aria-label={`Telefon: ${phoneDisplay}`}
               >
@@ -308,6 +309,7 @@ export function Navbar() {
                 ))}
                 <a
                   href={telHref}
+                  data-source="navbar-mobile-menu"
                   onClick={closeMenu}
                   className="flex items-center gap-3 border-b border-slate-100 py-3.5 text-base font-medium text-slate-800 sm:py-4 sm:text-lg"
                 >

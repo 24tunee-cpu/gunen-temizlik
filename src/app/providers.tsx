@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
 import { SiteCustomCss } from '@/components/SiteCustomCss';
+import MarketingEventTracker from '@/components/analytics/MarketingEventTracker';
 // import { setupGlobalErrorHandlers, logPerformanceMetrics } from '@/lib/client-error-handler'; // DISABLED
 
 // ============================================
@@ -63,6 +64,7 @@ export function Providers({ children }: ProvidersProps) {
   if (!isMounted) {
     return (
       <SiteSettingsProvider>
+        <MarketingEventTracker />
         <SiteCustomCss />
         {children}
       </SiteSettingsProvider>
@@ -92,6 +94,7 @@ export function Providers({ children }: ProvidersProps) {
       }
     >
       <SiteSettingsProvider>
+        <MarketingEventTracker />
         <SiteCustomCss />
         {children}
       </SiteSettingsProvider>

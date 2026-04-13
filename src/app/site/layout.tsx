@@ -21,6 +21,7 @@
 import { Navbar } from '@/components/site/Navbar';
 import { Footer } from '@/components/site/Footer';
 import { FloatingWhatsApp } from '@/components/site/FloatingWhatsApp';
+import MobileCallBar from '@/components/site/MobileCallBar';
 
 // ============================================
 // TYPES
@@ -62,7 +63,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       {/* Main Content */}
       <main
         id="main-content"
-        className="flex min-h-0 min-w-0 flex-1 flex-col"
+        className="flex min-h-0 min-w-0 flex-1 flex-col pb-20 lg:pb-0"
         role="main"
         aria-label="Sayfa içeriği"
       >
@@ -76,6 +77,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
 
       {/* Floating Action Button */}
       <FloatingWhatsApp />
+      <MobileCallBar />
     </div>
   );
 }

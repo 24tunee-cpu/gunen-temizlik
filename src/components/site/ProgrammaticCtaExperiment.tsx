@@ -85,6 +85,7 @@ export default function ProgrammaticCtaExperiment({
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
+          data-source={`programmatic-cta-${variant.toLowerCase()}-wa`}
           className="rounded-lg bg-emerald-500 px-5 py-2.5 font-medium text-white transition-colors hover:bg-emerald-600"
         >
           {cta.primaryLabel}
@@ -92,6 +93,7 @@ export default function ProgrammaticCtaExperiment({
         {variant === 'A' ? (
           <Link
             href={`/iletisim?district=${districtSlug}&service=${serviceSlug}&variant=${variant}`}
+            data-source={`programmatic-cta-${variant.toLowerCase()}-form`}
             className="rounded-lg border border-slate-500 px-5 py-2.5 font-medium text-slate-100 transition-colors hover:bg-slate-800"
           >
             {cta.secondaryLabel}
@@ -99,6 +101,7 @@ export default function ProgrammaticCtaExperiment({
         ) : (
           <Link
             href={`/bolgeler/${districtSlug}`}
+            data-source={`programmatic-cta-${variant.toLowerCase()}-district`}
             className="rounded-lg border border-slate-500 px-5 py-2.5 font-medium text-slate-100 transition-colors hover:bg-slate-800"
           >
             {cta.secondaryLabel}
