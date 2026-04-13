@@ -295,6 +295,23 @@ model ProgrammaticMetaOverride {
   @@map("programmatic_meta_overrides")
 }
 
+model SeoChecklistStatus {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  key         String    @unique
+  section     String
+  label       String
+  sortOrder   Int
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([section, sortOrder])
+  @@index([completed, updatedAt])
+  @@map("seo_checklist_statuses")
+}
+
 enum Role {
   USER
   ADMIN
