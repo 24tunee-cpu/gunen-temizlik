@@ -17,6 +17,7 @@ import {
   FolderOpen,
   BarChart3,
   WandSparkles,
+  MapPin,
 } from 'lucide-react';
 
 export type AdminMenuItem = {
@@ -64,6 +65,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     label: 'İletişim ve pazarlama',
     items: [
       { href: '/admin/referanslar', label: 'Referanslar', icon: Quote, ariaLabel: 'Müşteri yorumları' },
+      { href: '/admin/haritalar', label: 'Haritalar', icon: MapPin, ariaLabel: 'Google, Yandex ve Apple harita profilleri' },
       { href: '/admin/talepler', label: 'Müşteri talepleri', icon: MessageSquare, ariaLabel: 'İletişim talepleri' },
       { href: '/admin/ebulten', label: 'E-bülten', icon: Mail, ariaLabel: 'Bülten aboneleri' },
       { href: '/admin/pazarlama-analitik', label: 'Pazarlama analitik', icon: BarChart3, ariaLabel: 'Pazarlama performansı' },

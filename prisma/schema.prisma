@@ -344,6 +344,117 @@ model SeoAutomationSyncLog {
   @@map("seo_automation_sync_logs")
 }
 
+/// Google / Yandex / Apple harita ve işletme profili kayıtları (admin Haritalar modülü)
+model MapPlatformListing {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  /// google | yandex | apple
+  platform          String    @unique
+  businessName      String?
+  /// Haritada paylaşım veya arama URL’si
+  listingUrl        String?
+  /// İşletme yönetim paneli (GBP, Yandex, Apple Business Connect)
+  dashboardUrl      String?
+  /// Ek harita/embed veya alternatif görünüm URL’si
+  mapsEmbedUrl      String?
+  /// Google Place ID veya platformdaki benzeri tanımlayıcı
+  externalPlaceId   String?
+  /// not_connected | in_progress | connected
+  connectionStatus  String    @default("not_connected")
+  /// Checklist madde id → tamamlandı mı (client ile senkron)
+  checklistState    Json?
+  internalNotes     String?
+  lastManualSyncAt  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("map_platform_listings")
+}
+
+/// Harita sağlayıcıları için OAuth (Google; Yandex/Apple sonrası)
+model MapOAuthConnection {
+  id                     String    @id @default(auto()) @map("_id") @db.ObjectId
+  provider               String    @unique
+  /// AES-256-GCM ile şifrelenmiş refresh token
+  refreshTokenEnc        String
+  accessToken            String?
+  accessExpiresAt        DateTime?
+  accountEmail           String?
+  preferredAccountName   String?
+  preferredLocationName  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@map("map_oauth_connections")
+}
+
+model MapSyncRun {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  provider   String
+  source     String    @default("manual")
+  status     String
+  message    String?
+  stats      Json?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([provider, startedAt])
+  @@map("map_sync_runs")
+}
+
+/// API’den çekilen konum özeti
+model MapLocationSnapshot {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  provider       String
+  resourceName   String
+  title          String?
+  payload        Json?
+  fetchedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([provider, resourceName])
+  @@index([provider, fetchedAt])
+  @@map("map_location_snapshots")
+}
+
+/// API’den çekilen yorumlar
+model MapReviewSnapshot {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  provider             String
+  reviewName           String   @unique
+  locationResourceName String
+  reviewerDisplayName  String?
+  starRating           Int?
+  comment              String?
+  replyComment         String?
+  reviewTime           String?
+  payload              Json?
+  fetchedAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([locationResourceName])
+  @@index([provider, fetchedAt])
+  @@map("map_review_snapshots")
+}
+
+/// Onay kuyruğu: taslak → onay → gönderim
+model MapReviewReplyDraft {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  provider      String
+  reviewName    String
+  draftText     String
+  /// pending | approved | sent | failed
+  status        String    @default("pending")
+  approvedAt    DateTime?
+  sentAt        DateTime?
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([provider, reviewName])
+  @@index([provider, status])
+  @@map("map_review_reply_drafts")
+}
+
 enum Role {
   USER
   ADMIN
