@@ -14,7 +14,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Loader2, Calendar, ArrowRight, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import logger from '@/lib/logger';
 
 // ============================================
@@ -22,7 +22,7 @@ import logger from '@/lib/logger';
 // ============================================
 
 /** Blog post veri tipi (API: image, createdAt) */
-interface BlogPost {
+export interface BlogPost {
   id: string;
   title: string;
   slug: string;
@@ -30,6 +30,8 @@ interface BlogPost {
   coverImage?: string;
   publishedAt: string;
   author?: string;
+  category?: string;
+  tags?: string[];
 }
 
 /** /api/blog yanıtı (Prisma alan adları) */
@@ -55,6 +57,10 @@ interface BlogSectionProps {
   paginate?: boolean;
   /** paginate iken sayfa başına kart sayısı (varsayılan 9) */
   pageSize?: number;
+  /** Server-side hazır post listesi (özellikle /blog için) */
+  initialPosts?: BlogPost[];
+  /** Server tarafında hesaplanan geçerli sayfa (paginate için) */
+  currentPage?: number;
 }
 
 function blogListingPath(page: number): string {
@@ -195,17 +201,16 @@ export function BlogSection({
   description = "Temizlik ipuçları, haberler ve daha fazlası",
   paginate = false,
   pageSize: pageSizeProp = 9,
+  initialPosts,
+  currentPage: currentPageProp,
 }: BlogSectionProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(false); // SSR hydration fix
-  const [isMounted, setIsMounted] = useState(false);
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(initialPosts || []);
+  const [loading, setLoading] = useState(!initialPosts);
 
   const shouldReduceMotion = useReducedMotion();
   const showViewAllLink = pathname !== '/blog';
 
-  const pageFromUrl = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
   const perPage = paginate ? pageSizeProp : limit;
   const totalPages = useMemo(() => {
     if (!paginate) return 1;
@@ -214,8 +219,9 @@ export function BlogSection({
 
   const currentPage = useMemo(() => {
     if (!paginate) return 1;
-    return Math.min(pageFromUrl, totalPages);
-  }, [paginate, pageFromUrl, totalPages]);
+    const p = Math.max(1, currentPageProp || 1);
+    return Math.min(p, totalPages);
+  }, [paginate, currentPageProp, totalPages]);
 
   const posts = useMemo(() => {
     if (paginate) {
@@ -224,18 +230,17 @@ export function BlogSection({
     return allPosts.slice(0, limit);
   }, [allPosts, paginate, currentPage, perPage, limit]);
 
-  // ============================================
-  // MOUNT CHECK (SSR hydration fix)
-  // ============================================
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    if (!initialPosts) return;
+    setAllPosts(initialPosts);
+    setLoading(false);
+  }, [initialPosts]);
 
   // ============================================
   // DATA FETCHING
   // ============================================
   useEffect(() => {
-    if (!isMounted) return;
+    if (initialPosts) return;
 
     const fetchPosts = async () => {
       setLoading(true);
@@ -265,12 +270,12 @@ export function BlogSection({
     };
 
     fetchPosts();
-  }, [isMounted]);
+  }, [initialPosts]);
 
   // ============================================
   // LOADING / MOUNTING STATE
   // ============================================
-  if (!isMounted || loading) {
+  if (loading) {
     return (
       <section
         className="relative flex-1 bg-slate-900 py-24"

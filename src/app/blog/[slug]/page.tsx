@@ -138,14 +138,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  */
 function generateArticleSchema(post: BlogPostData) {
   const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
+  const wordCount = post.content.split(/\s+/).filter(Boolean).length;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     "headline": post.title,
     "description": metaDesc,
     "image": post.image || undefined,
     "datePublished": post.createdAt.toISOString(),
     "dateModified": post.updatedAt.toISOString(),
+    "wordCount": wordCount,
+    "inLanguage": "tr-TR",
     "author": {
       "@type": "Person",
       "name": post.author
@@ -162,6 +165,14 @@ function generateArticleSchema(post: BlogPostData) {
       "@type": "WebPage",
       "@id": `https://gunentemizlik.com/blog/${post.slug}`
     },
+    "isPartOf": {
+      "@type": "Blog",
+      "@id": "https://gunentemizlik.com/blog"
+    },
+    "about": [
+      { "@type": "Thing", "name": post.category },
+      ...post.tags.map((tag) => ({ "@type": "Thing", "name": tag })),
+    ],
     "articleSection": post.category,
     "keywords": post.tags.join(', ')
   };
@@ -191,6 +202,26 @@ export default async function BlogPostPage({ params }: PageProps) {
   if (!post || !post.published) {
     notFound();
   }
+
+  const relatedPosts = await prisma.blogPost.findMany({
+    where: {
+      published: true,
+      slug: { not: post.slug },
+      OR: [
+        { category: post.category },
+        { tags: { hasSome: post.tags.slice(0, 5) } },
+      ],
+    },
+    orderBy: [{ createdAt: 'desc' }, { views: 'desc' }],
+    take: 4,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      category: true,
+    },
+  });
 
   // Update view counter (fire and forget)
   prisma.blogPost.update({
@@ -313,13 +344,14 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </h2>
                 <div className="flex flex-wrap gap-2" role="list" aria-label="Etiketler">
                   {post.tags.map((tag: string) => (
-                    <span
+                    <Link
                       key={tag}
+                      href={`/blog?tag=${encodeURIComponent(tag)}`}
                       className="rounded-full border border-slate-600 bg-slate-800/80 px-4 py-2 text-sm text-slate-200"
                       role="listitem"
                     >
                       #{tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </footer>
@@ -343,6 +375,25 @@ export default async function BlogPostPage({ params }: PageProps) {
                 ))}
               </div>
             </section>
+
+            {relatedPosts.length > 0 && (
+              <section className="mt-10 rounded-xl border border-slate-700 bg-slate-800/30 p-5">
+                <h2 className="text-lg font-semibold text-white">İlgili blog yazıları</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {relatedPosts.map((related) => (
+                    <Link
+                      key={related.id}
+                      href={`/blog/${related.slug}`}
+                      className="rounded-lg border border-slate-700 bg-slate-800/60 p-3 hover:border-emerald-500/40"
+                    >
+                      <p className="text-xs text-emerald-300">{related.category}</p>
+                      <p className="mt-1 font-medium text-white">{related.title}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-400">{related.excerpt}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Share & CTA */}
             <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-700 pt-8 sm:flex-row">

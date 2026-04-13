@@ -1,6 +1,7 @@
 'use client';
 
 import { Share2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface BlogShareButtonProps {
   title: string;
@@ -11,6 +12,8 @@ interface BlogShareButtonProps {
  * Blog yazısı paylaşımı — Web Share API veya panoya kopyala.
  */
 export function BlogShareButton({ title, slug }: BlogShareButtonProps) {
+  const [copied, setCopied] = useState(false);
+
   const handleShare = async () => {
     const url = `https://gunentemizlik.com/blog/${slug}`;
 
@@ -27,7 +30,8 @@ export function BlogShareButton({ title, slug }: BlogShareButtonProps) {
     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(url);
-        alert('Link kopyalandı!');
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1600);
       } catch {
         console.error('Panoya kopyalanamadı');
       }
@@ -42,7 +46,7 @@ export function BlogShareButton({ title, slug }: BlogShareButtonProps) {
       aria-label="Yazıyı paylaş"
     >
       <Share2 size={18} aria-hidden="true" />
-      Paylaş
+      {copied ? 'Link kopyalandı' : 'Paylaş'}
     </button>
   );
 }

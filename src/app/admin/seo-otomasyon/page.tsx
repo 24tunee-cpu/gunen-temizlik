@@ -55,6 +55,26 @@ const emptyForm = {
   description: '',
 };
 
+const SAMPLE_GSC_CSV = `query,page,clicks,impressions,ctr,position
+atasehir ofis temizligi,https://www.gunentemizlik.com/bolgeler/atasehir/ofis-temizligi,12,740,1.62,8.4
+kadikoy koltuk yikama,https://www.gunentemizlik.com/bolgeler/kadikoy/koltuk-yikama,9,515,1.74,9.2
+uskudar insaat sonrasi temizlik,https://www.gunentemizlik.com/bolgeler/uskudar/insaat-sonrasi-temizlik,6,401,1.49,11.7`;
+
+const SAMPLE_OVERRIDE_EXAMPLES = [
+  {
+    key: 'atasehir/ofis-temizligi',
+    title: 'Ataşehir Ofis Temizliği | Aynı Gün Keşif - Günen Temizlik',
+    description:
+      'Ataşehir ofis temizliği için hızlı ekip planlaması, net kapsam ve kurumsal standartlarla düzenli hizmet alın.',
+  },
+  {
+    key: 'kadikoy/koltuk-yikama',
+    title: 'Kadıköy Koltuk Yıkama | Yerinde Profesyonel Hizmet',
+    description:
+      'Kadıköy koltuk yıkama hizmetinde kumaş tipine uygun uygulama ve hızlı kuruma avantajı ile teklif alın.',
+  },
+];
+
 export default function SeoAutomationPage() {
   const [rows, setRows] = useState<OverrideRow[]>([]);
   const [checklist, setChecklist] = useState<ChecklistRow[]>([]);
@@ -194,6 +214,11 @@ export default function SeoAutomationPage() {
     }
   };
 
+  const loadSampleCsv = () => {
+    setCsv(SAMPLE_GSC_CSV);
+    setImportMsg('Örnek CSV dolduruldu. Önizleme üret ile akışı test edebilirsiniz.');
+  };
+
   const toggleChecklist = async (row: ChecklistRow, completed: boolean) => {
     try {
       setChecklistSavingKey(row.key);
@@ -260,6 +285,13 @@ export default function SeoAutomationPage() {
             CSV Dosyası Seç
             <input type="file" accept=".csv,text/csv" onChange={onCsvFileChange} className="hidden" />
           </label>
+          <button
+            type="button"
+            onClick={loadSampleCsv}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+          >
+            Örnek CSV Doldur
+          </button>
         </div>
         <textarea
           value={csv}
@@ -289,6 +321,22 @@ export default function SeoAutomationPage() {
           </button>
         </div>
         {importMsg && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{importMsg}</p>}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Örnek Override Referansları</h2>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Bir dahaki import sırasında hızlı karar vermek için kullanabileceğiniz referans formatlar:
+        </p>
+        <div className="mt-3 space-y-2">
+          {SAMPLE_OVERRIDE_EXAMPLES.map((sample) => (
+            <div key={sample.key} className="rounded-lg border border-slate-200 p-3 text-sm dark:border-slate-700">
+              <p className="font-medium text-slate-900 dark:text-slate-100">{sample.key}</p>
+              <p className="mt-1 text-slate-700 dark:text-slate-300">{sample.title}</p>
+              <p className="mt-1 text-slate-600 dark:text-slate-400">{sample.description}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">

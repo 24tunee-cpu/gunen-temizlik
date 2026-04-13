@@ -80,7 +80,7 @@ const getHandler = async (req: NextRequest) => {
     const token = await getToken({ req, secret });
     const isAdmin = token?.role === 'ADMIN';
 
-    const services = await prisma.service.findMany({
+    const servicesRaw = await prisma.service.findMany({
       ...(isAdmin ? {} : { where: { isActive: true } }),
       orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
       select: {
@@ -100,6 +100,9 @@ const getHandler = async (req: NextRequest) => {
         createdAt: true,
       },
     });
+    const services = isAdmin
+      ? servicesRaw
+      : servicesRaw.map((service) => ({ ...service, priceRange: null }));
     console.log('Returning services list', { count: services.length });
 
     const response = NextResponse.json(services, { headers: CORS_HEADERS });

@@ -46,7 +46,9 @@ npm run seo:gsc:generate-meta -- data/gsc-query-export.csv src/config/programmat
 ## 5) Admin Panelden Operasyon (Önerilen)
 
 - `Admin -> SEO otomasyon` sayfasından CSV dosyasını direkt yükleyin.
+- Test için paneldeki `Örnek CSV Doldur` butonunu kullanabilirsiniz.
 - "Önizleme üret" ile önerileri kontrol edin, "Önerileri uygula" ile DB override'a yazın.
 - "Otomatik SEO önerileri" bölümündeki yüksek öncelikli aksiyonları sırayla işleyin.
 - "Search Console Checklist Durumu" bölümünden haftalık/aylık adımları tamamlandıkça işaretleyin.
 - "Manuel Override Editörü" ile kritik landing sayfalarında özel title/meta yayınlayın.
+- "Örnek Override Referansları" bloğunu ekip içinde standardizasyon referansı olarak kullanın.

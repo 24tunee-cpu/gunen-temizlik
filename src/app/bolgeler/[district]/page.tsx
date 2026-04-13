@@ -24,6 +24,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
     description: `${districtData.name} bölgesinde ofis temizliği, inşaat sonrası temizlik, koltuk yıkama ve daha fazlası için hızlı teklif alın.`,
+    openGraph: {
+      title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
+      description: `${districtData.name} için bölgesel temizlik hizmetleri ve hızlı teklif.`,
+      url: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
+      type: 'website',
+      locale: 'tr_TR',
+      siteName: 'Günen Temizlik',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
+      description: `${districtData.name} için bölgesel temizlik hizmetleri ve hızlı teklif.`,
+    },
     alternates: {
       canonical: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
     },

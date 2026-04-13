@@ -32,6 +32,7 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { href: '/', label: 'Ana Sayfa' },
   { href: '/hizmetler', label: 'Hizmetlerimiz' },
+  { href: '/bolgeler', label: 'Bölgeler' },
   { href: '/galeri', label: 'Galeri' },
   { href: '/sss', label: 'SSS' },
   { href: '/blog', label: 'Blog' },

@@ -75,10 +75,9 @@ export default function ProgrammaticCtaExperiment({
 
   return (
     <div className="mt-10 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6">
-      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">CTA Testi V2 - Varyant {variant}</p>
       <h2 className="mt-2 text-xl font-semibold text-white">{districtName} için Hızlı Teklif</h2>
       <p className="mt-2 text-sm text-slate-200">
-        Bu blokta kullanıcı dönüşümünü artırmak için CTA metinlerini A/B test ediyoruz.
+        Uygun saat ve hizmet kapsamı için dakikalar içinde teklif alabilirsiniz.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <a

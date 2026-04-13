@@ -62,10 +62,14 @@ export default function RegionsHubPage() {
               <h2 className="text-xl font-semibold">Odak Hizmetler</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {SERVICE_LANDINGS.map((service) => (
-                  <div key={service.slug} className="rounded-xl border border-slate-700 bg-slate-800/40 p-4">
+                  <Link
+                    key={service.slug}
+                    href={`/hizmetler/${service.slug}`}
+                    className="rounded-xl border border-slate-700 bg-slate-800/40 p-4 transition-colors hover:border-emerald-500/50 hover:bg-slate-800"
+                  >
                     <p className="font-medium">{service.name}</p>
                     <p className="mt-1 text-sm text-slate-400">{service.shortPitch}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ServicesPageClient from '@/components/site/ServicesPageClient';
+import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
   title: 'Hizmetlerimiz | Günen Temizlik - İstanbul',
@@ -62,12 +63,36 @@ const breadcrumbSchema = {
   ],
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      shortDesc: true,
+      features: true,
+    },
+  });
+
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: services.map((service, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: service.title,
+      url: `https://gunentemizlik.com/hizmetler/${service.slug}`,
+    })),
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      <ServicesPageClient />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
+      <ServicesPageClient services={services} />
     </>
   );
 }

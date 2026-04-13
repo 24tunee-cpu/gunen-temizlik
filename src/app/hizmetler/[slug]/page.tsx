@@ -22,6 +22,7 @@ import { prisma } from '@/lib/prisma';
 import SiteLayout from '../../site/layout';
 import { Sparkles, Check, ArrowRight, Phone, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
 
 // ============================================
 // TYPES
@@ -40,8 +41,8 @@ interface ServiceData {
   shortDesc: string;
   description: string | null;
   metaDesc: string | null;
+  metaTitle: string | null;
   image: string | null;
-  priceRange: string | null;
   features: string[];
   isActive: boolean;
   createdAt: Date;
@@ -73,7 +74,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     return {
-      title: `${service.title} | Günen Temizlik - İstanbul`,
+      title: service.metaTitle?.trim() || `${service.title} | Günen Temizlik - İstanbul`,
       description: service.metaDesc || service.shortDesc,
       keywords: service.features,
       alternates: {
@@ -134,11 +135,6 @@ function generateServiceSchema(service: ServiceData) {
     },
     "areaServed": "İstanbul",
     "description": service.description || service.shortDesc,
-    "offers": service.priceRange ? {
-      "@type": "Offer",
-      "priceCurrency": "TRY",
-      "description": service.priceRange
-    } : undefined,
     "image": service.image || undefined,
   };
 }
@@ -223,11 +219,6 @@ export default async function ServiceDetailPage({ params }: PageProps) {
             <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
               {service.shortDesc}
             </p>
-            {service.priceRange && (
-              <p className="mt-4 text-2xl font-bold text-emerald-400">
-                {service.priceRange}
-              </p>
-            )}
           </div>
         </section>
 
@@ -247,6 +238,24 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                 />
               </figure>
             )}
+
+            <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Bu hizmetin verildiği bölgeler</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Bölgenize özel sayfalardan hızlıca teklif alabilir, süreç detaylarını görebilirsiniz.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {DISTRICT_LANDINGS.slice(0, 6).map((district) => (
+                  <Link
+                    key={district.slug}
+                    href={`/bolgeler/${district.slug}/${service.slug}`}
+                    className="rounded-full border border-emerald-500/30 px-3 py-1.5 text-sm text-emerald-600 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300"
+                  >
+                    {district.name} {service.title}
+                  </Link>
+                ))}
+              </div>
+            </section>
 
             {/* Description */}
             <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-600 dark:prose-p:text-slate-300">

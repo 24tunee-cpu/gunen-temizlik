@@ -144,7 +144,6 @@ const LOCAL_BUSINESS_SCHEMA = {
   "url": "https://gunentemizlik.com",
   "telephone": SITE_CONTACT.phoneE164,
   "email": SITE_CONTACT.email,
-  "priceRange": "₺₺",
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev temizliği ve koltuk yıkama hizmetleri.",
   "foundingDate": "2010",
   "address": {
@@ -183,6 +182,11 @@ const WEBSITE_SCHEMA = {
   "url": "https://gunentemizlik.com",
   "name": "Günen Temizlik",
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://gunentemizlik.com/blog?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
 } as const;
 
 // ============================================
