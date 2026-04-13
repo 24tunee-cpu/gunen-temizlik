@@ -3,6 +3,10 @@ export type DistrictLanding = {
   name: string;
   populationNote: string;
   neighborhoods: string[];
+  /** Yerel SEO ve meta metinlerinde yaka bağlamı */
+  side?: 'anadolu' | 'avrupa';
+  /** Kısa tanıtım cümlesi (mahalle + operasyon odağı) */
+  regionBlurb?: string;
 };
 
 export type ServiceLanding = {
@@ -32,50 +36,164 @@ export const DISTRICT_LANDINGS: DistrictLanding[] = [
   {
     slug: 'atasehir',
     name: 'Ataşehir',
+    side: 'anadolu',
     populationNote: 'yoğun site yaşamı ve kurumsal ofis trafiği',
-    neighborhoods: ['Atatürk', 'Küçükbakkalköy', 'İçerenköy'],
+    regionBlurb:
+      'Finans ve iş merkezi yoğunluğu yüksek; plaza, AVM ve rezidanslarda düzenli operasyon planları kuruyoruz.',
+    neighborhoods: ['Atatürk', 'Küçükbakkalköy', 'İçerenköy', 'Barbaros', 'Yenişehir', 'Mustafa Kemal'],
   },
   {
     slug: 'kadikoy',
     name: 'Kadıköy',
+    side: 'anadolu',
     populationNote: 'yüksek konut yoğunluğu ve hızlı randevu ihtiyacı',
-    neighborhoods: ['Göztepe', 'Kozyatağı', 'Erenköy'],
+    regionBlurb:
+      'Merkezi konum ve çok çeşitli konut/ofis dokusu; aynı gün veya ertesi gün ekip yönlendirmesi yapıyoruz.',
+    neighborhoods: ['Göztepe', 'Kozyatağı', 'Erenköy', 'Moda', 'Fenerbahçe', 'Bostancı', 'Suadiye'],
   },
   {
     slug: 'uskudar',
     name: 'Üsküdar',
+    side: 'anadolu',
     populationNote: 'konut + ofis karışımı bölgelerde düzenli temizlik talebi',
-    neighborhoods: ['Acıbadem', 'Altunizade', 'Çengelköy'],
+    regionBlurb:
+      'Boğaz hattı ve iç bölgelerde apartman, villa ve işyeri temizliklerinde esnek saatler sunuyoruz.',
+    neighborhoods: ['Acıbadem', 'Altunizade', 'Çengelköy', 'Bulgurlu', 'Ünalan', 'Kısıklı'],
   },
   {
     slug: 'besiktas',
     name: 'Beşiktaş',
+    side: 'avrupa',
     populationNote: 'yüksek tempolu iş merkezleri ve butik ofis yapısı',
-    neighborhoods: ['Levent', 'Etiler', 'Ortaköy'],
+    regionBlurb:
+      'Levent ve çevresinde kurumsal hijyen, butik ofis ve rezidans projelerinde deneyimli ekipler.',
+    neighborhoods: ['Levent', 'Etiler', 'Ortaköy', 'Bebek', 'Arnavutköy', 'Abbasağa'],
   },
   {
     slug: 'sisli',
     name: 'Şişli',
+    side: 'avrupa',
     populationNote: 'plaza ve apartman temizliklerinde süreklilik beklentisi',
-    neighborhoods: ['Mecidiyeköy', 'Fulya', 'Nişantaşı'],
+    regionBlurb:
+      'Plaza, rezidans ve perakende hatlarında gece veya mesai dışı temizlik planlaması yapıyoruz.',
+    neighborhoods: ['Mecidiyeköy', 'Fulya', 'Nişantaşı', 'Harbiye', 'Osmanbey', 'Bomonti'],
   },
   {
     slug: 'bakirkoy',
     name: 'Bakırköy',
+    side: 'avrupa',
     populationNote: 'aile konutlarında periyodik temizlik ihtiyacı',
-    neighborhoods: ['Ataköy', 'Yeşilköy', 'Florya'],
+    regionBlurb:
+      'Sahil ve iç mahallelerde konut, ofis ve mağaza temizliklerinde düzenli sözleşmeli hizmet veriyoruz.',
+    neighborhoods: ['Ataköy', 'Yeşilköy', 'Florya', 'Zeytinlik', 'Kartaltepe', 'Şenlikköy'],
   },
   {
     slug: 'bahcelievler',
     name: 'Bahçelievler',
+    side: 'avrupa',
     populationNote: 'orta-yoğun konut alanlarında uygun fiyat beklentisi',
-    neighborhoods: ['Yenibosna', 'Şirinevler', 'Soğanlı'],
+    regionBlurb:
+      'Geniş apartman dokusunda periyodik ev temizliği ve taşınma öncesi/sonrası paketler sunuyoruz.',
+    neighborhoods: ['Yenibosna', 'Şirinevler', 'Soğanlı', 'Kocasinan', 'Çobançeşme', 'Bahçelievler Merkez'],
   },
   {
     slug: 'pendik',
     name: 'Pendik',
+    side: 'anadolu',
     populationNote: 'geniş ilçe ölçeğinde planlı ekip yönlendirme ihtiyacı',
-    neighborhoods: ['Kurtköy', 'Çamçeşme', 'Kaynarca'],
+    regionBlurb:
+      'Havalimanı ve sanayi çevresi dahil geniş coğrafyada rota bazlı ekip planlaması yapıyoruz.',
+    neighborhoods: ['Kurtköy', 'Çamçeşme', 'Kaynarca', 'Velibaba', 'Pendik Merkez', 'Güzelyalı'],
+  },
+  {
+    slug: 'umraniye',
+    name: 'Ümraniye',
+    side: 'anadolu',
+    populationNote: 'site ve iş merkezi yoğunluğu ile hızlı büyüyen talep',
+    regionBlurb:
+      'Finans Merkezi ve çevresinde ofis, mağaza ve rezidans temizliklerinde yoğun operasyon kapasitesi.',
+    neighborhoods: ['İnkılap', 'Şerifali', 'Atakent', 'Çakmak', 'Site', 'Parseller'],
+  },
+  {
+    slug: 'maltepe',
+    name: 'Maltepe',
+    side: 'anadolu',
+    populationNote: 'sahil şeridi ve konut projelerinde düzenli hizmet ihtiyacı',
+    regionBlurb:
+      'Sahil hattı ve iç mahallelerde daire, dubleks ve işyeri temizliklerinde hızlı randevu.',
+    neighborhoods: ['Cevizli', 'Feyzullah', 'Gülsuyu', 'Altıntepe', 'Bağlarbaşı', 'İdealtepe'],
+  },
+  {
+    slug: 'kartal',
+    name: 'Kartal',
+    side: 'anadolu',
+    populationNote: 'konut + OSB çevresinde çeşitli temizlik senaryoları',
+    regionBlurb:
+      'Yakın çevre sanayi ve konut bölgelerinde inşaat sonrası ve periyodik temizlik paketleri.',
+    neighborhoods: ['Yakacık', 'Soğanlık', 'Uğur Mumcu', 'Hürriyet', 'Orhantepe', 'Topselvi'],
+  },
+  {
+    slug: 'sariyer',
+    name: 'Sarıyer',
+    side: 'avrupa',
+    populationNote: 'villa, site ve yüksek gelir segmentinde detay beklentisi',
+    regionBlurb:
+      'Boğaz hattı ve orman içi yerleşimlerde hijyen ve güven odaklı, titiz uygulama sunuyoruz.',
+    neighborhoods: ['Maslak', 'Zekeriyaköy', 'Tarabya', 'Yeniköy', 'Bahçeköy', 'Rumelihisarı'],
+  },
+  {
+    slug: 'kagithane',
+    name: 'Kağıthane',
+    side: 'avrupa',
+    populationNote: 'kentsel dönüşüm ve yeni projelerde yoğun talep',
+    regionBlurb:
+      'Yeni rezidans ve ofis projelerinde inşaat sonrası teslim ve düzenli temizlik hizmeti veriyoruz.',
+    neighborhoods: ['Çağlayan', 'Gürsel', 'Seyrantepe', 'Merkez', 'Hamidiye', 'Sultan Selim'],
+  },
+  {
+    slug: 'eyupsultan',
+    name: 'Eyüpsultan',
+    side: 'avrupa',
+    populationNote: 'geleneksel konut ve yeni konut karışımı',
+    regionBlurb:
+      'Tarihi semt ve yeni yerleşimlerde aile konutlarına uygun fiyatlı periyodik paketler sunuyoruz.',
+    neighborhoods: ['Alibeyköy', '5. Levent', 'Göktürk', 'Kemerburgaz', 'Çırçır', 'Ram'],
+  },
+  {
+    slug: 'bayrampasa',
+    name: 'Bayrampaşa',
+    side: 'avrupa',
+    populationNote: 'sanayi ve konut yakınlığında pratik hizmet beklentisi',
+    regionBlurb:
+      'İşyeri, depo ve konut temizliklerinde kısa süreli ekip çıkışı ve net kapsam sunuyoruz.',
+    neighborhoods: ['Yıldırım', 'Muratpaşa', 'Kartaltepe', 'İsmet Paşa', 'Vatan', 'Terazidere'],
+  },
+  {
+    slug: 'gaziosmanpasa',
+    name: 'Gaziosmanpaşa',
+    side: 'avrupa',
+    populationNote: 'yoğun apartman dokusunda fiyat-duyarlı segment',
+    regionBlurb:
+      'Apartman ve site içi ortak alan + daire temizliklerinde şeffaf süre ve fiyat politikası.',
+    neighborhoods: ['Bağlarbaşı', 'Karayolları', 'Yıldıztabya', 'Fevzi Çakmak', 'Habibler', 'Şemsipaşa'],
+  },
+  {
+    slug: 'zeytinburnu',
+    name: 'Zeytinburnu',
+    side: 'avrupa',
+    populationNote: 'sanayi, lojistik ve konut iç içe',
+    regionBlurb:
+      'İşyeri, atölye ve konut temizliklerinde esnek vardiya ve hızlı teklif süreci.',
+    neighborhoods: ['Maltepe', 'Veliefendi', 'Kazlıçeşme', 'Merkezefendi', 'Telsiz', 'Yeşiltepe'],
+  },
+  {
+    slug: 'fatih',
+    name: 'Fatih',
+    side: 'avrupa',
+    populationNote: 'tarihi yapı ve dar sokaklarda özel dikkat gerektiren alanlar',
+    regionBlurb:
+      'Dar sokak ve tarihi çevrede apartman, pansiyon ve küçük işyeri temizliklerinde deneyimli ekip.',
+    neighborhoods: ['Balat', 'Fener', 'Sultanahmet', 'Aksaray', 'Çarşamba', 'Kocamustafapaşa'],
   },
 ];
 
@@ -171,6 +289,13 @@ export function getDistrictBySlug(slug: string) {
   return DISTRICT_LANDINGS.find((d) => d.slug === slug);
 }
 
+/** Arayüz ve meta için kısa yaka etiketi */
+export function formatDistrictSide(district: DistrictLanding): string {
+  if (district.side === 'anadolu') return 'Anadolu yakası';
+  if (district.side === 'avrupa') return 'Avrupa yakası';
+  return '';
+}
+
 export function getServiceBySlug(slug: string) {
   return SERVICE_LANDINGS.find((s) => s.slug === slug);
 }
@@ -190,6 +315,7 @@ const HERO_TEMPLATES = [
   '{district} bölgesinde {serviceLower} ihtiyacında hızlı ekip yönlendirmesi ve net iş planı sunuyoruz.',
   '{district} için planlı {serviceLower} hizmetinde keşif sonrası kapsamı şeffaf biçimde paylaşıyoruz.',
   '{district} içinde {serviceLower} arayan kullanıcılar için hızlı randevu ve profesyonel uygulama sağlıyoruz.',
+  '{district}: {regionHint} {serviceLower} kapsamını adresinize göre netleştiriyoruz.',
 ];
 
 const LOCAL_ANGLES = [
@@ -218,13 +344,19 @@ function hashKey(input: string): number {
   return h;
 }
 
-function fillTemplate(template: string, district: DistrictLanding, service: ServiceLanding): string {
-  const neighborhood = district.neighborhoods[0] ?? district.name;
+function fillTemplate(
+  template: string,
+  district: DistrictLanding,
+  service: ServiceLanding,
+  neighborhoodPick: string
+): string {
+  const regionHint = district.regionBlurb || district.populationNote;
   return template
     .replaceAll('{district}', district.name)
     .replaceAll('{service}', service.name)
     .replaceAll('{serviceLower}', service.name.toLowerCase())
-    .replaceAll('{neighborhood}', neighborhood);
+    .replaceAll('{neighborhood}', neighborhoodPick)
+    .replaceAll('{regionHint}', regionHint);
 }
 
 export function buildProgrammaticContentVariant(
@@ -232,12 +364,15 @@ export function buildProgrammaticContentVariant(
   service: ServiceLanding
 ): ProgrammaticContentVariant {
   const seed = hashKey(`${district.slug}:${service.slug}`);
+  const nh =
+    district.neighborhoods[seed % Math.max(1, district.neighborhoods.length)] ??
+    district.name;
 
-  const heroLead = fillTemplate(HERO_TEMPLATES[seed % HERO_TEMPLATES.length], district, service);
-  const localAngle = fillTemplate(LOCAL_ANGLES[(seed + 1) % LOCAL_ANGLES.length], district, service);
+  const heroLead = fillTemplate(HERO_TEMPLATES[seed % HERO_TEMPLATES.length], district, service, nh);
+  const localAngle = fillTemplate(LOCAL_ANGLES[(seed + 1) % LOCAL_ANGLES.length], district, service, nh);
 
-  const trustPoints = TRUST_POINT_TEMPLATES.map((t) => fillTemplate(t, district, service));
-  const processSteps = PROCESS_STEP_TEMPLATES.map((t) => fillTemplate(t, district, service));
+  const trustPoints = TRUST_POINT_TEMPLATES.map((t) => fillTemplate(t, district, service, nh));
+  const processSteps = PROCESS_STEP_TEMPLATES.map((t) => fillTemplate(t, district, service, nh));
 
   return {
     heroLead,

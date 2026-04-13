@@ -7,6 +7,7 @@ import {
   DISTRICT_LANDINGS,
   SERVICE_LANDINGS,
   buildProgrammaticContentVariant,
+  formatDistrictSide,
   getDistrictBySlug,
   getNearbyDistrictSlugs,
   getServiceBySlug,
@@ -153,10 +154,38 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
       <SiteLayout>
         <div className="min-h-screen bg-slate-900 pb-16 pt-28 text-white">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold sm:text-4xl">{districtData.name} {serviceData.name}</h1>
-            <p className="mt-4 text-slate-300">
-              {contentVariant.heroLead}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-3xl font-bold sm:text-4xl">
+                {districtData.name} {serviceData.name}
+              </h1>
+              {formatDistrictSide(districtData) && (
+                <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                  {formatDistrictSide(districtData)}
+                </span>
+              )}
+            </div>
+            {districtData.regionBlurb && (
+              <p className="mt-2 text-sm text-slate-400">{districtData.regionBlurb}</p>
+            )}
+            <p className="mt-4 text-slate-300">{contentVariant.heroLead}</p>
+
+            <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-800/30 p-5">
+              <h2 className="text-lg font-semibold text-white">Mahalle ve semt kapsamı</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                {districtData.name} içinde özellikle şu bölgelerde düzenli ekip yönlendirmesi yapıyoruz; liste
+                genişleyebilir — keşifde netleştiririz.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {districtData.neighborhoods.map((n) => (
+                  <span
+                    key={n}
+                    className="rounded-full border border-slate-600 bg-slate-800/60 px-3 py-1 text-xs text-slate-200"
+                  >
+                    {n}
+                  </span>
+                ))}
+              </div>
+            </section>
 
             <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
               <h2 className="text-xl font-semibold">Neden bu bölgede bizi tercih ediyorlar?</h2>
