@@ -16,7 +16,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
-import { faqPageJsonLdObject } from "@/lib/seed-faq";
 import { SITE_CONTACT } from "@/config/site-contact";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
@@ -135,7 +134,7 @@ export const viewport: Viewport = {
 
 const LOCAL_BUSINESS_SCHEMA = {
   "@context": "https://schema.org",
-  "@type": "CleaningService",
+  "@type": "LocalBusiness",
   "@id": "https://gunentemizlik.com/#business",
   "name": "Günen Temizlik Şirketi",
   "image": [
@@ -175,20 +174,13 @@ const LOCAL_BUSINESS_SCHEMA = {
       "closes": "23:59",
     },
   ],
-  "areaServed": [
-    { "@type": "City", "name": "İstanbul" },
-    { "@type": "AdministrativeArea", "name": "Ataşehir" },
-    { "@type": "AdministrativeArea", "name": "Kadıköy" },
-    { "@type": "AdministrativeArea", "name": "Üsküdar" },
-  ],
+  "areaServed": ["İstanbul", "Ataşehir", "Kadıköy", "Üsküdar"],
   "sameAs": [
     "https://facebook.com/gunentemizlik",
     "https://instagram.com/gunentemizlik",
   ],
   "hasMap": "https://www.google.com/maps?q=41.0082,28.9784",
 } as const;
-
-const FAQ_SCHEMA = faqPageJsonLdObject();
 
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
@@ -197,14 +189,6 @@ const WEBSITE_SCHEMA = {
   "url": "https://gunentemizlik.com",
   "name": "Günen Temizlik",
   "description": "İstanbul'un önde gelen profesyonel temizlik şirketi",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": "https://gunentemizlik.com/arama?q={search_term_string}",
-    },
-    "query-input": "required name=search_term_string",
-  },
 } as const;
 
 // ============================================
@@ -240,11 +224,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           id="local-business-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_SCHEMA) }}
-        />
-        <Script
-          id="faq-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
         />
         <Script
           id="website-schema"

@@ -87,6 +87,25 @@ const blogSchema = {
   }
 };
 
+const blogBreadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Ana Sayfa',
+      item: 'https://gunentemizlik.com/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: 'https://gunentemizlik.com/blog',
+    },
+  ],
+};
+
 // ============================================
 // LOADING FALLBACK
 // ============================================
@@ -122,6 +141,10 @@ export default function BlogPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogBreadcrumbSchema) }}
       />
 
       <SiteLayout>

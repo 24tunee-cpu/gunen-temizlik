@@ -201,7 +201,7 @@ export function generateSEO({
 export function generateLocalBusinessSchema() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'CleaningService', // Daha spesifik LocalBusiness alt tipi
+    '@type': 'LocalBusiness',
     '@id': 'https://gunentemizlik.com/#business',
     name: 'Günen Temizlik Şirketi',
     image: [
@@ -248,25 +248,7 @@ export function generateLocalBusinessSchema() {
         description: '7/24 Acil Temizlik Hizmeti',
       },
     ],
-    areaServed: [
-      {
-        '@type': 'City',
-        name: 'İstanbul',
-        '@id': 'https://www.wikidata.org/wiki/Q406',
-      },
-      {
-        '@type': 'AdministrativeArea',
-        name: 'Ataşehir',
-      },
-      {
-        '@type': 'AdministrativeArea',
-        name: 'Kadıköy',
-      },
-      {
-        '@type': 'AdministrativeArea',
-        name: 'Üsküdar',
-      },
-    ],
+    areaServed: ['İstanbul', 'Ataşehir', 'Kadıköy', 'Üsküdar'],
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'Temizlik Hizmetleri',
@@ -333,16 +315,13 @@ export function generateServiceSchema(service: {
     name: service.title,
     description: service.description,
     provider: {
-      '@type': 'CleaningService',
+      '@type': 'LocalBusiness',
       name: 'Günen Temizlik',
       '@id': 'https://gunentemizlik.com/#business',
     },
     url: `https://gunentemizlik.com/hizmetler/${service.slug}`,
     image: service.image,
-    areaServed: {
-      '@type': 'City',
-      name: 'İstanbul',
-    },
+    areaServed: 'İstanbul',
     serviceType: 'Temizlik Hizmeti',
     ...(service.priceRange && {
       offers: {

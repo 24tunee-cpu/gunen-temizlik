@@ -267,11 +267,7 @@ export function generateServiceSchema(service: {
     url: fullUrl,
     image: fullImage,
     ...(service.priceRange && { priceRange: service.priceRange }),
-    areaServed: {
-      '@type': 'City',
-      name: 'İstanbul',
-      '@id': 'https://www.wikidata.org/wiki/Q406',
-    },
+    areaServed: 'İstanbul',
     serviceType: 'Temizlik Hizmetleri',
   };
 }
@@ -463,14 +459,6 @@ export function generateWebSiteSchema(): Record<string, unknown> {
     '@type': 'WebSite',
     name: SITE_CONFIG.name,
     url: SITE_URL,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${SITE_URL}/arama?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 

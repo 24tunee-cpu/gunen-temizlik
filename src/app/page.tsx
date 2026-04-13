@@ -101,7 +101,7 @@ export const metadata: Metadata = {
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "CleaningService",
+  "@type": "LocalBusiness",
   "@id": "https://gunentemizlik.com/#business",
   "name": "Günen Temizlik Şirketi",
   "url": "https://gunentemizlik.com",
@@ -141,10 +141,7 @@ const structuredData = {
     }
   ],
   "priceRange": "₺₺",
-  "areaServed": {
-    "@type": "City",
-    "name": "İstanbul"
-  },
+  "areaServed": ["İstanbul"],
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "4.9",

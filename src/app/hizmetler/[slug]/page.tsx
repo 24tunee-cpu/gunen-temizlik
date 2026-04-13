@@ -132,10 +132,7 @@ function generateServiceSchema(service: ServiceData) {
         "addressCountry": "TR"
       }
     },
-    "areaServed": {
-      "@type": "City",
-      "name": "İstanbul"
-    },
+    "areaServed": "İstanbul",
     "description": service.description || service.shortDesc,
     "offers": service.priceRange ? {
       "@type": "Offer",
@@ -173,6 +170,30 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   // Generate structured data
   const serviceSchema = generateServiceSchema(service as ServiceData);
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Ana Sayfa',
+        item: 'https://gunentemizlik.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Hizmetler',
+        item: 'https://gunentemizlik.com/hizmetler',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: service.title,
+        item: `https://gunentemizlik.com/hizmetler/${service.slug}`,
+      },
+    ],
+  };
 
   return (
     <>
@@ -180,6 +201,10 @@ export default async function ServiceDetailPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <SiteLayout>

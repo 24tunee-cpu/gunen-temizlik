@@ -75,6 +75,35 @@ const TERMS_ITEMS = [
   }
 ] as const;
 
+const termsPageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Kullanım Koşulları',
+  url: 'https://gunentemizlik.com/kullanim-kosullari',
+  description:
+    'Günen Temizlik hizmetlerinin kullanım koşulları, sorumluluklar ve yasal bilgilendirmeler.',
+  inLanguage: 'tr-TR',
+};
+
+const termsBreadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Ana Sayfa',
+      item: 'https://gunentemizlik.com/',
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Kullanım Koşulları',
+      item: 'https://gunentemizlik.com/kullanim-kosullari',
+    },
+  ],
+};
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -87,8 +116,17 @@ const TERMS_ITEMS = [
  */
 export default function TermsPage() {
   return (
-    <SiteLayout>
-      <div className="flex min-h-full flex-1 flex-col bg-slate-900">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(termsPageSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(termsBreadcrumbSchema) }}
+      />
+      <SiteLayout>
+        <div className="flex min-h-full flex-1 flex-col bg-slate-900">
       {/* Hero Section */}
       <section
         className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 py-16 sm:py-24 md:py-32"
@@ -154,7 +192,8 @@ export default function TermsPage() {
           </footer>
         </div>
       </section>
-      </div>
-    </SiteLayout>
+        </div>
+      </SiteLayout>
+    </>
   );
 }

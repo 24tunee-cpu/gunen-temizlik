@@ -54,6 +54,12 @@ interface BlogPostData {
   updatedAt: Date;
 }
 
+const RELATED_SERVICE_LINKS = [
+  { href: '/hizmetler/insaat-sonrasi-temizlik', label: 'İnşaat Sonrası Temizlik' },
+  { href: '/hizmetler/ofis-temizligi', label: 'Ofis Temizliği' },
+  { href: '/hizmetler/koltuk-yikama', label: 'Koltuk Yıkama' },
+] as const;
+
 // ============================================
 // METADATA GENERATION
 // ============================================
@@ -196,6 +202,30 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   // Generate structured data
   const articleSchema = generateArticleSchema(post as BlogPostData);
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Ana Sayfa',
+        item: 'https://gunentemizlik.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: 'https://gunentemizlik.com/blog',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.title,
+        item: `https://gunentemizlik.com/blog/${post.slug}`,
+      },
+    ],
+  };
 
   // Calculate reading time (approximate)
   const wordCount = post.content.split(/\s+/).length;
@@ -207,6 +237,10 @@ export default async function BlogPostPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <SiteLayout>
@@ -290,6 +324,25 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </div>
               </footer>
             )}
+
+            {/* Share & CTA */}
+            <section className="mt-12 rounded-xl border border-slate-700 bg-slate-800/40 p-5">
+              <h2 className="text-lg font-semibold text-white">İlgili hizmetler</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                Bu konuyla ilgili profesyonel destek almak için en çok tercih edilen hizmetlerimiz:
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {RELATED_SERVICE_LINKS.map((service) => (
+                  <Link
+                    key={service.href}
+                    href={service.href}
+                    className="rounded-full border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:bg-emerald-500/15"
+                  >
+                    {service.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
 
             {/* Share & CTA */}
             <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-700 pt-8 sm:flex-row">
