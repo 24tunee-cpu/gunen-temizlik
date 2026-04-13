@@ -20,6 +20,9 @@ import {
   Square,
   AlertCircle,
   RefreshCw,
+  Lightbulb,
+  ChevronDown,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
@@ -57,6 +60,14 @@ type SortField = 'name' | 'rating' | 'createdAt' | 'order';
 type SortOrder = 'asc' | 'desc';
 type FilterStatus = 'all' | 'active' | 'inactive';
 
+/** SEO / JSON-LD ile uyumlu üst sınır (testimonials-seo.ts reviewBody) */
+const CONTENT_SCHEMA_MAX = 8000;
+const CONTENT_SOFT_MIN = 40;
+const CONTENT_IDEAL_MIN = 120;
+const NAME_DISPLAY_MAX = 80;
+const LOCATION_MAX = 120;
+const SERVICE_MAX = 100;
+
 export default function TestimonialsPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +85,7 @@ export default function TestimonialsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [seoPanelOpen, setSeoPanelOpen] = useState(true);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -463,6 +475,61 @@ export default function TestimonialsPage() {
         </div>
       </div>
 
+      {/* SEO rehberi — /referanslar */}
+      <div className="overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/25">
+        <button
+          type="button"
+          onClick={() => setSeoPanelOpen((o) => !o)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-emerald-100/50 dark:hover:bg-emerald-900/20"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+            <Lightbulb className="h-4 w-4 shrink-0" />
+            SEO — Referanslar sayfası (Google)
+          </span>
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 text-emerald-700 transition-transform dark:text-emerald-400 ${seoPanelOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {seoPanelOpen && (
+          <div className="space-y-3 border-t border-emerald-200/80 px-4 py-4 text-sm text-emerald-900/90 dark:border-emerald-900/40 dark:text-emerald-100/85">
+            <p>
+              Yayında olan yorumlar{' '}
+              <a
+                href="/referanslar"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-emerald-700 underline decoration-emerald-400/60 hover:decoration-emerald-600 dark:text-emerald-300"
+              >
+                /referanslar
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>{' '}
+              üzerinde tam metin + yapılandırılmış veri (yıldız, FAQ, breadcrumb) olarak sunulur.
+            </p>
+            <ul className="list-inside list-disc space-y-1.5 text-emerald-900/85 dark:text-emerald-200/80">
+              <li>
+                <strong>Yorum metni:</strong> En az birkaç tam cümle; mümkünse hizmeti ve bölgeyi doğal biçimde geçirin
+                (ör. &quot;Kadıköy ofis temizliği&quot;).
+              </li>
+              <li>
+                <strong>Lokasyon ve hizmet</strong> alanlarını doldurun; arama sonuçlarında bağlam güçlenir.
+              </li>
+              <li>
+                <strong>Yayında</strong> işaretli kayıtlar sayfada ve JSON-LD&apos;de kullanılır; taslak için kapatın.
+              </li>
+              <li>
+                Düzenli yeni yorum eklemek sayfa tazeliğine yardımcı olur (sayfa ~5 dk önbelleklenir).
+              </li>
+              <li>
+                Google İşletim Profili yorumlarıyla çelişmeyen, gerçek müşteri ifadeleri kullanın.
+              </li>
+            </ul>
+            <p className="text-xs text-emerald-800/70 dark:text-emerald-300/60">
+              Rich snippet (yıldızlı sonuç) garanti değildir; içerik kalitesi ve politika Google&apos;a bağlıdır.
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -819,6 +886,7 @@ export default function TestimonialsPage() {
                     <input
                       type="text"
                       value={formData.name}
+                      maxLength={NAME_DISPLAY_MAX}
                       onChange={(e) => {
                         setFormData({ ...formData, name: e.target.value });
                         if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
@@ -829,6 +897,9 @@ export default function TestimonialsPage() {
                         }`}
                       placeholder="Örn: Ahmet Yılmaz"
                     />
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formData.name.length}/{NAME_DISPLAY_MAX} karakter · Şemada yazar adı olarak geçer
+                    </p>
                     {formErrors.name && (
                       <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> {formErrors.name}
@@ -842,10 +913,12 @@ export default function TestimonialsPage() {
                     <input
                       type="text"
                       value={formData.location}
+                      maxLength={LOCATION_MAX}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       className="w-full rounded-xl border border-slate-200 px-4 py-2.5 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-700"
                       placeholder="Örn: Kadıköy, İstanbul"
                     />
+                    <p className="mt-1 text-xs text-slate-400">{formData.location.length}/{LOCATION_MAX}</p>
                   </div>
                 </div>
 
@@ -882,10 +955,12 @@ export default function TestimonialsPage() {
                     <input
                       type="text"
                       value={formData.service}
+                      maxLength={SERVICE_MAX}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                       placeholder="Örn: Ofis Temizliği"
                     />
+                    <p className="mt-1 text-xs text-slate-400">{formData.service.length}/{SERVICE_MAX}</p>
                   </div>
                 </div>
 
@@ -924,24 +999,47 @@ export default function TestimonialsPage() {
                   <textarea
                     value={formData.content}
                     onChange={(e) => {
-                      setFormData({ ...formData, content: e.target.value });
+                      const v = e.target.value.slice(0, CONTENT_SCHEMA_MAX);
+                      setFormData({ ...formData, content: v });
                       if (formErrors.content) setFormErrors({ ...formErrors, content: '' });
                     }}
-                    rows={4}
-                    className={`w-full rounded-xl border px-4 py-3 resize-none focus:outline-none focus:ring-2 transition-all ${formErrors.content
+                    rows={5}
+                    maxLength={CONTENT_SCHEMA_MAX}
+                    className={`w-full rounded-xl border px-4 py-3 resize-y min-h-[120px] focus:outline-none focus:ring-2 transition-all ${formErrors.content
                       ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                      : 'border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-emerald-200'
+                      : formData.content.length > 0 &&
+                          formData.content.length < CONTENT_SOFT_MIN
+                        ? 'border-amber-200 dark:border-amber-900/50 focus:border-amber-500 focus:ring-amber-200/50'
+                        : 'border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-emerald-200'
                       }`}
-                    placeholder="Müşterinin yorumunu buraya yazın..."
+                    placeholder="Müşterinin yorumunu buraya yazın — en az birkaç cümle, mümkünse hizmet ve bölgeyi doğal şekilde geçirin."
                   />
                   {formErrors.content ? (
                     <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                       <AlertCircle className="h-3 w-3" /> {formErrors.content}
                     </p>
                   ) : (
-                    <p className="mt-1 text-sm text-slate-400">
-                      {formData.content.length} karakter
-                    </p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        <span className="font-medium tabular-nums">{formData.content.length}</span>
+                        <span className="text-slate-400"> / {CONTENT_SCHEMA_MAX}</span> karakter
+                        <span className="text-slate-400 dark:text-slate-500">
+                          {' '}
+                          · Yapılandırılmış veride üst sınır {CONTENT_SCHEMA_MAX} (fazlası kesilir)
+                        </span>
+                      </p>
+                      {formData.content.length > 0 && formData.content.length < CONTENT_SOFT_MIN && (
+                        <p className="text-xs text-amber-700 dark:text-amber-300/90">
+                          Kısa görünüyor — SEO için en az ~{CONTENT_SOFT_MIN} karakterde birkaç tam cümle önerilir.
+                        </p>
+                      )}
+                      {formData.content.length >= CONTENT_IDEAL_MIN &&
+                        formData.content.length <= CONTENT_SCHEMA_MAX && (
+                          <p className="text-xs text-emerald-700 dark:text-emerald-400/90">
+                            Uzunluk /referanslar tam metin ve şema için uygun aralıkta.
+                          </p>
+                        )}
+                    </div>
                   )}
                 </div>
 

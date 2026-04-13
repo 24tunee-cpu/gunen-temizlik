@@ -36,6 +36,10 @@ interface TestimonialsProps {
   autoPlayInterval?: number;
   /** Başlangıçta auto-play aktif mi - varsayılan: true */
   autoPlay?: boolean;
+  /**
+   * Sunucudan gelen veri (ör. /referanslar). Verilirse istemci fetch yapılmaz; SEO ve LCP için.
+   */
+  initialTestimonials?: Testimonial[];
 }
 
 // ============================================
@@ -49,10 +53,14 @@ interface TestimonialsProps {
  */
 export function Testimonials({
   autoPlayInterval = 5000,
-  autoPlay = true
+  autoPlay = true,
+  initialTestimonials,
 }: TestimonialsProps) {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(false); // SSR hydration fix: start false
+  const serverHydrated = initialTestimonials !== undefined;
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(() =>
+    serverHydrated ? initialTestimonials! : []
+  );
+  const [loading, setLoading] = useState(!serverHydrated);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
   const [isPaused, setIsPaused] = useState(false);
@@ -74,7 +82,8 @@ export function Testimonials({
   // ============================================
 
   useEffect(() => {
-    if (!isMounted) return; // Only fetch after mount
+    if (serverHydrated) return;
+    if (!isMounted) return;
 
     const fetchTestimonials = async () => {
       setLoading(true);
@@ -82,7 +91,6 @@ export function Testimonials({
         const res = await fetch('/api/testimonials');
         if (!res.ok) throw new Error('Failed to fetch testimonials');
         const data = await res.json();
-        // API zaten yalnızca isActive kayıtları döner; isActive alanı eski yanıtlarda eksik olabildiği için burada filtre kullanmıyoruz
         setTestimonials(Array.isArray(data) ? data : []);
       } catch (error) {
         logger.error('Error fetching testimonials', {}, error instanceof Error ? error : undefined);
@@ -93,7 +101,7 @@ export function Testimonials({
     };
 
     fetchTestimonials();
-  }, [isMounted]);
+  }, [isMounted, serverHydrated]);
 
   // ============================================
   // NAVIGATION HANDLERS
@@ -183,8 +191,8 @@ export function Testimonials({
   // ============================================
   // LOADING / MOUNTING STATE
   // ============================================
-  // Show loading during SSR hydration and initial data fetch
-  if (!isMounted || loading) {
+  // Sunucu verisi yoksa: mount + fetch beklenir
+  if (!serverHydrated && (!isMounted || loading)) {
     return (
       <section
         className="relative bg-slate-900 py-24 overflow-hidden"
