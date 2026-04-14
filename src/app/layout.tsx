@@ -12,7 +12,6 @@
  */
 
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
@@ -23,26 +22,6 @@ import { buildRootSchemaGraphJson } from "@/lib/root-schema";
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-GX9WV429Y3";
-
-// ============================================
-// FONT CONFIGURATION
-// ============================================
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-  fallback: ["system-ui", "arial"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false, // Mono font daha az kritik
-  fallback: ["monospace"],
-});
 
 const siteRoot = getSiteUrl();
 
@@ -172,7 +151,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="tr"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className="antialiased"
       suppressHydrationWarning
     >
       <head>
@@ -181,21 +160,9 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: rootSchemaJsonLd }}
         />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="lazyOnload"
-        />
-        <Script id="google-analytics" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
-          `}
-        </Script>
       </head>
       <body className="min-h-screen bg-white dark:bg-slate-900 transition-colors">
-        <Providers>
+        <Providers gaMeasurementId={GA_MEASUREMENT_ID}>
           {children}
         </Providers>
       </body>

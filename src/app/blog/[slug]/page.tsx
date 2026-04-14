@@ -25,6 +25,7 @@ import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { BlogShareButton } from '@/components/site/BlogShareButton';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
+import styles from './blog-content.module.css';
 import {
   canonicalUrl,
   generateBreadcrumbSchema,
@@ -328,7 +329,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <main className="flex-1 bg-slate-900">
           <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
             <div
-              className="blog-post-body max-w-none text-lg"
+              className={`${styles.body} max-w-none text-lg`}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 

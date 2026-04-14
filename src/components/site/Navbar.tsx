@@ -12,7 +12,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Menu, X, Phone, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
@@ -77,16 +76,6 @@ export function Navbar() {
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const resourcesDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-
-  const { scrollYProgress } = useScroll();
-  const shouldReduceMotion = useReducedMotion();
-
-  // Scroll progress animation (disabled if reduced motion preferred)
-  const scaleX = useTransform(
-    scrollYProgress,
-    [0, 1],
-    shouldReduceMotion ? [1, 1] : [0, 1]
-  );
 
   // ============================================
   // SCROLL → header arka planı (rAF: son konumu asla kaçırmaz)
@@ -186,9 +175,7 @@ export function Navbar() {
   // ============================================
   return (
     <>
-      <motion.nav
-        initial={{ y: shouldReduceMotion ? 0 : -100 }}
-        animate={{ y: 0 }}
+      <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
@@ -318,22 +305,12 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Scroll Progress Indicator */}
-        <motion.div
-          className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-600"
-          style={{ scaleX, transformOrigin: "left" }}
-          aria-hidden="true"
-        />
-      </motion.nav>
+      </nav>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
+      {isOpen && (
+        <div
             ref={mobileMenuRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 lg:hidden"
             role="dialog"
             aria-modal="true"
@@ -348,13 +325,7 @@ export function Navbar() {
             />
 
             {/* Menu Panel */}
-            <motion.div
-              initial={{ x: shouldReduceMotion ? 0 : '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: shouldReduceMotion ? 0 : '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 flex h-[100dvh] max-h-screen w-[min(100vw,20rem)] flex-col bg-white shadow-xl"
-            >
+            <div className="absolute right-0 top-0 flex h-[100dvh] max-h-screen w-[min(100vw,20rem)] flex-col bg-white shadow-xl">
               <div className="flex h-16 shrink-0 items-center justify-between border-b px-4 sm:h-20 sm:px-6">
                 <span className="text-lg font-bold text-slate-900 sm:text-xl">Menü</span>
                 <button
@@ -421,10 +392,9 @@ export function Navbar() {
                   Hemen Fiyat Al
                 </Link>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
     </>
   );
 }

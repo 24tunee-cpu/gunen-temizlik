@@ -58,5 +58,20 @@
     "eslint-plugin-prettier": "^5.5.5",
     "prisma": "6.19.3",
     "tsx": "^4.21.0"
+  },
+  "browserslist": {
+    "production": [
+      "chrome >= 111",
+      "edge >= 111",
+      "firefox >= 111",
+      "safari >= 16.4",
+      "ios_saf >= 16.4",
+      "not dead"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

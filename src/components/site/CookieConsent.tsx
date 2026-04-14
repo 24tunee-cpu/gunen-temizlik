@@ -22,6 +22,7 @@ export function CookieConsent() {
   const accept = useCallback(() => {
     try {
       localStorage.setItem(storageKey, new Date().toISOString());
+      window.dispatchEvent(new CustomEvent('cookie-consent-accepted', { detail: { storageKey } }));
     } catch {
       /* ignore */
     }

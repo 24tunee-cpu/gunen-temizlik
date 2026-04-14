@@ -16,14 +16,10 @@
  * - Semantic HTML5 elements
  */
 
-'use client';
-
 import { Navbar } from '@/components/site/Navbar';
 import { Footer } from '@/components/site/Footer';
-import { FloatingWhatsApp } from '@/components/site/FloatingWhatsApp';
-import MobileCallBar from '@/components/site/MobileCallBar';
 import { PromoBanner, TrustBand } from '@/components/site/PromoTrustBars';
-import { CookieConsent } from '@/components/site/CookieConsent';
+import DeferredFloatingWidgets from '@/components/site/DeferredFloatingWidgets';
 
 // ============================================
 // TYPES
@@ -81,9 +77,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       </footer>
 
       {/* Floating Action Button */}
-      <FloatingWhatsApp />
-      <MobileCallBar />
-      <CookieConsent />
+      <DeferredFloatingWidgets />
     </div>
   );
 }

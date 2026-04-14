@@ -17,6 +17,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { SiteSettingsProvider } from '@/context/SiteSettingsContext';
 import { SiteCustomCss } from '@/components/SiteCustomCss';
 import MarketingEventTracker from '@/components/analytics/MarketingEventTracker';
+import DeferredAnalytics from '@/components/analytics/DeferredAnalytics';
 // import { setupGlobalErrorHandlers, logPerformanceMetrics } from '@/lib/client-error-handler'; // DISABLED
 
 // ============================================
@@ -27,6 +28,7 @@ import MarketingEventTracker from '@/components/analytics/MarketingEventTracker'
 interface ProvidersProps {
   /** Uygulama içeriği */
   children: React.ReactNode;
+  gaMeasurementId?: string;
 }
 
 // ============================================
@@ -39,7 +41,7 @@ interface ProvidersProps {
  * 
  * @param children Application content
  */
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children, gaMeasurementId = '' }: ProvidersProps) {
   // SSR hydration fix
   const [isMounted, setIsMounted] = useState(false);
 
@@ -64,6 +66,7 @@ export function Providers({ children }: ProvidersProps) {
   if (!isMounted) {
     return (
       <SiteSettingsProvider>
+        <DeferredAnalytics measurementId={gaMeasurementId} />
         <MarketingEventTracker />
         <SiteCustomCss />
         {children}
@@ -94,6 +97,7 @@ export function Providers({ children }: ProvidersProps) {
       }
     >
       <SiteSettingsProvider>
+        <DeferredAnalytics measurementId={gaMeasurementId} />
         <MarketingEventTracker />
         <SiteCustomCss />
         {children}

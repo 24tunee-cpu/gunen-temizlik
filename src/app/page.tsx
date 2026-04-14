@@ -15,6 +15,7 @@ import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import SiteLayout from './site/layout';
 import { canonicalUrl } from '@/lib/seo';
+import DeferredHomeSections from '@/components/site/DeferredHomeSections';
 
 // ============================================
 // DYNAMIC IMPORTS (Code Splitting)
@@ -26,18 +27,6 @@ const Hero = dynamic(() => import('@/components/site/Hero').then(mod => mod.Hero
 
 const Services = dynamic(() => import('@/components/site/Services').then(mod => mod.Services), {
   loading: () => <div className="h-96 bg-slate-50 animate-pulse" />,
-});
-
-const Testimonials = dynamic(() => import('@/components/site/Testimonials').then(mod => mod.Testimonials), {
-  loading: () => <div className="h-80 bg-white animate-pulse" />,
-});
-
-const BlogSection = dynamic(() => import('@/components/site/BlogSection').then(mod => mod.BlogSection), {
-  loading: () => <div className="h-96 bg-slate-50 animate-pulse" />,
-});
-
-const ContactForm = dynamic(() => import('@/components/site/ContactForm').then(mod => mod.ContactForm), {
-  loading: () => <div className="h-[600px] bg-white animate-pulse" />,
 });
 
 // ============================================
@@ -127,20 +116,8 @@ export default function HomePage() {
           <Services />
         </Suspense>
 
-        {/* Testimonials */}
-        <Suspense fallback={<SectionLoading height="h-80" />}>
-          <Testimonials />
-        </Suspense>
-
-        {/* Blog Section */}
-        <Suspense fallback={<SectionLoading height="h-96" />}>
-          <BlogSection />
-        </Suspense>
-
-        {/* Contact Form - En altta, daha az kritik */}
-        <Suspense fallback={<SectionLoading height="h-[600px]" />}>
-          <ContactForm />
-        </Suspense>
+        {/* Below-the-fold sections (client-only deferred) */}
+        <DeferredHomeSections />
       </SiteLayout>
     </>
   );
