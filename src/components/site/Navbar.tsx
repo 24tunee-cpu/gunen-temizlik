@@ -207,6 +207,7 @@ export function Navbar() {
                   fill
                   className="object-contain"
                   priority
+                  sizes="(max-width: 640px) 40px, 48px"
                 />
               </div>
               <div className="min-w-0 sm:hidden">

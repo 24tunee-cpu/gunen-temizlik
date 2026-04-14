@@ -59,7 +59,7 @@ export default function NewsletterPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [denseView, setDenseView] = useState(true);
+  const [denseView, setDenseView] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -459,7 +459,7 @@ export default function NewsletterPage() {
             <Copy className="h-4 w-4" />
             E-postaları kopyala
           </button>
-          <div className="hidden items-center rounded-lg border border-slate-200 p-0.5 dark:border-slate-600 sm:flex">
+          <div className="flex items-center rounded-lg border border-slate-200 p-0.5 dark:border-slate-600">
             <button
               type="button"
               aria-label="Kart görünümü"

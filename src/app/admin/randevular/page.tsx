@@ -208,8 +208,46 @@ export default function AdminAppointmentsPage() {
               Filtreye uygun randevu talebi bulunamadı.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-sm">
+            <>
+              <div className="space-y-2 p-3 md:hidden">
+                {filteredRows.map((r) => {
+                  const active = r.id === selectedId;
+                  const badgeClass =
+                    STATUS_META[r.status as StatusKey]?.badge ??
+                    'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
+                  return (
+                    <button
+                      key={r.id}
+                      type="button"
+                      className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                        active
+                          ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/20'
+                          : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/30'
+                      }`}
+                      onClick={() => {
+                        setSelectedId(r.id);
+                        setNotesDraft(r.adminNotes ?? '');
+                      }}
+                    >
+                      <p className="font-medium text-slate-900 dark:text-white">{r.name}</p>
+                      <p className="text-sm text-slate-500">{r.email}</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span>{formatDate(r.preferredDate)}</span>
+                        <span>•</span>
+                        <span>{r.timeSlot}</span>
+                        <span>•</span>
+                        <span>{r.district || '-'}</span>
+                      </div>
+                      <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${badgeClass}`}>
+                        {toStatusLabel(r.status)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[820px] text-sm">
                 <thead className="bg-slate-50 dark:bg-slate-900/40">
                   <tr>
                     <th className="px-3 py-2 text-left">Talep</th>
@@ -255,8 +293,9 @@ export default function AdminAppointmentsPage() {
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </>
           )}
         </section>
 

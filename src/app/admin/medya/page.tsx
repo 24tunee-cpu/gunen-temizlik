@@ -481,8 +481,8 @@ export default function MediaLibraryPage() {
           ))}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+          <table className="w-full min-w-[860px] text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-700/50">
               <tr>
                 <th className="px-3 py-3">

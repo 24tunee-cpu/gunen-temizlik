@@ -34,7 +34,7 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-label="Çerez ve gizlilik"
-      className="fixed inset-x-0 bottom-0 z-[110] border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95"
+      className="fixed inset-x-0 bottom-[5.5rem] z-[110] border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 lg:bottom-0"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -47,7 +47,7 @@ export function CookieConsent() {
         <button
           type="button"
           onClick={accept}
-          className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+          className="shrink-0 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-700 dark:hover:bg-emerald-800"
         >
           Anladım
         </button>

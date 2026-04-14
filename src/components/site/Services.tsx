@@ -62,6 +62,7 @@ function ServiceCard({ service, index }: ServiceCardProps) {
 
   return (
     <motion.article
+      role="listitem"
       initial={{ opacity: 0, y: shouldReduceMotion ? 20 : 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}

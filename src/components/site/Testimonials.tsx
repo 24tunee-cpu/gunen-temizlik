@@ -254,7 +254,10 @@ export function Testimonials({
     >
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-900 to-slate-950" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" aria-hidden="true" />
+      <div
+        className="absolute top-1/2 left-1/2 h-[min(80vw,800px)] w-[min(80vw,800px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/5 blur-3xl"
+        aria-hidden="true"
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -399,14 +402,19 @@ export function Testimonials({
                   key={index}
                   onClick={() => goToSlide(index)}
                   whileHover={shouldReduceMotion ? {} : { scale: 1.2 }}
-                  className={`h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${index === currentIndex
-                    ? 'w-8 bg-emerald-500'
-                    : 'w-3 bg-slate-600 hover:bg-slate-500'
-                    }`}
+                  className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   role="tab"
                   aria-selected={index === currentIndex}
                   aria-label={`${index + 1}. yoruma git`}
-                />
+                >
+                  <span
+                    className={`block rounded-full transition-all duration-300 ${index === currentIndex
+                      ? 'h-2.5 w-6 bg-emerald-500'
+                      : 'h-2.5 w-2.5 bg-slate-600 hover:bg-slate-500'
+                      }`}
+                    aria-hidden
+                  />
+                </motion.button>
               ))}
             </div>
 

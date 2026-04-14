@@ -44,7 +44,20 @@ export default function AdminAuditPage() {
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Denetim günlüğü</h1>
       <p className="text-sm text-slate-600 dark:text-slate-400">Toplam {total} kayıt (son 100 gösterilir).</p>
       {loading ? <Loader2 className="h-8 w-8 animate-spin text-emerald-600" /> : null}
-      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="space-y-2 md:hidden">
+        {rows.map((r) => (
+          <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-3 text-xs dark:border-slate-700 dark:bg-slate-800">
+            <p className="font-medium text-slate-900 dark:text-white">{r.action}</p>
+            <p className="mt-1 text-slate-500">{r.userEmail}</p>
+            <p className="mt-1 text-slate-500">{new Date(r.createdAt).toLocaleString('tr-TR')}</p>
+            <p className="mt-1 text-slate-600 dark:text-slate-300">
+              {r.resource}
+              {r.resourceId ? <span className="text-slate-400"> #{r.resourceId.slice(-6)}</span> : null}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto rounded-xl border border-slate-200 md:block dark:border-slate-700">
         <table className="w-full min-w-[640px] text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800">
             <tr>

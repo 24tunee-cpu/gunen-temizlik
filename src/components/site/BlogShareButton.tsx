@@ -42,7 +42,7 @@ export function BlogShareButton({ title, slug }: BlogShareButtonProps) {
     <button
       type="button"
       onClick={handleShare}
-      className="flex items-center gap-2 rounded px-2 py-1 text-slate-500 transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-slate-500 transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       aria-label="Yazıyı paylaş"
     >
       <Share2 size={18} aria-hidden="true" />

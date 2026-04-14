@@ -96,15 +96,15 @@ export default function AdminRedirectsPage() {
         {rows.map((r) => (
           <li
             key={r.id}
-            className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
+            className="flex flex-col gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between dark:border-slate-700"
           >
-            <span>
+            <span className="min-w-0 break-all">
               <span className="font-mono text-emerald-700 dark:text-emerald-400">{r.fromPath}</span>
               {' → '}
               <span className="font-mono">{r.toPath}</span>
               {r.permanent ? ' (308)' : ' (307)'}
             </span>
-            <button type="button" onClick={() => void del(r.id)} className="text-red-600" aria-label="Sil">
+            <button type="button" onClick={() => void del(r.id)} className="self-end text-red-600 sm:self-auto" aria-label="Sil">
               <Trash2 className="h-4 w-4" />
             </button>
           </li>
