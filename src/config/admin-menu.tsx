@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Settings,
   Image as ImageIcon,
-  Quote,
   Mail,
   Users,
   Award,
@@ -24,11 +23,20 @@ import {
   Megaphone,
 } from 'lucide-react';
 
+/** Alt menü satırı (site dışı için external) */
+export type AdminMenuChild = {
+  href: string;
+  label: string;
+  external?: boolean;
+};
+
 export type AdminMenuItem = {
   href: string;
   label: string;
   icon: LucideIcon;
   ariaLabel?: string;
+  /** Varsa sidebar’da açılır alt menü */
+  children?: AdminMenuChild[];
 };
 
 export type AdminMenuGroup = {
@@ -60,7 +68,17 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { href: '/admin/medya', label: 'Medya', icon: FolderOpen, ariaLabel: 'Medya kütüphanesi' },
       { href: '/admin/ekip', label: 'Ekibimiz', icon: Users, ariaLabel: 'Ekip üyeleri' },
       { href: '/admin/sertifikalar', label: 'Sertifikalar', icon: Award, ariaLabel: 'Sertifikalar' },
-      { href: '/admin/sss', label: 'SSS', icon: HelpCircle, ariaLabel: 'Sıkça sorulan sorular' },
+      {
+        href: '/admin/sss',
+        label: 'Bilgi merkezi',
+        icon: HelpCircle,
+        ariaLabel: 'SSS, rehber ve referanslar',
+        children: [
+          { href: '/admin/sss', label: 'SSS' },
+          { href: '/rehber', label: 'Rehber (site)', external: true },
+          { href: '/admin/referanslar', label: 'Referanslar' },
+        ],
+      },
       { href: '/admin/fiyatlar', label: 'Fiyat listesi', icon: DollarSign, ariaLabel: 'Fiyat listesi' },
     ],
   },
@@ -68,7 +86,6 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     id: 'iletisim',
     label: 'İletişim ve pazarlama',
     items: [
-      { href: '/admin/referanslar', label: 'Referanslar', icon: Quote, ariaLabel: 'Müşteri yorumları' },
       { href: '/admin/haritalar', label: 'Haritalar', icon: MapPin, ariaLabel: 'Google, Yandex ve Apple harita profilleri' },
       { href: '/admin/talepler', label: 'Müşteri talepleri', icon: MessageSquare, ariaLabel: 'İletişim talepleri' },
       { href: '/admin/randevular', label: 'Randevu talepleri', icon: CalendarClock, ariaLabel: 'Keşif ve randevu' },
@@ -96,12 +113,24 @@ export function isAdminNavActive(pathname: string, href: string): boolean {
   return pathname.startsWith(`${href}/`);
 }
 
-/** Header başlığı: en uzun eşleşen menü etiketi */
+/** Header başlığı: en uzun eşleşen menü etiketi (alt menü öncelikli) */
 export function getAdminPageTitle(pathname: string): string {
   let bestLen = -1;
   let title = 'Yönetim Paneli';
   for (const g of ADMIN_MENU_GROUPS) {
     for (const item of g.items) {
+      if (item.children?.length) {
+        let childHit = false;
+        for (const ch of item.children) {
+          if (ch.external) continue;
+          if (isAdminNavActive(pathname, ch.href) && ch.href.length >= bestLen) {
+            bestLen = ch.href.length;
+            title = ch.label;
+            childHit = true;
+          }
+        }
+        if (childHit) continue;
+      }
       if (isAdminNavActive(pathname, item.href) && item.href.length >= bestLen) {
         bestLen = item.href.length;
         title = item.label;
@@ -111,6 +140,31 @@ export function getAdminPageTitle(pathname: string): string {
   return title;
 }
 
+/** Sidebar vurgusu: grup veya tek link */
+export function isAdminMenuItemActive(pathname: string, item: AdminMenuItem): boolean {
+  if (item.children?.some((c) => !c.external && isAdminNavActive(pathname, c.href))) {
+    return true;
+  }
+  return isAdminNavActive(pathname, item.href);
+}
+
 export function flattenAdminMenuItems(): AdminMenuItem[] {
   return ADMIN_MENU_GROUPS.flatMap((g) => g.items);
+}
+
+/** Menü düzleştirme (alt satırlar ayrı kayıt — arama vb. için) */
+export function flattenAdminMenuLeaves(): { href: string; label: string; groupId: string }[] {
+  const out: { href: string; label: string; groupId: string }[] = [];
+  for (const g of ADMIN_MENU_GROUPS) {
+    for (const item of g.items) {
+      if (item.children?.length) {
+        for (const ch of item.children) {
+          out.push({ href: ch.href, label: ch.label, groupId: g.id });
+        }
+      } else {
+        out.push({ href: item.href, label: item.label, groupId: g.id });
+      }
+    }
+  }
+  return out;
 }

@@ -155,6 +155,34 @@ async function seed() {
       console.log(`Zaten ${existingPricing} fiyat bilgisi var, atlanıyor`);
     }
 
+    // Pazarlama + güven bandı — kayıt varsa ve içerik boşsa bir kez doldur
+    const siteRow = await prisma.siteSettings.findFirst();
+    if (siteRow) {
+      const patch: {
+        promoBannerJson?: object;
+        trustBandItemsJson?: string[];
+      } = {};
+      if (siteRow.promoBannerJson == null) {
+        patch.promoBannerJson = {
+          active: true,
+          title: 'Ücretsiz keşif — aynı gün dönüş',
+          body: 'Randevu bırakın, ekibimiz uygunluk ve fiyat için sizi arasın.',
+          ctaLabel: 'Randevu al',
+          ctaHref: '/randevu',
+          dismissible: true,
+        };
+      }
+      const trust = siteRow.trustBandItemsJson;
+      const trustEmpty = trust == null || (Array.isArray(trust) && trust.length === 0);
+      if (trustEmpty) {
+        patch.trustBandItemsJson = ["15+ yıl İstanbul'da profesyonel temizlik · Sigortalı ekip"];
+      }
+      if (Object.keys(patch).length > 0) {
+        await prisma.siteSettings.update({ where: { id: siteRow.id }, data: patch });
+        console.log('SiteSettings: varsayılan pazarlama / güven bandı güncellendi');
+      }
+    }
+
     console.log('Seed işlemi tamamlandı!');
   } catch (error) {
     console.error('Seed hatası:', error);

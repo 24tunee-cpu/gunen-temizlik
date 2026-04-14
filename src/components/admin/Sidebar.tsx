@@ -18,11 +18,13 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   ExternalLink,
 } from 'lucide-react';
 import Image from 'next/image';
 import {
   ADMIN_MENU_GROUPS,
+  isAdminMenuItemActive,
   isAdminNavActive,
 } from '@/config/admin-menu';
 
@@ -33,6 +35,7 @@ export function Sidebar() {
   const sidebarRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [isLg, setIsLg] = useState(true);
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -41,6 +44,22 @@ export function Sidebar() {
     mq.addEventListener('change', set);
     return () => mq.removeEventListener('change', set);
   }, []);
+
+  useEffect(() => {
+    const next: Record<string, boolean> = {};
+    for (const g of ADMIN_MENU_GROUPS) {
+      for (const item of g.items) {
+        if (!item.children?.length) continue;
+        const key = `${g.id}-${item.href}`;
+        if (item.children.some((c) => !c.external && isAdminNavActive(pathname, c.href))) {
+          next[key] = true;
+        }
+      }
+    }
+    if (Object.keys(next).length > 0) {
+      setExpandedFolders((prev) => ({ ...prev, ...next }));
+    }
+  }, [pathname]);
 
   const handleLogout = useCallback(async () => {
     await logout();
@@ -199,7 +218,118 @@ export function Sidebar() {
                 <ul className="space-y-0.5" role="list">
                   {group.items.map((item) => {
                     const Icon = item.icon;
-                    const active = isAdminNavActive(pathname, item.href);
+                    const folderKey = `${group.id}-${item.href}`;
+                    const folderOpen = expandedFolders[folderKey] ?? false;
+                    const active = isAdminMenuItemActive(pathname, item);
+
+                    if (item.children?.length) {
+                      return (
+                        <li key={item.href}>
+                          {sidebarOpen ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedFolders((p) => ({
+                                    ...p,
+                                    [folderKey]: !p[folderKey],
+                                  }))
+                                }
+                                title={item.ariaLabel || item.label}
+                                className={cn(
+                                  'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60',
+                                  active
+                                    ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/25'
+                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                )}
+                                aria-expanded={folderOpen}
+                              >
+                                <span
+                                  className={cn(
+                                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+                                    active
+                                      ? 'bg-emerald-500/20 text-emerald-300'
+                                      : 'bg-slate-800/80 text-slate-400 group-hover:bg-slate-800 group-hover:text-white'
+                                  )}
+                                >
+                                  <Icon className="h-[18px] w-[18px]" aria-hidden />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                                <ChevronDown
+                                  className={cn(
+                                    'h-4 w-4 shrink-0 text-slate-500 transition-transform',
+                                    folderOpen && 'rotate-180'
+                                  )}
+                                  aria-hidden
+                                />
+                              </button>
+                              {folderOpen && (
+                                <ul className="mt-0.5 space-y-0.5 border-l border-slate-700/80 py-1 pl-3 ml-4" role="list">
+                                  {item.children.map((ch) => {
+                                    const subActive = !ch.external && isAdminNavActive(pathname, ch.href);
+                                    const linkClass =
+                                      'block rounded-lg py-2 pl-2 pr-2 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 ' +
+                                      (subActive
+                                        ? 'bg-emerald-500/10 font-medium text-emerald-200'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-white');
+                                    return (
+                                      <li key={`${item.href}-${ch.href}`}>
+                                        {ch.external ? (
+                                          <Link
+                                            href={ch.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={closeSidebar}
+                                            className={linkClass}
+                                          >
+                                            {ch.label}
+                                            <ExternalLink className="ml-1 inline h-3 w-3 opacity-60" aria-hidden />
+                                          </Link>
+                                        ) : (
+                                          <Link
+                                            href={ch.href}
+                                            onClick={closeSidebar}
+                                            className={linkClass}
+                                            aria-current={subActive ? 'page' : undefined}
+                                          >
+                                            {ch.label}
+                                          </Link>
+                                        )}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              )}
+                            </>
+                          ) : (
+                            <Link
+                              href={item.href}
+                              onClick={closeSidebar}
+                              title={item.ariaLabel || item.label}
+                              className={cn(
+                                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60',
+                                active
+                                  ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/25'
+                                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                              )}
+                              aria-label={item.ariaLabel || item.label}
+                            >
+                              <span
+                                className={cn(
+                                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+                                  active
+                                    ? 'bg-emerald-500/20 text-emerald-300'
+                                    : 'bg-slate-800/80 text-slate-400 group-hover:bg-slate-800 group-hover:text-white'
+                                )}
+                              >
+                                <Icon className="h-[18px] w-[18px]" aria-hidden />
+                              </span>
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    }
+
                     return (
                       <li key={item.href}>
                         <Link

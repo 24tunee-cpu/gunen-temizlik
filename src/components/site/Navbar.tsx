@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, Phone, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
@@ -28,19 +28,22 @@ interface NavLink {
   label: string;
 }
 
-/** Navigasyon linkleri */
+/** Ana satır linkleri (Rehber / SSS / Referanslar ayrı açılır menüde) */
 const navLinks: NavLink[] = [
   { href: '/', label: 'Ana Sayfa' },
   { href: '/hizmetler', label: 'Hizmetlerimiz' },
   { href: '/bolgeler', label: 'Bölgeler' },
-  { href: '/rehber', label: 'Rehber' },
   { href: '/randevu', label: 'Keşif' },
   { href: '/galeri', label: 'Galeri' },
-  { href: '/sss', label: 'SSS' },
   { href: '/blog', label: 'Blog' },
-  { href: '/referanslar', label: 'Referanslar' },
   { href: '/ara', label: 'Ara' },
   { href: '/iletisim', label: 'İletişim' },
+];
+
+const resourcesNavLinks: NavLink[] = [
+  { href: '/rehber', label: 'Rehber' },
+  { href: '/sss', label: 'SSS' },
+  { href: '/referanslar', label: 'Referanslar' },
 ];
 
 // ============================================
@@ -68,8 +71,11 @@ export function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const resourcesDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   const { scrollYProgress } = useScroll();
@@ -115,6 +121,21 @@ export function Navbar() {
     return () => window.cancelAnimationFrame(id);
   }, [pathname, syncScrolledFromDocument]);
 
+  useEffect(() => {
+    setResourcesOpen(false);
+    setMobileResourcesOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!resourcesOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      const el = resourcesDropdownRef.current;
+      if (el && !el.contains(e.target as Node)) setResourcesOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [resourcesOpen]);
+
   // ============================================
   // MOBILE MENU HANDLERS
   // ============================================
@@ -131,18 +152,20 @@ export function Navbar() {
   // ============================================
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        closeMenu();
-        // Return focus to menu button
-        mobileButtonRef.current?.focus();
+      if (e.key === 'Escape') {
+        if (isOpen) {
+          closeMenu();
+          mobileButtonRef.current?.focus();
+        }
+        setResourcesOpen(false);
       }
     };
 
-    if (isOpen) {
+    if (isOpen || resourcesOpen) {
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [isOpen, closeMenu]);
+  }, [isOpen, resourcesOpen, closeMenu]);
 
   // ============================================
   // BODY SCROLL LOCK
@@ -207,7 +230,7 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-5 xl:gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -218,6 +241,47 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              <div className="relative" ref={resourcesDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setResourcesOpen((v) => !v)}
+                  aria-expanded={resourcesOpen}
+                  aria-haspopup="true"
+                  aria-controls="nav-resources-menu"
+                  className={`inline-flex items-center gap-1 text-sm font-medium transition-colors hover:text-emerald-500 ${scrolled ? 'text-slate-700' : 'text-white/90'}`}
+                >
+                  Bilgi merkezi
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 transition-transform ${resourcesOpen ? 'rotate-180' : ''}`}
+                    aria-hidden
+                  />
+                </button>
+                {resourcesOpen && (
+                  <div
+                    id="nav-resources-menu"
+                    role="menu"
+                    className={`absolute right-0 top-full z-50 mt-2 min-w-[12rem] rounded-xl border py-1 shadow-xl ${scrolled
+                      ? 'border-slate-200 bg-white text-slate-800'
+                      : 'border-white/10 bg-slate-900/95 text-white backdrop-blur-md'
+                      }`}
+                  >
+                    {resourcesNavLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        role="menuitem"
+                        onClick={() => setResourcesOpen(false)}
+                        className={`block px-4 py-2.5 text-sm transition-colors ${scrolled
+                          ? 'hover:bg-emerald-50 hover:text-emerald-700'
+                          : 'hover:bg-white/10 hover:text-emerald-300'
+                          }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* CTA Button */}
@@ -311,6 +375,34 @@ export function Navbar() {
                     {link.label}
                   </Link>
                 ))}
+                <div className="border-b border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setMobileResourcesOpen((v) => !v)}
+                    className="flex w-full items-center justify-between py-3.5 text-left text-base font-medium text-slate-700 transition-colors hover:text-emerald-500 sm:py-4 sm:text-lg"
+                    aria-expanded={mobileResourcesOpen}
+                  >
+                    Bilgi merkezi
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 transition-transform ${mobileResourcesOpen ? 'rotate-180' : ''}`}
+                      aria-hidden
+                    />
+                  </button>
+                  {mobileResourcesOpen && (
+                    <div className="pb-2 pl-2">
+                      {resourcesNavLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={closeMenu}
+                          className="block rounded-lg py-2.5 pl-3 text-base text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 sm:text-lg"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <a
                   href={telHref}
                   data-source="navbar-mobile-menu"

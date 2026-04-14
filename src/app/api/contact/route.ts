@@ -161,7 +161,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Fetching contact requests', { ip });
 
-    const contacts = await prisma.contactRequest.findMany({
+    // İlişkiyi ayrı çekiyoruz: MongoDB’de bozuk/uyumsuz assignedUserId Prisma include’da 500 üretebiliyor.
+    const rows = await prisma.contactRequest.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -177,11 +178,25 @@ export async function GET(request: NextRequest) {
         assignedUserId: true,
         createdAt: true,
         updatedAt: true,
-        assignedUser: {
-          select: { id: true, name: true, email: true },
-        },
       },
     });
+
+    const assigneeIds = [
+      ...new Set(rows.map((r) => r.assignedUserId).filter((id): id is string => Boolean(id))),
+    ];
+    const assignees =
+      assigneeIds.length > 0
+        ? await prisma.user.findMany({
+            where: { id: { in: assigneeIds } },
+            select: { id: true, name: true, email: true },
+          })
+        : [];
+    const byId = new Map(assignees.map((u) => [u.id, u]));
+
+    const contacts = rows.map((r) => ({
+      ...r,
+      assignedUser: r.assignedUserId ? byId.get(r.assignedUserId) ?? null : null,
+    }));
 
     console.log(`Retrieved ${contacts.length} contact requests`);
 
