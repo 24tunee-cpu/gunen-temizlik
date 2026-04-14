@@ -118,7 +118,7 @@ export function FloatingWhatsApp({
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-end p-4 sm:p-6"
       style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
     >
-      <div className="pointer-events-auto flex w-full max-w-[min(100%,22rem)] flex-col items-end gap-3">
+      <div className="pointer-events-none flex w-full max-w-[min(100%,22rem)] flex-col items-end gap-3">
         <AnimatePresence mode="sync">
           {open && (
             <motion.div
@@ -140,7 +140,7 @@ export function FloatingWhatsApp({
                   : { opacity: 0, y: 12, scale: 0.98 }
               }
               transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-              className="w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-950/90 text-left shadow-[0_25px_50px_-12px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-white/5"
+              className="pointer-events-auto w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-950/90 text-left shadow-[0_25px_50px_-12px_rgba(0,0,0,0.65)] backdrop-blur-xl ring-1 ring-white/5"
             >
               <div className="relative border-b border-white/10 bg-gradient-to-br from-[#075e54] via-[#128c7e] to-[#25d366] px-4 py-3.5">
                 <div className="flex items-start gap-3">
@@ -231,7 +231,7 @@ export function FloatingWhatsApp({
           aria-expanded={open}
           aria-controls={panelId}
           aria-haspopup="dialog"
-          className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-white shadow-lg shadow-emerald-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 sm:h-[3.75rem] sm:w-[3.75rem]"
+          className="pointer-events-auto relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-white shadow-lg shadow-emerald-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 sm:h-[3.75rem] sm:w-[3.75rem]"
           style={{
             background: 'linear-gradient(145deg, #25D366 0%, #128C7E 55%, #075E54 100%)',
           }}

@@ -45,8 +45,11 @@ model User {
   image         String?
   password      String?
   role          Role      @default(USER)
+  /// İki adımlı doğrulama (TOTP) etkin — secret ayrı ortamda tutulmalıdır
+  twoFactorEnabled Boolean @default(false)
   accounts      Account[]
   sessions      Session[]
+  assignedContacts ContactRequest[] @relation("ContactAssignee")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -84,35 +87,47 @@ model Service {
 }
 
 model BlogPost {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  slug        String   @unique
-  content     String
-  excerpt     String
-  image       String?
-  category    String
-  tags        String[]
-  author      String   @default("Günen Temizlik")
-  published   Boolean  @default(false)
-  views       Int      @default(0)
-  metaTitle   String?
-  metaDesc    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  title                String
+  slug                 String    @unique
+  content              String
+  excerpt              String
+  image                String?
+  category             String
+  tags                 String[]
+  author               String    @default("Günen Temizlik")
+  published            Boolean   @default(false)
+  /// Yayın zamanı geldiğinde günlük cron `published` yapar
+  scheduledPublishAt   DateTime?
+  views                Int       @default(0)
+  metaTitle            String?
+  metaDesc             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
+  @@index([published, scheduledPublishAt])
   @@map("blogposts")
 }
 
 model ContactRequest {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String
-  phone     String?
-  service   String?
-  message   String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  email            String
+  phone            String?
+  service          String?
+  message          String
+  read             Boolean   @default(false)
+  /// new | contacted | quoted | won | lost
+  pipelineStatus   String    @default("new")
+  internalNotes    String?
+  reminderAt       DateTime?
+  assignedUserId   String?   @db.ObjectId
+  assignedUser     User?     @relation("ContactAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
+  @@index([pipelineStatus, createdAt])
+  @@index([assignedUserId])
   @@map("contactrequests")
 }
 
@@ -178,6 +193,16 @@ model SiteSettings {
   maintenanceMode Boolean  @default(false)
   customCss       String?
   customJs        String?
+  /// { active, title, body, ctaLabel?, ctaHref?, dismissible? }
+  promoBannerJson       Json?
+  /// Kısa güven maddeleri metin dizisi
+  trustBandItemsJson    Json?
+  /// { whatsappFollowup, emailQuoteSubject, emailQuoteBody }
+  messageTemplatesJson  Json?
+  /// Pazarlama A/B: üst banner varyant anahtarı
+  marketingBannerVariant String? @default("A")
+  /// Çerez metni sürümü (banner tekrar göstermek için)
+  consentPolicyVersion   String? @default("1")
   updatedAt       DateTime @updatedAt
 
   @@map("sitesettings")
@@ -187,8 +212,15 @@ model Gallery {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
+  /// Görsel URL (image veya video poster)
   image       String
+  /// image | video
+  mediaKind   String   @default("image")
+  /// video embed veya doğrudan mp4 URL (Cloudinary vb.)
+  videoUrl    String?
   category    String
+  /// Medya kütüphanesi filtre etiketleri (virgülle ayrılmış veya tek etiket)
+  tags        String[] @default([])
   order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -455,7 +487,61 @@ model MapReviewReplyDraft {
   @@map("map_review_reply_drafts")
 }
 
+/// Ücretsiz keşif / randevu talepleri (ön yüz formu)
+model AppointmentRequest {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  email          String
+  phone          String?
+  preferredDate  DateTime
+  /// morning | afternoon | evening | flexible
+  timeSlot       String    @default("flexible")
+  district       String?
+  address        String?
+  serviceHint    String?
+  notes          String?
+  /// pending | confirmed | declined | done
+  status         String    @default("pending")
+  adminNotes     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status, preferredDate])
+  @@map("appointment_requests")
+}
+
+/// SEO ve eski URL yönetimi
+model RedirectRule {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fromPath  String   @unique
+  toPath    String
+  permanent Boolean  @default(true)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("redirect_rules")
+}
+
+/// Yönetici işlem kaydı
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String?  @db.ObjectId
+  userEmail  String
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([resource, createdAt])
+  @@map("audit_logs")
+}
+
 enum Role {
   USER
   ADMIN
+  EDITOR
 }

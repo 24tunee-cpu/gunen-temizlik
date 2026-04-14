@@ -71,6 +71,11 @@ const DEFAULT_SETTINGS = {
   maintenanceMode: false,
   customCss: '',
   customJs: '',
+  promoBannerJson: null,
+  trustBandItemsJson: null,
+  messageTemplatesJson: null,
+  marketingBannerVariant: 'A',
+  consentPolicyVersion: '1',
 } as const;
 
 /** Rate limiting map (IP -> timestamp array) */
@@ -233,6 +238,10 @@ export async function GET(request: NextRequest) {
       maintenanceMode: settings.maintenanceMode,
       sitemapEnabled: settings.sitemapEnabled,
       customCss: settings.customCss ?? '',
+      promoBannerJson: settings.promoBannerJson ?? null,
+      trustBandItemsJson: settings.trustBandItemsJson ?? null,
+      marketingBannerVariant: settings.marketingBannerVariant ?? 'A',
+      consentPolicyVersion: settings.consentPolicyVersion ?? '1',
     };
 
     return NextResponse.json(publicSettings, { headers });

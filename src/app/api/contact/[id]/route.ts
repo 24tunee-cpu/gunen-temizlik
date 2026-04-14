@@ -22,8 +22,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/security';
+import { requireAdminAuth, requireAdminOnly } from '@/lib/security';
+import { writeAuditLog } from '@/lib/audit-log';
+import { getToken } from 'next-auth/jwt';
+
+const PIPELINE = new Set(['new', 'contacted', 'quoted', 'won', 'lost']);
 
 // ============================================
 // CONFIGURATION
@@ -183,29 +188,89 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
 
-    // Validate read status
-    if (body.read === undefined || typeof body.read !== 'boolean') {
-      return NextResponse.json(
-        { error: 'read değeri boolean olmalıdır' },
-        { status: 400, headers }
-      );
+    const data: Prisma.ContactRequestUpdateInput = {};
+
+    if (body.read !== undefined) {
+      if (typeof body.read !== 'boolean') {
+        return NextResponse.json({ error: 'read boolean olmalıdır' }, { status: 400, headers });
+      }
+      data.read = body.read;
+    }
+    if (body.pipelineStatus !== undefined) {
+      const ps = String(body.pipelineStatus);
+      if (!PIPELINE.has(ps)) {
+        return NextResponse.json({ error: 'Geçersiz pipeline durumu' }, { status: 400, headers });
+      }
+      data.pipelineStatus = ps;
+    }
+    if (body.internalNotes !== undefined) {
+      if (body.internalNotes === null) data.internalNotes = null;
+      else if (typeof body.internalNotes === 'string') {
+        data.internalNotes = body.internalNotes.slice(0, 8000);
+      } else {
+        return NextResponse.json({ error: 'internalNotes metin veya null olmalı' }, { status: 400, headers });
+      }
+    }
+    if (body.reminderAt !== undefined) {
+      if (body.reminderAt === null) data.reminderAt = null;
+      else if (typeof body.reminderAt === 'string') {
+        const d = new Date(body.reminderAt);
+        if (Number.isNaN(d.getTime())) {
+          return NextResponse.json({ error: 'Geçersiz reminderAt' }, { status: 400, headers });
+        }
+        data.reminderAt = d;
+      } else {
+        return NextResponse.json({ error: 'reminderAt ISO string veya null' }, { status: 400, headers });
+      }
+    }
+    if (body.assignedUserId !== undefined) {
+      if (body.assignedUserId === null || body.assignedUserId === '') {
+        data.assignedUser = { disconnect: true };
+      } else if (typeof body.assignedUserId === 'string') {
+        const uid = body.assignedUserId;
+        const u = await prisma.user.findFirst({
+          where: { id: uid, role: { in: ['ADMIN', 'EDITOR'] } },
+          select: { id: true },
+        });
+        if (!u) {
+          return NextResponse.json({ error: 'Atanan kullanıcı bulunamadı' }, { status: 400, headers });
+        }
+        data.assignedUser = { connect: { id: uid } };
+      } else {
+        return NextResponse.json({ error: 'assignedUserId geçersiz' }, { status: 400, headers });
+      }
     }
 
-    console.log('Updating contact request read status', { id, read: body.read, ip });
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'Güncellenecek alan yok' }, { status: 400, headers });
+    }
+
+    console.log('Updating contact request', { id, fields: Object.keys(data), ip });
 
     const contact = await prisma.contactRequest.update({
       where: { id },
-      data: { read: body.read },
+      data,
+      include: { assignedUser: { select: { id: true, name: true, email: true } } },
     });
 
-    console.log('Contact request read status updated successfully', { id, read: body.read });
+    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    await writeAuditLog({
+      userId: token?.sub ?? null,
+      userEmail: String(token?.email || 'unknown'),
+      action: 'contact.update',
+      resource: 'ContactRequest',
+      resourceId: id,
+      metadata: { fields: Object.keys(data) },
+      ip,
+    });
 
     return NextResponse.json(
       {
         success: true,
-        message: body.read ? 'Mesaj okundu olarak işaretlendi' : 'Mesaj okunmadı olarak işaretlendi',
+        message: 'Talep güncellendi',
         contact,
       },
       { headers }
@@ -230,8 +295,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const headers = { ...CORS_HEADERS };
   const ip = getClientIp(request);
 
-  // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
-  const authError = await requireAdminAuth(request);
+  const authError = await requireAdminOnly(request);
   if (authError) {
     console.warn('Unauthorized contact request delete attempt', { ip });
     return authError;
@@ -274,6 +338,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     await prisma.contactRequest.delete({
       where: { id },
+    });
+
+    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const token = await getToken({ req: request, secret });
+    await writeAuditLog({
+      userId: token?.sub ?? null,
+      userEmail: String(token?.email || 'unknown'),
+      action: 'contact.delete',
+      resource: 'ContactRequest',
+      resourceId: id,
+      ip,
     });
 
     console.log('Contact request deleted successfully', { id });

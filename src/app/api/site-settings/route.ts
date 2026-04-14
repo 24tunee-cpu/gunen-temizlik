@@ -64,6 +64,11 @@ function defaultCreateData(): Omit<SiteSettingsRow, 'id' | 'updatedAt'> {
     maintenanceMode: false,
     customCss: null,
     customJs: null,
+    promoBannerJson: null,
+    trustBandItemsJson: null,
+    messageTemplatesJson: null,
+    marketingBannerVariant: 'A',
+    consentPolicyVersion: '1',
   };
 }
 
@@ -260,7 +265,7 @@ export async function GET(request: NextRequest) {
     const secret =
       process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
     const token = await getToken({ req: request, secret });
-    const isAdmin = token?.role === 'ADMIN';
+    const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 
     let row = await prisma.siteSettings.findFirst();
     if (!row) {

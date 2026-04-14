@@ -52,6 +52,7 @@ export default function MediaLibraryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [kindFilter, setKindFilter] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -82,15 +83,29 @@ export default function MediaLibraryPage() {
     }
   };
 
+  const usageKinds = useMemo(() => {
+    const s = new Set<string>();
+    for (const item of media) {
+      for (const u of item.usages) {
+        if (u.kind) s.add(u.kind);
+      }
+    }
+    return [...s].sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [media]);
+
   const filteredMedia = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return media;
-    return media.filter(
-      (item) =>
+    return media.filter((item) => {
+      if (kindFilter && !item.usages.some((u) => u.kind === kindFilter)) {
+        return false;
+      }
+      if (!q) return true;
+      return (
         item.name.toLowerCase().includes(q) ||
         item.usages.some((u) => `${u.kind} ${u.label}`.toLowerCase().includes(q))
-    );
-  }, [media, searchQuery]);
+      );
+    });
+  }, [media, searchQuery, kindFilter]);
 
   const usageSummary = (item: MediaItem) => {
     const real = item.usages.filter((u) => !u.label.includes('Kayıtlı referans yok'));
@@ -290,7 +305,7 @@ export default function MediaLibraryPage() {
           />
           <input
             type="text"
-            placeholder="Dosya adı veya kullanım yeri ara…"
+            placeholder="Dosya adı, kullanım yeri veya galeri etiketi ara…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
@@ -327,6 +342,39 @@ export default function MediaLibraryPage() {
           </div>
         </div>
       </div>
+
+      {usageKinds.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-800">
+          <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Kaynak
+          </span>
+          <button
+            type="button"
+            onClick={() => setKindFilter('')}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              !kindFilter
+                ? 'bg-emerald-600 text-white dark:bg-emerald-500'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+            }`}
+          >
+            Tümü
+          </button>
+          {usageKinds.map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setKindFilter((prev) => (prev === k ? '' : k))}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                kindFilter === k
+                  ? 'bg-violet-600 text-white dark:bg-violet-500'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+              }`}
+            >
+              {k}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {viewMode === 'grid' ? (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

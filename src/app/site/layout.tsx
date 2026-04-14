@@ -22,6 +22,8 @@ import { Navbar } from '@/components/site/Navbar';
 import { Footer } from '@/components/site/Footer';
 import { FloatingWhatsApp } from '@/components/site/FloatingWhatsApp';
 import MobileCallBar from '@/components/site/MobileCallBar';
+import { PromoBanner, TrustBand } from '@/components/site/PromoTrustBars';
+import { CookieConsent } from '@/components/site/CookieConsent';
 
 // ============================================
 // TYPES
@@ -55,6 +57,9 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
         İçeriğe atla
       </a>
 
+      <PromoBanner />
+      <TrustBand />
+
       {/* Navigation */}
       <header role="banner">
         <Navbar />
@@ -78,6 +83,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       {/* Floating Action Button */}
       <FloatingWhatsApp />
       <MobileCallBar />
+      <CookieConsent />
     </div>
   );
 }

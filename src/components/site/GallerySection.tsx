@@ -11,11 +11,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Loader2, Image as ImageIcon, ZoomIn } from 'lucide-react';
+import { Loader2, Image as ImageIcon, ZoomIn, Play } from 'lucide-react';
 import Image from 'next/image';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import logger from '@/lib/logger';
+import { toVideoEmbedSrc } from '@/lib/gallery-video';
 
 // ============================================
 // TYPES
@@ -29,6 +30,9 @@ interface GalleryItem {
   image: string;
   category: string;
   isActive: boolean;
+  mediaKind?: string;
+  videoUrl?: string | null;
+  tags?: string[];
 }
 
 /** GallerySection component props */
@@ -82,6 +86,7 @@ export function GallerySection({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [videoModal, setVideoModal] = useState<GalleryItem | null>(null);
 
   const shouldReduceMotion = useReducedMotion();
 
@@ -130,9 +135,14 @@ export function GallerySection({
     [items, selectedCategory]
   );
 
-  const lightboxSlides = useMemo(() =>
-    filteredItems.map((item) => ({ src: item.image, title: item.title })),
+  const imageOnlyItems = useMemo(
+    () => filteredItems.filter((i) => (i.mediaKind ?? 'image') !== 'video'),
     [filteredItems]
+  );
+
+  const lightboxSlides = useMemo(
+    () => imageOnlyItems.map((item) => ({ src: item.image, title: item.title })),
+    [imageOnlyItems]
   );
 
   // ============================================
@@ -142,6 +152,15 @@ export function GallerySection({
     setCurrentImageIndex(index);
     setLightboxOpen(true);
   }, []);
+
+  const openLightboxForImageItem = useCallback(
+    (item: GalleryItem) => {
+      const idx = imageOnlyItems.findIndex((i) => i.id === item.id);
+      if (idx < 0) return;
+      openLightbox(idx);
+    },
+    [imageOnlyItems, openLightbox]
+  );
 
   const closeLightbox = useCallback(() => {
     setLightboxOpen(false);
@@ -287,7 +306,9 @@ export function GallerySection({
           aria-label={`${selectedCategory} kategorisi görselleri`}
         >
           <AnimatePresence mode="popLayout">
-            {filteredItems.map((item, index) => (
+            {filteredItems.map((item, index) => {
+              const isVideo = item.mediaKind === 'video' && item.videoUrl?.trim();
+              return (
               <motion.article
                 key={item.id}
                 layout
@@ -301,7 +322,9 @@ export function GallerySection({
                 }}
                 onMouseEnter={() => handleMouseEnter(item.id)}
                 onMouseLeave={handleMouseLeave}
-                onClick={() => openLightbox(index)}
+                onClick={() =>
+                  isVideo ? setVideoModal(item) : openLightboxForImageItem(item)
+                }
                 className={`group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-500 ${index % 3 === 0 ? 'aspect-[3/4]' : 'aspect-square'
                   }`}
                 aria-label={`${item.title} - ${item.category}`}
@@ -328,13 +351,17 @@ export function GallerySection({
                   aria-hidden="true"
                 />
 
-                {/* Zoom Icon */}
+                {/* Zoom / Play */}
                 <div
                   className={`absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full transition-all duration-300 ${hoveredId === item.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
                     }`}
                   aria-hidden="true"
                 >
-                  <ZoomIn className="h-5 w-5 text-white" />
+                  {isVideo ? (
+                    <Play className="h-5 w-5 text-white" fill="currentColor" />
+                  ) : (
+                    <ZoomIn className="h-5 w-5 text-white" />
+                  )}
                 </div>
 
                 {/* Content */}
@@ -344,6 +371,7 @@ export function GallerySection({
                 >
                   <span className="inline-block px-3 py-1 mb-3 text-xs font-medium text-emerald-400 bg-emerald-500/20 rounded-full backdrop-blur-sm">
                     {item.category}
+                    {isVideo ? ' · Video' : ''}
                   </span>
                   <h3 className="font-semibold text-lg text-white mb-1">{item.title}</h3>
                   {item.description && (
@@ -351,7 +379,8 @@ export function GallerySection({
                   )}
                 </div>
               </motion.article>
-            ))}
+            );
+            })}
           </AnimatePresence>
         </motion.div>
 
@@ -379,6 +408,58 @@ export function GallerySection({
             container: { backgroundColor: 'rgba(0, 0, 0, 0.95)' }
           }}
         />
+
+        {videoModal?.videoUrl ? (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={videoModal.title}
+            onClick={() => setVideoModal(null)}
+          >
+            <div
+              className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-slate-900 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setVideoModal(null)}
+                className="absolute right-3 top-3 z-10 rounded-full bg-black/50 px-3 py-1 text-sm font-medium text-white hover:bg-black/70"
+              >
+                Kapat
+              </button>
+              {(() => {
+                const embed = toVideoEmbedSrc(videoModal.videoUrl);
+                if (!embed) {
+                  return (
+                    <div className="p-8 text-center text-slate-200">
+                      <p className="mb-4 text-sm">Bu video bağlantısı yerleştirilemedi.</p>
+                      <a
+                        href={videoModal.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-400 underline"
+                      >
+                        Yeni sekmede aç
+                      </a>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="aspect-video w-full bg-black">
+                    <iframe
+                      src={embed}
+                      title={videoModal.title}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

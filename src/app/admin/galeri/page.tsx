@@ -33,6 +33,9 @@ interface GalleryItem {
   order: number;
   isActive: boolean;
   createdAt: string;
+  mediaKind?: string;
+  videoUrl?: string | null;
+  tags?: string[];
 }
 
 const BASE_CATEGORIES = [
@@ -52,6 +55,9 @@ const defaultForm = () => ({
   category: 'Temizlik Öncesi/Sonrası' as string,
   isActive: true,
   order: 0,
+  mediaKind: 'image' as 'image' | 'video',
+  videoUrl: '',
+  tags: '',
 });
 
 export default function GalleryPage() {
@@ -124,11 +130,13 @@ export default function GalleryPage() {
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return items.filter((item) => {
+      const tagStr = (item.tags || []).join(' ').toLowerCase();
       const matchesSearch =
         !q ||
         item.title.toLowerCase().includes(q) ||
         (item.description?.toLowerCase().includes(q) ?? false) ||
-        item.category.toLowerCase().includes(q);
+        item.category.toLowerCase().includes(q) ||
+        tagStr.includes(q);
       const matchesCategory = selectedCategory === 'Tümü' || item.category === selectedCategory;
       const matchesStatus =
         statusFilter === 'all' ||
@@ -179,8 +187,15 @@ export default function GalleryPage() {
     e.preventDefault();
 
     if (!formData.image?.trim()) {
-      toast.error('Doğrulama', 'Lütfen bir görsel URL’si girin veya dosya yükleyin.');
+      toast.error('Doğrulama', 'Kapak / poster için görsel URL’si veya yüklenmiş dosya gerekir.');
       return;
+    }
+    if (formData.mediaKind === 'video') {
+      const vu = formData.videoUrl.trim();
+      if (!/^https:\/\//i.test(vu)) {
+        toast.error('Doğrulama', 'Video için https ile başlayan bir bağlantı girin.');
+        return;
+      }
     }
     if (!formData.title?.trim()) {
       toast.error('Doğrulama', 'Başlık alanı zorunludur.');
@@ -193,6 +208,11 @@ export default function GalleryPage() {
 
     const orderNum = Number(formData.order);
     const order = Number.isFinite(orderNum) ? orderNum : 0;
+    const tags = formData.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .slice(0, 20);
 
     setIsSubmitting(true);
     try {
@@ -205,6 +225,9 @@ export default function GalleryPage() {
             category: formData.category,
             isActive: formData.isActive,
             order,
+            mediaKind: formData.mediaKind,
+            videoUrl: formData.mediaKind === 'video' ? formData.videoUrl.trim() : null,
+            tags,
           }
         : {
             title: formData.title.trim(),
@@ -213,6 +236,9 @@ export default function GalleryPage() {
             category: formData.category,
             isActive: formData.isActive,
             order,
+            mediaKind: formData.mediaKind,
+            videoUrl: formData.mediaKind === 'video' ? formData.videoUrl.trim() : null,
+            tags,
           };
 
       const res = await fetch('/api/gallery', {
@@ -308,6 +334,7 @@ export default function GalleryPage() {
 
   const openEditModal = (item: GalleryItem) => {
     setEditingItem(item);
+    const mk = item.mediaKind === 'video' ? 'video' : 'image';
     setFormData({
       title: item.title,
       description: item.description ?? '',
@@ -315,6 +342,9 @@ export default function GalleryPage() {
       category: item.category,
       isActive: item.isActive,
       order: item.order ?? 0,
+      mediaKind: mk,
+      videoUrl: item.videoUrl ?? '',
+      tags: (item.tags || []).join(', '),
     });
     setIsModalOpen(true);
   };
@@ -498,7 +528,7 @@ export default function GalleryPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Başlık, açıklama veya kategoriye göre ara..."
+            placeholder="Başlık, açıklama, kategori veya etiket ara..."
             className="w-full rounded-xl border bg-white py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
@@ -548,8 +578,17 @@ export default function GalleryPage() {
                     <Trash2 className="h-5 w-5" />
                   </button>
                 </div>
+                {item.mediaKind === 'video' && (
+                  <span className="absolute left-2 top-2 rounded-full bg-violet-700/90 px-2 py-1 text-xs font-medium text-white">
+                    Video
+                  </span>
+                )}
                 {!item.isActive && (
-                  <span className="absolute left-2 top-2 rounded-full bg-slate-900/75 px-2 py-1 text-xs text-white">
+                  <span
+                    className={`absolute rounded-full bg-slate-900/75 px-2 py-1 text-xs text-white ${
+                      item.mediaKind === 'video' ? 'left-2 top-10' : 'left-2 top-2'
+                    }`}
+                  >
                     Taslak
                   </span>
                 )}
@@ -717,8 +756,42 @@ export default function GalleryPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium dark:text-slate-300">Medya türü</label>
+                    <select
+                      value={formData.mediaKind}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          mediaKind: e.target.value === 'video' ? 'video' : 'image',
+                          videoUrl: e.target.value === 'video' ? formData.videoUrl : '',
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    >
+                      <option value="image">Görsel</option>
+                      <option value="video">Video (YouTube / Vimeo / embed)</option>
+                    </select>
+                  </div>
+                  {formData.mediaKind === 'video' ? (
+                    <div>
+                      <label className="mb-2 block text-sm font-medium dark:text-slate-300">Video URL (https)</label>
+                      <input
+                        type="url"
+                        value={formData.videoUrl}
+                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                        placeholder="https://www.youtube.com/watch?v=…"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                      />
+                    </div>
+                  ) : null}
+                </div>
+
                 <div>
-                  <label className="mb-2 block text-sm font-medium dark:text-slate-300">Görsel URL</label>
+                  <label className="mb-2 block text-sm font-medium dark:text-slate-300">
+                    {formData.mediaKind === 'video' ? 'Kapak (poster) görsel URL' : 'Görsel URL'}
+                  </label>
                   <input
                     type="text"
                     inputMode="url"
@@ -728,7 +801,7 @@ export default function GalleryPage() {
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                   />
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Harici adres veya sitedeki göreli yol. İsterseniz aşağıdan dosya yükleyin.
+                    Harici adres veya sitedeki göreli yol. Videoda liste ve ızgarada poster olarak kullanılır.
                   </p>
                 </div>
 
@@ -798,6 +871,18 @@ export default function GalleryPage() {
                     className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     placeholder="Kısa açıklama..."
                   />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium dark:text-slate-300">Etiketler</label>
+                  <input
+                    type="text"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    placeholder="virgülle ayırın: inşaat, ofis, derin"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                  />
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">En fazla 20 etiket; yönetimde aramada kullanılır.</p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

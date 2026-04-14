@@ -30,7 +30,6 @@ import {
   isValidEmail,
   isValidPhone,
 } from '@/lib/security';
-
 // ============================================
 // CONFIGURATION
 // ============================================
@@ -172,7 +171,15 @@ export async function GET(request: NextRequest) {
         service: true,
         message: true,
         read: true,
+        pipelineStatus: true,
+        internalNotes: true,
+        reminderAt: true,
+        assignedUserId: true,
         createdAt: true,
+        updatedAt: true,
+        assignedUser: {
+          select: { id: true, name: true, email: true },
+        },
       },
     });
 

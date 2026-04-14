@@ -122,6 +122,20 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const [appointmentsPending, contactsPipelineNew, marketingEventsWeek, lastMapSync] =
+      await Promise.all([
+        prisma.appointmentRequest.count({ where: { status: 'pending' } }),
+        prisma.contactRequest.count({ where: { pipelineStatus: 'new' } }),
+        prisma.marketingEvent.count({ where: { createdAt: { gte: weekAgo } } }),
+        prisma.mapSyncRun.findFirst({
+          orderBy: { startedAt: 'desc' },
+          select: { status: true, message: true, startedAt: true, provider: true },
+        }),
+      ]);
+
     const blogViewsTotal = blogViewsAgg._sum.views ?? 0;
     const blogDrafts = blogTotal - blogPublished;
     const servicesInactive = servicesTotal - servicesActive;
@@ -218,6 +232,19 @@ export async function GET(req: NextRequest) {
         updatedAt: b.updatedAt.toISOString(),
       })),
       activity: activityTop,
+      funnel: {
+        appointmentsPending,
+        contactsPipelineNew,
+        marketingEventsWeek,
+        lastMapSync: lastMapSync
+          ? {
+              status: lastMapSync.status,
+              message: lastMapSync.message,
+              startedAt: lastMapSync.startedAt.toISOString(),
+              provider: lastMapSync.provider,
+            }
+          : null,
+      },
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';

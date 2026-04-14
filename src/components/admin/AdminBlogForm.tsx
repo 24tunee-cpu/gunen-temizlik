@@ -15,9 +15,10 @@ import {
   Save,
   Wand2,
   X,
+  Clock,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { generateSlug } from '@/lib/utils';
+import { generateSlug, toDatetimeLocalValue, fromDatetimeLocalValue } from '@/lib/utils';
 import { toast } from '@/store/toastStore';
 
 type FormState = {
@@ -31,6 +32,8 @@ type FormState = {
   published: boolean;
   metaTitle: string;
   metaDesc: string;
+  /** `datetime-local` input değeri; boş = zamanlama yok */
+  scheduledPublishAt: string;
 };
 
 const emptyForm: FormState = {
@@ -44,6 +47,7 @@ const emptyForm: FormState = {
   published: false,
   metaTitle: '',
   metaDesc: '',
+  scheduledPublishAt: '',
 };
 
 function SectionCard({
@@ -126,6 +130,9 @@ export function AdminBlogForm({
           published: post.published ?? false,
           metaTitle: typeof post.metaTitle === 'string' ? post.metaTitle.trim() : '',
           metaDesc: typeof post.metaDesc === 'string' ? post.metaDesc.trim() : '',
+          scheduledPublishAt: toDatetimeLocalValue(
+            post.scheduledPublishAt != null ? String(post.scheduledPublishAt) : ''
+          ),
         });
         setTags(Array.isArray(post.tags) ? post.tags : []);
         setLoadState('ready');
@@ -175,6 +182,7 @@ export function AdminBlogForm({
     setSubmitting(true);
     try {
       if (mode === 'create') {
+        const scheduledIso = fromDatetimeLocalValue(formData.scheduledPublishAt);
         const res = await fetch('/api/blog', {
           method: 'POST',
           credentials: 'include',
@@ -184,6 +192,7 @@ export function AdminBlogForm({
             slug,
             category: formData.category.trim() || 'Genel',
             tags,
+            scheduledPublishAt: scheduledIso,
           }),
         });
         if (!res.ok) {
@@ -200,6 +209,7 @@ export function AdminBlogForm({
         return;
       }
 
+      const scheduledIso = fromDatetimeLocalValue(formData.scheduledPublishAt);
       const res = await fetch(`/api/blog/${encodeURIComponent(routeSlug)}`, {
         method: 'PUT',
         credentials: 'include',
@@ -209,6 +219,7 @@ export function AdminBlogForm({
           slug,
           category: formData.category.trim() || 'Genel',
           tags,
+          scheduledPublishAt: scheduledIso,
         }),
       });
       if (!res.ok) {
@@ -373,6 +384,33 @@ export function AdminBlogForm({
                 />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Yayınla</span>
               </label>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <Clock className="h-4 w-4 text-slate-400" aria-hidden />
+                Zamanlanmış yayın (isteğe bağlı)
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="datetime-local"
+                  value={formData.scheduledPublishAt}
+                  onChange={(e) => setFormData({ ...formData, scheduledPublishAt: e.target.value })}
+                  disabled={submitting}
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  disabled={submitting || !formData.scheduledPublishAt}
+                  onClick={() => setFormData({ ...formData, scheduledPublishAt: '' })}
+                  className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  Temizle
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Tarih geldiğinde cron görevi yazıyı otomatik yayınlar (yayın kutusu kapalı olsa bile). Boş bırakırsanız
+                yalnızca elle yayınlarsınız.
+              </p>
             </div>
           </div>
         </SectionCard>

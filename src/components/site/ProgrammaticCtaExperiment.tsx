@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 type Variant = 'A' | 'B';
 
@@ -32,9 +33,20 @@ export default function ProgrammaticCtaExperiment({
   serviceName,
   serviceSlug,
 }: Props) {
+  const { settings } = useSiteSettings();
   const [variant, setVariant] = useState<Variant>('A');
 
   useEffect(() => {
+    const fromAdmin = settings.marketingBannerVariant;
+    if (fromAdmin === 'A' || fromAdmin === 'B') {
+      setVariant(fromAdmin);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, fromAdmin);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved === 'A' || saved === 'B') {
       setVariant(saved);
@@ -43,7 +55,7 @@ export default function ProgrammaticCtaExperiment({
     const next: Variant = Math.random() < 0.5 ? 'A' : 'B';
     window.localStorage.setItem(STORAGE_KEY, next);
     setVariant(next);
-  }, []);
+  }, [settings.marketingBannerVariant]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

@@ -83,7 +83,9 @@ export async function buildUploadUsageMap(): Promise<Map<string, MediaUsage[]>> 
     prisma.siteSettings.findFirst(),
     prisma.service.findMany({ select: { title: true, slug: true, image: true } }),
     prisma.blogPost.findMany({ select: { title: true, slug: true, image: true, content: true } }),
-    prisma.gallery.findMany({ select: { title: true, id: true, image: true } }),
+    prisma.gallery.findMany({
+      select: { title: true, id: true, image: true, videoUrl: true, tags: true },
+    }),
     prisma.certificate.findMany({ select: { title: true, id: true, image: true } }),
     prisma.teamMember.findMany({ select: { name: true, id: true, image: true } }),
     prisma.testimonial.findMany({ select: { name: true, id: true, avatar: true } }),
@@ -131,10 +133,20 @@ export async function buildUploadUsageMap(): Promise<Map<string, MediaUsage[]>> 
   }
 
   for (const g of gallery) {
+    const tagPart =
+      Array.isArray(g.tags) && g.tags.length > 0 ? ` · ${g.tags.join(', ')}` : '';
+    const galleryLabel = `${g.title}${tagPart}`;
     for (const fn of extractUploadBasenamesFromString(g.image)) {
       addUsage(map, fn, {
         kind: 'Galeri',
-        label: g.title,
+        label: galleryLabel,
+        href: '/admin/galeri',
+      });
+    }
+    for (const fn of extractUploadBasenamesFromString(g.videoUrl ?? undefined)) {
+      addUsage(map, fn, {
+        kind: 'Galeri (video dosyası)',
+        label: galleryLabel,
         href: '/admin/galeri',
       });
     }

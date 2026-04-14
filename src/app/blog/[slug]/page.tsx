@@ -25,6 +25,12 @@ import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { BlogShareButton } from '@/components/site/BlogShareButton';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
+import {
+  canonicalUrl,
+  generateBreadcrumbSchema,
+  getSiteUrl,
+  serializeSchemaGraph,
+} from '@/lib/seo';
 
 // ============================================
 // TYPES
@@ -60,6 +66,19 @@ const RELATED_SERVICE_LINKS = [
   { href: '/hizmetler/koltuk-yikama', label: 'Koltuk Yıkama' },
 ] as const;
 
+const RELATED_SEO_UTILITY_LINKS = [
+  { href: '/randevu', label: 'Randevu / keşif' },
+  { href: '/rehber', label: 'Temizlik rehberi' },
+  { href: '/ara', label: 'Site içi arama' },
+] as const;
+
+function toAbsoluteAsset(pathOrUrl: string | null | undefined, base: string): string | undefined {
+  if (!pathOrUrl?.trim()) return undefined;
+  const t = pathOrUrl.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  return `${base}${t.startsWith('/') ? t : `/${t}`}`;
+}
+
 // ============================================
 // METADATA GENERATION
 // ============================================
@@ -87,12 +106,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const metaTitle = resolveBlogMetaTitle(post.title, post.metaTitle);
     const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
 
+    const ogImage = toAbsoluteAsset(post.image, getSiteUrl());
+
     return {
       title: metaTitle,
       description: metaDesc,
       keywords: post.tags,
       alternates: {
-        canonical: `https://gunentemizlik.com/blog/${post.slug}`,
+        canonical: canonicalUrl(`/blog/${post.slug}`),
       },
       openGraph: {
         title: metaTitle,
@@ -102,21 +123,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         modifiedTime: post.updatedAt.toISOString(),
         authors: [post.author],
         tags: post.tags,
-        url: `https://gunentemizlik.com/blog/${post.slug}`,
-        images: post.image ? [
-          {
-            url: post.image,
-            width: 1200,
-            height: 630,
-            alt: post.title,
-          }
-        ] : undefined,
+        url: canonicalUrl(`/blog/${post.slug}`),
+        images: ogImage
+          ? [{ url: ogImage, width: 1200, height: 630, alt: post.title }]
+          : undefined,
       },
       twitter: {
         card: 'summary_large_image',
         title: metaTitle,
         description: metaDesc,
-        images: post.image ? [post.image] : undefined,
+        images: ogImage ? [ogImage] : undefined,
       },
     };
   } catch (error) {
@@ -139,12 +155,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 function generateArticleSchema(post: BlogPostData) {
   const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
   const wordCount = post.content.split(/\s+/).filter(Boolean).length;
+  const cover = toAbsoluteAsset(post.image, getSiteUrl());
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
     "description": metaDesc,
-    "image": post.image || undefined,
+    "image": cover ? [cover] : undefined,
     "datePublished": post.createdAt.toISOString(),
     "dateModified": post.updatedAt.toISOString(),
     "wordCount": wordCount,
@@ -158,16 +175,16 @@ function generateArticleSchema(post: BlogPostData) {
       "name": "Günen Temizlik",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://gunentemizlik.com/logo.png"
+        "url": canonicalUrl('/logo.png')
       }
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://gunentemizlik.com/blog/${post.slug}`
+      "@id": canonicalUrl(`/blog/${post.slug}`)
     },
     "isPartOf": {
       "@type": "Blog",
-      "@id": "https://gunentemizlik.com/blog"
+      "@id": canonicalUrl('/blog')
     },
     "about": [
       { "@type": "Thing", "name": post.category },
@@ -231,32 +248,16 @@ export default async function BlogPostPage({ params }: PageProps) {
     // Silent fail - views are not critical
   });
 
-  // Generate structured data
   const articleSchema = generateArticleSchema(post as BlogPostData);
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Ana Sayfa',
-        item: 'https://gunentemizlik.com/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Blog',
-        item: 'https://gunentemizlik.com/blog',
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: post.title,
-        item: `https://gunentemizlik.com/blog/${post.slug}`,
-      },
-    ],
-  };
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: '/' },
+    { name: 'Blog', url: '/blog' },
+    { name: post.title, url: `/blog/${post.slug}` },
+  ]);
+  const schemaGraphJson = serializeSchemaGraph([
+    articleSchema as Record<string, unknown>,
+    breadcrumbSchema,
+  ]);
 
   // Calculate reading time (approximate)
   const wordCount = post.content.split(/\s+/).length;
@@ -264,14 +265,9 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <>
-      {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: schemaGraphJson }}
       />
 
       <SiteLayout>
@@ -371,6 +367,21 @@ export default async function BlogPostPage({ params }: PageProps) {
                     className="rounded-full border border-emerald-500/40 px-3 py-1.5 text-sm text-emerald-300 transition-colors hover:bg-emerald-500/15"
                   >
                     {service.label}
+                  </Link>
+                ))}
+              </div>
+              <h3 className="mt-8 text-base font-semibold text-white">Hızlı erişim</h3>
+              <p className="mt-1 text-sm text-slate-300">
+                Randevu, rehber ve site içi arama ile devam edin:
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {RELATED_SEO_UTILITY_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full border border-slate-500/50 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:bg-slate-700/50"
+                  >
+                    {item.label}
                   </Link>
                 ))}
               </div>

@@ -103,6 +103,26 @@ export default async function DistrictPage({ params }: Props) {
               Aşağıdaki hizmet sayfalarından doğrudan teklif alabilirsiniz.
             </p>
 
+            <div className="mt-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <p className="text-sm font-medium text-emerald-100">Yakın bölgeler</p>
+              <p className="mt-1 text-xs text-emerald-100/80">
+                Komşu ilçelerde de aynı hizmet kalitesiyle çalışıyoruz; ilgili bölge sayfasına geçebilirsiniz.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {DISTRICT_LANDINGS.filter((d) => d.slug !== districtData.slug)
+                  .slice(0, 8)
+                  .map((d) => (
+                    <Link
+                      key={d.slug}
+                      href={`/bolgeler/${d.slug}`}
+                      className="rounded-full border border-emerald-400/40 bg-slate-900/40 px-3 py-1 text-xs font-medium text-emerald-100 transition-colors hover:bg-emerald-500/20"
+                    >
+                      {d.name}
+                    </Link>
+                  ))}
+              </div>
+            </div>
+
             <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/40 p-4">
               <p className="text-sm font-medium text-white">Hizmet verdiğimiz mahalle ve semtler</p>
               <div className="mt-3 flex flex-wrap gap-2">

@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 
+/** SLA özeti + son senkron (haritalar paneli banner) */
+export async function GET(request: NextRequest) {
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+  const twoDaysAgo = new Date(Date.now() - 48 * 3600 * 1000);
+  const [totalPending, slaBreaches, lastSync] = await Promise.all([
+    prisma.mapReviewReplyDraft.count({ where: { status: 'pending' } }),
+    prisma.mapReviewReplyDraft.count({
+      where: { status: 'pending', createdAt: { lt: twoDaysAgo } },
+    }),
+    prisma.mapSyncRun.findFirst({
+      orderBy: { startedAt: 'desc' },
+      select: { status: true, message: true, startedAt: true, provider: true },
+    }),
+  ]);
+  return NextResponse.json({ totalPending, slaBreaches, lastSync });
+}
+
 export async function PUT(request: NextRequest) {
   const authError = await requireAdminAuth(request);
   if (authError) return authError;

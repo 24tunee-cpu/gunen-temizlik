@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
     const secret =
       process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
     const token = await getToken({ req: request, secret });
-    const isAdmin = token?.role === 'ADMIN';
+    const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 
     console.log('Fetching all gallery items', { ip, isAdmin });
 
@@ -165,6 +165,9 @@ export async function GET(request: NextRequest) {
         title: true,
         description: true,
         image: true,
+        mediaKind: true,
+        videoUrl: true,
+        tags: true,
         category: true,
         isActive: true,
         order: true,
@@ -225,6 +228,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const mediaKind = body.mediaKind === 'video' ? 'video' : 'image';
+    let videoUrl: string | null = null;
+    if (mediaKind === 'video') {
+      if (!body.videoUrl || typeof body.videoUrl !== 'string' || !/^https:\/\//i.test(body.videoUrl.trim())) {
+        return NextResponse.json(
+          { error: 'Video için geçerli bir https URL giriniz' },
+          { status: 400, headers }
+        );
+      }
+      videoUrl = body.videoUrl.trim().slice(0, 2000);
+    }
+
+    const tags =
+      Array.isArray(body.tags) && body.tags.length > 0
+        ? body.tags
+            .filter((t: unknown) => typeof t === 'string')
+            .map((t: string) => sanitizeInput(t).slice(0, 40))
+            .slice(0, 20)
+        : [];
+
     console.log('Creating new gallery item', { title: body.title });
 
     const item = await prisma.gallery.create({
@@ -234,6 +257,9 @@ export async function POST(request: NextRequest) {
           ? sanitizeInput(body.description).slice(0, MAX_LENGTHS.description)
           : null,
         image: body.image,
+        mediaKind,
+        videoUrl,
+        tags,
         category: body.category && typeof body.category === 'string'
           ? sanitizeInput(body.category).slice(0, MAX_LENGTHS.category)
           : DEFAULT_CATEGORY,
@@ -346,6 +372,32 @@ export async function PUT(request: NextRequest) {
     }
     if (data.order !== undefined) {
       updateData.order = typeof data.order === 'number' ? data.order : 0;
+    }
+    if (data.mediaKind !== undefined) {
+      const mk = String(data.mediaKind).toLowerCase();
+      if (mk !== 'image' && mk !== 'video') {
+        return NextResponse.json({ error: 'mediaKind image veya video olmalı' }, { status: 400, headers });
+      }
+      updateData.mediaKind = mk;
+    }
+    if (data.videoUrl !== undefined) {
+      if (data.videoUrl === null || data.videoUrl === '') {
+        updateData.videoUrl = null;
+      } else if (typeof data.videoUrl === 'string') {
+        const u = data.videoUrl.trim();
+        if (!/^https:\/\//i.test(u)) {
+          return NextResponse.json({ error: 'videoUrl https ile başlamalı' }, { status: 400, headers });
+        }
+        updateData.videoUrl = u.slice(0, 2000);
+      }
+    }
+    if (data.tags !== undefined) {
+      if (Array.isArray(data.tags)) {
+        updateData.tags = data.tags
+          .filter((t: unknown) => typeof t === 'string')
+          .map((t: string) => sanitizeInput(t).slice(0, 40))
+          .slice(0, 20);
+      }
     }
 
     const item = await prisma.gallery.update({

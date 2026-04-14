@@ -187,6 +187,28 @@ export function formatRelativeTime(date: Date | string | number): string {
   return 'şimdi';
 }
 
+/**
+ * `<input type="datetime-local" />` için yerel tarih-saat dizesi (tarayıcı yerel saatine göre).
+ */
+export function toDatetimeLocalValue(isoOrDate: string | Date | null | undefined): string {
+  if (!isoOrDate) return '';
+  const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate;
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/**
+ * `datetime-local` değerini ISO stringe çevirir; boş veya geçersizse `null`.
+ */
+export function fromDatetimeLocalValue(value: string): string | null {
+  const v = value.trim();
+  if (!v) return null;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
 // ============================================
 // CURRENCY UTILITIES
 // ============================================

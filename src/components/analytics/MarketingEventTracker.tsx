@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 declare global {
   interface Window {
     dataLayer?: Array<Record<string, unknown>>;
-    gtag?: (command: 'event', eventName: string, params?: Record<string, unknown>) => void;
+    gtag?: (command: string, ...args: unknown[]) => void;
   }
 }
 

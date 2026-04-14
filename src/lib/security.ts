@@ -132,15 +132,16 @@ export async function requireAdminAuth(
     );
   }
 
-  if (token.role !== 'ADMIN') {
+  const role = String(token.role || '');
+  if (role !== 'ADMIN' && role !== 'EDITOR') {
     logSecurityEvent('AUTH_FAILURE', {
       ip,
       userId: token.sub ? String(token.sub) : undefined,
       path: req.nextUrl.pathname,
       method: req.method,
       reason: 'Insufficient role',
-      requiredRole: 'ADMIN',
-      actualRole: String(token.role),
+      requiredRole: 'ADMIN|EDITOR',
+      actualRole: role,
     });
 
     return NextResponse.json(
@@ -158,6 +159,48 @@ export async function requireAdminAuth(
   });
 
   return null; // Auth başarılı
+}
+
+/**
+ * Yalnızca `ADMIN` rolü (silme, yönlendirme, denetim günlüğü, tam site ayarı vb.).
+ */
+export async function requireAdminOnly(req: NextRequest): Promise<NextResponse | null> {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+  }
+
+  const token = await getToken({
+    req,
+    secret: secret || 'development-secret-do-not-use-in-production',
+  });
+
+  const ip = getClientIp(req);
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Authentication required' },
+      { status: 401 }
+    );
+  }
+
+  if (String(token.role || '') !== 'ADMIN') {
+    logSecurityEvent('AUTH_FAILURE', {
+      ip,
+      userId: token.sub ? String(token.sub) : undefined,
+      path: req.nextUrl.pathname,
+      method: req.method,
+      reason: 'Full admin required',
+      requiredRole: 'ADMIN',
+      actualRole: String(token.role),
+    });
+    return NextResponse.json(
+      { error: 'Forbidden - Full administrator access required' },
+      { status: 403 }
+    );
+  }
+
+  return null;
 }
 
 /**

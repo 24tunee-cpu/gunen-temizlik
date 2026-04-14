@@ -76,6 +76,17 @@ interface DashboardPayload {
     subtitle: string;
     at: string;
   }>;
+  funnel?: {
+    appointmentsPending: number;
+    contactsPipelineNew: number;
+    marketingEventsWeek: number;
+    lastMapSync: {
+      status: string;
+      message: string | null;
+      startedAt: string;
+      provider: string;
+    } | null;
+  };
 }
 
 // ============================================
@@ -360,7 +371,7 @@ export default function AdminDashboardPage() {
 
   if (!data) return null;
 
-  const { counts, chart, recentContacts, activity, contactsWeekHint } = data;
+  const { counts, chart, recentContacts, activity, contactsWeekHint, funnel } = data;
 
   const contactTrend: 'up' | 'down' | 'neutral' =
     counts.contactsThisWeek > counts.contactsPrevWeek
@@ -474,6 +485,42 @@ export default function AdminDashboardPage() {
           delay={0.15}
         />
       </div>
+
+      {funnel ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-5"
+        >
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Dönüşüm ve operasyon
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-slate-100 p-3 dark:border-slate-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Bekleyen randevu</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{funnel.appointmentsPending}</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 p-3 dark:border-slate-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Yeni talep (pipeline)</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{funnel.contactsPipelineNew}</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 p-3 dark:border-slate-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Pazarlama olayı (7 gün)</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{funnel.marketingEventsWeek}</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 p-3 dark:border-slate-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400">Son harita senkronu</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                {funnel.lastMapSync ? funnel.lastMapSync.status : '—'}
+              </p>
+              {funnel.lastMapSync?.status?.toLowerCase() === 'error' ? (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{funnel.lastMapSync.message}</p>
+              ) : null}
+            </div>
+          </div>
+        </motion.div>
+      ) : null}
 
       {/* İçerik özeti şeridi */}
       <motion.div

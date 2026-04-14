@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runGoogleMapsSync } from '@/lib/google-maps-sync';
 import { prisma } from '@/lib/prisma';
+import { publishScheduledBlogPosts } from '@/lib/publish-scheduled-posts';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const blogPub = await publishScheduledBlogPosts();
+
   const conn = await prisma.mapOAuthConnection.findUnique({ where: { provider: 'google' } });
   if (!conn?.refreshTokenEnc) {
-    return NextResponse.json({ skipped: true, reason: 'Google bağlı değil.' });
+    return NextResponse.json({
+      skipped: true,
+      reason: 'Google bağlı değil.',
+      blogPublished: blogPub.published,
+    });
   }
 
   const result = await runGoogleMapsSync('cron');
-  return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  return NextResponse.json({ ...result, blogPublished: blogPub.published }, { status: result.ok ? 200 : 502 });
 }

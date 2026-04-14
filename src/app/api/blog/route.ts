@@ -321,6 +321,13 @@ export async function POST(request: NextRequest) {
           ? sanitizeInput(data.author).slice(0, MAX_LENGTHS.author)
           : 'Günen Temizlik',
         published: typeof data.published === 'boolean' ? data.published : false,
+        scheduledPublishAt:
+          typeof data.scheduledPublishAt === 'string' && data.scheduledPublishAt
+            ? (() => {
+                const d = new Date(data.scheduledPublishAt);
+                return Number.isNaN(d.getTime()) ? null : d;
+              })()
+            : null,
         metaTitle: resolveBlogMetaTitle(title, metaTitleRaw).slice(0, MAX_LENGTHS.metaTitle),
         metaDesc: resolveBlogMetaDesc(excerpt, metaDescRaw).slice(0, MAX_LENGTHS.metaDesc),
       },
@@ -474,6 +481,17 @@ export async function PUT(request: NextRequest) {
 
     if (data.published !== undefined) {
       updateData.published = typeof data.published === 'boolean' ? data.published : false;
+    }
+
+    if (data.scheduledPublishAt !== undefined) {
+      if (data.scheduledPublishAt === null || data.scheduledPublishAt === '') {
+        updateData.scheduledPublishAt = null;
+      } else if (typeof data.scheduledPublishAt === 'string') {
+        const d = new Date(data.scheduledPublishAt);
+        if (!Number.isNaN(d.getTime())) {
+          updateData.scheduledPublishAt = d;
+        }
+      }
     }
 
     if (data.metaTitle !== undefined) {

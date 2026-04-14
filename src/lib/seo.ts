@@ -42,6 +42,16 @@ export function getSiteUrl(): string {
   return 'https://gunentemizlik.com';
 }
 
+/**
+ * Tam kanonik sayfa URL’si — `metadata.alternates.canonical` ile JSON-LD `@id` aynı kaynaktan üretilir.
+ */
+export function canonicalUrl(path: string): string {
+  const base = getSiteUrl();
+  const p = path.startsWith('/') ? path : `/${path}`;
+  if (p === '/') return `${base}/`;
+  return `${base}${p}`;
+}
+
 /** Varsayılan OG görseli */
 const DEFAULT_OG_IMAGE = '/og-image.jpg';
 
@@ -189,6 +199,21 @@ export function generateSEO({
  */
 export function serializeSchema(schema: Record<string, unknown>): string {
   return JSON.stringify(schema);
+}
+
+/**
+ * Birden fazla şemayı tek `application/ld+json` içinde `@graph` olarak birleştirir (öğelerdeki `@context` atılır).
+ */
+export function serializeSchemaGraph(nodes: Record<string, unknown>[]): string {
+  const graph = nodes.map((n) => {
+    if (!n || typeof n !== 'object') return n;
+    const { ['@context']: _ctx, ...rest } = n as Record<string, unknown> & { '@context'?: unknown };
+    return rest;
+  });
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  });
 }
 
 /**
@@ -342,15 +367,56 @@ export function generateBreadcrumbSchema(
     return {};
   }
 
+  const base = getSiteUrl();
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.name,
-      item: item.url.startsWith('http') ? item.url : `${SITE_URL}${item.url}`,
-    })),
+    itemListElement: items.map((item, index) => {
+      const path = item.url.startsWith('/') ? item.url : `/${item.url}`;
+      const absolute = item.url.startsWith('http')
+        ? item.url
+        : path === '/'
+          ? `${base}/`
+          : `${base}${path}`;
+      return {
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: absolute,
+      };
+    }),
+  };
+}
+
+/**
+ * Genel içerik sayfaları için WebPage + WebSite ilişkisi (randevu, rehber, site içi arama vb.).
+ */
+export function generateWebPageSchema(params: {
+  path: string;
+  title: string;
+  description: string;
+}): Record<string, unknown> {
+  const base = getSiteUrl();
+  const path = params.path.startsWith('/') ? params.path : `/${params.path}`;
+  const pageUrl = path === '/' || path === '' ? `${base}/` : `${base}${path}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': pageUrl,
+    url: pageUrl,
+    name: params.title,
+    description: params.description,
+    inLanguage: SITE_CONFIG.language,
+    isPartOf: {
+      '@type': 'WebSite',
+      name: SITE_CONFIG.name,
+      url: `${base}/`,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_CONFIG.name,
+      url: `${base}/`,
+    },
   };
 }
 

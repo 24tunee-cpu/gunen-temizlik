@@ -336,6 +336,7 @@ export function Hero() {
                       fill
                       className="object-contain drop-shadow-[0_0_28px_rgba(16,185,129,0.35)]"
                       priority
+                      fetchPriority="high"
                       sizes="(min-width: 640px) 160px, 144px"
                     />
                   </div>

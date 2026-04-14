@@ -16,8 +16,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from "./providers";
-import { SITE_CONTACT } from "@/config/site-contact";
 import { getSiteIconHref } from "@/lib/site-branding";
+import { canonicalUrl, getSiteUrl } from "@/lib/seo";
+import { buildRootSchemaGraphJson } from "@/lib/root-schema";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
@@ -43,6 +44,8 @@ const geistMono = Geist_Mono({
   fallback: ["monospace"],
 });
 
+const siteRoot = getSiteUrl();
+
 const rootMetadataBase: Metadata = {
   title: {
     default: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24 Hizmet",
@@ -66,11 +69,11 @@ const rootMetadataBase: Metadata = {
   authors: [{ name: "Günen Temizlik" }],
   creator: "Günen Temizlik",
   publisher: "Günen Temizlik",
-  metadataBase: new URL("https://gunentemizlik.com"),
+  metadataBase: new URL(siteRoot),
   alternates: {
-    canonical: "https://gunentemizlik.com",
+    canonical: canonicalUrl("/"),
     languages: {
-      "tr-TR": "https://gunentemizlik.com",
+      "tr-TR": canonicalUrl("/"),
     },
   },
   openGraph: {
@@ -78,11 +81,11 @@ const rootMetadataBase: Metadata = {
     description: "15+ yıl deneyimli profesyonel temizlik ekibi. İnşaat sonrası, ofis, ev temizliği, koltuk yıkama. Ücretsiz keşif, uygun fiyatlar!",
     type: "website",
     locale: "tr_TR",
-    url: "https://gunentemizlik.com",
+    url: canonicalUrl("/"),
     siteName: "Günen Temizlik",
     images: [
       {
-        url: "https://gunentemizlik.com/og-image.jpg",
+        url: canonicalUrl("/og-image.jpg"),
         width: 1200,
         height: 630,
         alt: "Günen Temizlik - İstanbul Profesyonel Temizlik Hizmetleri",
@@ -94,7 +97,7 @@ const rootMetadataBase: Metadata = {
     card: "summary_large_image",
     title: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi",
     description: "Profesyonel temizlik hizmetleri. 7/24 hizmet, ücretsiz keşif!",
-    images: ["https://gunentemizlik.com/og-image.jpg"],
+    images: [canonicalUrl("/og-image.jpg")],
     creator: "@gunentemizlik",
     site: "@gunentemizlik",
   },
@@ -118,8 +121,10 @@ const rootMetadataBase: Metadata = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const iconHref = await getSiteIconHref();
+  const googleVerify = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
   return {
     ...rootMetadataBase,
+    ...(googleVerify ? { verification: { google: googleVerify } } : {}),
     icons: {
       icon: [{ url: iconHref }],
       shortcut: iconHref,
@@ -142,67 +147,6 @@ export const viewport: Viewport = {
 };
 
 // ============================================
-// SCHEMA.ORG JSON-LD (Static - Performance)
-// ============================================
-
-const LOCAL_BUSINESS_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "@id": "https://gunentemizlik.com/#business",
-  "name": "Günen Temizlik Şirketi",
-  "image": [
-    "https://gunentemizlik.com/logo.png",
-    "https://gunentemizlik.com/og-image.jpg",
-  ],
-  "url": "https://gunentemizlik.com",
-  "telephone": SITE_CONTACT.phoneE164,
-  "email": SITE_CONTACT.email,
-  "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev temizliği ve koltuk yıkama hizmetleri.",
-  "foundingDate": "2010",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Atatürk Mah. Turgut Özal Bulvarı No:123",
-    "addressLocality": "Ataşehir",
-    "addressRegion": "İstanbul",
-    "postalCode": "34758",
-    "addressCountry": "TR",
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 41.0082,
-    "longitude": 28.9784,
-  },
-  "openingHoursSpecification": [
-    {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      "opens": "00:00",
-      "closes": "23:59",
-    },
-  ],
-  "areaServed": ["İstanbul", "Ataşehir", "Kadıköy", "Üsküdar"],
-  "sameAs": [
-    "https://facebook.com/gunentemizlik",
-    "https://instagram.com/gunentemizlik",
-  ],
-  "hasMap": "https://www.google.com/maps?q=41.0082,28.9784",
-} as const;
-
-const WEBSITE_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": "https://gunentemizlik.com/#website",
-  "url": "https://gunentemizlik.com",
-  "name": "Günen Temizlik",
-  "description": "İstanbul'un önde gelen profesyonel temizlik şirketi",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://gunentemizlik.com/blog?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  },
-} as const;
-
-// ============================================
 // TYPES
 // ============================================
 
@@ -223,7 +167,8 @@ interface RootLayoutProps {
  * 
  * @param children Uygulama içeriği
  */
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const rootSchemaJsonLd = await buildRootSchemaGraphJson();
   return (
     <html
       lang="tr"
@@ -232,14 +177,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
     >
       <head>
         <Script
-          id="local-business-schema"
+          id="site-root-schema-graph"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(LOCAL_BUSINESS_SCHEMA) }}
-        />
-        <Script
-          id="website-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
+          dangerouslySetInnerHTML={{ __html: rootSchemaJsonLd }}
         />
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}

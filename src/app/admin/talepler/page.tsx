@@ -21,8 +21,20 @@ import {
   Eye,
   EyeOff,
   MessageSquare,
+  Copy,
+  Clock,
+  GitBranch,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, toDatetimeLocalValue, fromDatetimeLocalValue } from '@/lib/utils';
+
+type PipelineKey = 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
+
+interface StaffUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+}
 
 interface ContactRequest {
   id: string;
@@ -33,9 +45,26 @@ interface ContactRequest {
   message: string;
   read: boolean;
   createdAt: string;
+  updatedAt?: string;
+  pipelineStatus?: PipelineKey | string;
+  internalNotes?: string | null;
+  reminderAt?: string | null;
+  assignedUserId?: string | null;
+  assignedUser?: { id: string; name: string | null; email: string | null } | null;
 }
 
+const PIPELINE_LABEL: Record<PipelineKey, string> = {
+  new: 'Yeni',
+  contacted: 'Görüşüldü',
+  quoted: 'Teklif',
+  won: 'Kazanıldı',
+  lost: 'Kayıp',
+};
+
+const PIPELINE_ORDER: PipelineKey[] = ['new', 'contacted', 'quoted', 'won', 'lost'];
+
 type StatusFilter = 'all' | 'unread' | 'read';
+type PipelineFilter = 'all' | PipelineKey;
 
 export default function ContactRequestsPage() {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
@@ -44,8 +73,14 @@ export default function ContactRequestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [pipelineFilter, setPipelineFilter] = useState<PipelineFilter>('all');
   const [denseView, setDenseView] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [staffUsers, setStaffUsers] = useState<StaffUser[]>([]);
+  const [messageTemplates, setMessageTemplates] = useState<Record<string, string>>({});
+  const [notesDraft, setNotesDraft] = useState('');
+  const [reminderDraft, setReminderDraft] = useState('');
+  const [crmBusy, setCrmBusy] = useState(false);
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -84,28 +119,107 @@ export default function ContactRequestsPage() {
     void fetchRequests();
   }, [fetchRequests]);
 
-  const setReadStatus = useCallback(async (id: string, read: boolean) => {
-    try {
+  useEffect(() => {
+    const loadAux = async () => {
+      try {
+        const [uRes, mRes] = await Promise.all([
+          fetch('/api/admin/users', { credentials: 'include' }),
+          fetch('/api/admin/site-marketing', { credentials: 'include' }),
+        ]);
+        if (uRes.ok) {
+          const u = (await uRes.json()) as unknown;
+          setStaffUsers(Array.isArray(u) ? (u as StaffUser[]) : []);
+        }
+        if (mRes.ok) {
+          const m = (await mRes.json()) as { messageTemplatesJson?: unknown };
+          const raw = m.messageTemplatesJson;
+          if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            const entries = Object.entries(raw as Record<string, unknown>)
+              .filter(([, v]) => typeof v === 'string')
+              .map(([k, v]) => [k, v as string] as const);
+            setMessageTemplates(Object.fromEntries(entries));
+          } else {
+            setMessageTemplates({});
+          }
+        }
+      } catch {
+        /* yok say */
+      }
+    };
+    void loadAux();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedRequest) {
+      setNotesDraft('');
+      setReminderDraft('');
+      return;
+    }
+    setNotesDraft(selectedRequest.internalNotes ?? '');
+    setReminderDraft(
+      selectedRequest.reminderAt ? toDatetimeLocalValue(selectedRequest.reminderAt) : ''
+    );
+  }, [selectedRequest?.id, selectedRequest?.internalNotes, selectedRequest?.reminderAt]);
+
+  const mapApiContactToRow = useCallback((c: Record<string, unknown>): ContactRequest => {
+    const assigned = c.assignedUser as ContactRequest['assignedUser'];
+    return {
+      id: String(c.id),
+      name: String(c.name ?? ''),
+      email: String(c.email ?? ''),
+      phone: (c.phone as string | null | undefined) ?? null,
+      service: (c.service as string | null | undefined) ?? null,
+      message: String(c.message ?? ''),
+      read: Boolean(c.read),
+      createdAt: typeof c.createdAt === 'string' ? c.createdAt : new Date(String(c.createdAt)).toISOString(),
+      updatedAt:
+        typeof c.updatedAt === 'string' ? c.updatedAt : c.updatedAt != null ? String(c.updatedAt) : undefined,
+      pipelineStatus: (c.pipelineStatus as string) ?? 'new',
+      internalNotes: (c.internalNotes as string | null | undefined) ?? null,
+      reminderAt:
+        c.reminderAt == null
+          ? null
+          : typeof c.reminderAt === 'string'
+            ? c.reminderAt
+            : new Date(c.reminderAt as Date).toISOString(),
+      assignedUserId: (c.assignedUserId as string | null | undefined) ?? null,
+      assignedUser: assigned ?? null,
+    };
+  }, []);
+
+  const patchContact = useCallback(
+    async (id: string, body: Record<string, unknown>, okMessage?: string) => {
       const res = await fetch(`/api/contact/${id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ read }),
+        body: JSON.stringify(body),
       });
-
+      const data = (await res.json().catch(() => null)) as { error?: string; contact?: Record<string, unknown> } | null;
       if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.error || `İşlem başarısız (${res.status})`);
+        throw new Error(data?.error || `İşlem başarısız (${res.status})`);
       }
+      if (data?.contact) {
+        const row = mapApiContactToRow(data.contact);
+        setRequests((prev) => prev.map((r) => (r.id === id ? row : r)));
+        setSelectedRequest((prev) => (prev?.id === id ? row : prev));
+      }
+      if (okMessage) toast.success('Güncellendi', okMessage);
+    },
+    [mapApiContactToRow]
+  );
 
-      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, read } : r)));
-      setSelectedRequest((prev) => (prev?.id === id ? { ...prev, read } : prev));
-      toast.success(read ? 'Okundu işaretlendi' : 'Okunmadı olarak işaretlendi');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'İşlem başarısız';
-      toast.error('Güncelleme', msg);
-    }
-  }, []);
+  const setReadStatus = useCallback(
+    async (id: string, read: boolean) => {
+      try {
+        await patchContact(id, { read }, read ? 'Okundu işaretlendi' : 'Okunmadı olarak işaretlendi');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'İşlem başarısız';
+        toast.error('Güncelleme', msg);
+      }
+    },
+    [patchContact]
+  );
 
   const openDetail = (request: ContactRequest) => {
     setSelectedRequest(request);
@@ -140,7 +254,14 @@ export default function ContactRequestsPage() {
   const stats = useMemo(() => {
     const total = requests.length;
     const unread = requests.filter((r) => !r.read).length;
-    return { total, unread, read: total - unread };
+    const byPipe = PIPELINE_ORDER.reduce(
+      (acc, k) => {
+        acc[k] = requests.filter((r) => (r.pipelineStatus as PipelineKey | undefined) === k).length;
+        return acc;
+      },
+      {} as Record<PipelineKey, number>
+    );
+    return { total, unread, read: total - unread, byPipe };
   }, [requests]);
 
   const filteredRequests = useMemo(() => {
@@ -149,17 +270,38 @@ export default function ContactRequestsPage() {
       .filter((r) => {
         if (statusFilter === 'unread' && r.read) return false;
         if (statusFilter === 'read' && !r.read) return false;
+        if (pipelineFilter !== 'all') {
+          const p = (r.pipelineStatus as PipelineKey) || 'new';
+          if (p !== pipelineFilter) return false;
+        }
         if (!term) return true;
         return (
           r.name.toLowerCase().includes(term) ||
           r.email.toLowerCase().includes(term) ||
           (r.phone && r.phone.toLowerCase().includes(term)) ||
           (r.service && r.service.toLowerCase().includes(term)) ||
-          r.message.toLowerCase().includes(term)
+          r.message.toLowerCase().includes(term) ||
+          (r.internalNotes && r.internalNotes.toLowerCase().includes(term))
         );
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [requests, searchTerm, statusFilter]);
+  }, [requests, searchTerm, statusFilter, pipelineFilter]);
+
+  const pipelinePill = (key: PipelineFilter, label: string, count: number) => (
+    <button
+      type="button"
+      key={key}
+      onClick={() => setPipelineFilter(key)}
+      className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+        pipelineFilter === key
+          ? 'bg-violet-600 text-white shadow-sm dark:bg-violet-500'
+          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
+      }`}
+    >
+      {label}
+      <span className="ml-1.5 tabular-nums opacity-80">({count})</span>
+    </button>
+  );
 
   const filterPill = (key: StatusFilter, label: string, count: number) => (
     <button
@@ -280,10 +422,20 @@ export default function ContactRequestsPage() {
               className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-4 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
             />
           </div>
-          <div className="flex flex-wrap gap-2">
-            {filterPill('all', 'Tümü', stats.total)}
-            {filterPill('unread', 'Okunmamış', stats.unread)}
-            {filterPill('read', 'Okunmuş', stats.read)}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap gap-2">
+              {filterPill('all', 'Tümü', stats.total)}
+              {filterPill('unread', 'Okunmamış', stats.unread)}
+              {filterPill('read', 'Okunmuş', stats.read)}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-700">
+              <span className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                <GitBranch className="h-3.5 w-3.5" />
+                Satış hattı
+              </span>
+              {pipelinePill('all', 'Tümü', stats.total)}
+              {PIPELINE_ORDER.map((k) => pipelinePill(k, PIPELINE_LABEL[k], stats.byPipe[k]))}
+            </div>
           </div>
         </div>
 
@@ -309,7 +461,7 @@ export default function ContactRequestsPage() {
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p
                         className={`truncate font-medium ${!request.read ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}
                       >
@@ -318,6 +470,9 @@ export default function ContactRequestsPage() {
                       {!request.read && (
                         <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400" aria-hidden />
                       )}
+                      <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-800 dark:bg-violet-900/40 dark:text-violet-200">
+                        {PIPELINE_LABEL[(request.pipelineStatus as PipelineKey) || 'new']}
+                      </span>
                     </div>
                     <p className="truncate text-sm text-slate-500 dark:text-slate-400">{request.email}</p>
                     <p className="mt-0.5 line-clamp-1 text-xs text-slate-400 dark:text-slate-500">{request.message}</p>
@@ -336,7 +491,7 @@ export default function ContactRequestsPage() {
 
         {denseView && (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px]">
+            <table className="w-full min-w-[840px]">
               <thead className="bg-slate-50 dark:bg-slate-700/80">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
@@ -347,6 +502,9 @@ export default function ContactRequestsPage() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
                     Özet
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
+                    Hat
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
                     Durum
@@ -375,6 +533,9 @@ export default function ContactRequestsPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                       <p className="line-clamp-2 max-w-xs">{request.message}</p>
+                    </td>
+                    <td className="px-4 py-3 text-xs font-medium text-violet-700 dark:text-violet-300 whitespace-nowrap">
+                      {PIPELINE_LABEL[(request.pipelineStatus as PipelineKey) || 'new']}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -424,7 +585,7 @@ export default function ContactRequestsPage() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+              className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800"
             >
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -493,7 +654,128 @@ export default function ContactRequestsPage() {
                   <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-200">{selectedRequest.message}</p>
                 </div>
 
-                <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(selectedRequest.createdAt)}</p>
+                <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-600">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    CRM
+                  </h4>
+                  <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Satış hattı</label>
+                      <select
+                        value={(selectedRequest.pipelineStatus as PipelineKey) || 'new'}
+                        onChange={(e) => {
+                          const v = e.target.value as PipelineKey;
+                          void patchContact(selectedRequest.id, { pipelineStatus: v }, PIPELINE_LABEL[v]);
+                        }}
+                        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      >
+                        {PIPELINE_ORDER.map((k) => (
+                          <option key={k} value={k}>
+                            {PIPELINE_LABEL[k]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Atanan</label>
+                      <select
+                        value={selectedRequest.assignedUserId ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          void patchContact(
+                            selectedRequest.id,
+                            { assignedUserId: v || null },
+                            v ? 'Atama güncellendi' : 'Atama kaldırıldı'
+                          );
+                        }}
+                        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      >
+                        <option value="">(Atanmadı)</option>
+                        {staffUsers.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {(u.name || u.email || u.id).slice(0, 48)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                      <Clock className="h-3.5 w-3.5" />
+                      Hatırlatma
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={reminderDraft}
+                      onChange={(e) => setReminderDraft(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <label className="text-xs font-medium text-slate-600 dark:text-slate-300">Dahili notlar</label>
+                    <textarea
+                      value={notesDraft}
+                      onChange={(e) => setNotesDraft(e.target.value)}
+                      rows={4}
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      placeholder="Sadece panelde görünür…"
+                    />
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={crmBusy}
+                      onClick={async () => {
+                        try {
+                          setCrmBusy(true);
+                          await patchContact(selectedRequest.id, {
+                            internalNotes: notesDraft.trim() || null,
+                            reminderAt: fromDatetimeLocalValue(reminderDraft),
+                          });
+                          toast.success('Kaydedildi', 'Not ve hatırlatma güncellendi.');
+                        } catch (err) {
+                          toast.error('Kayıt', err instanceof Error ? err.message : 'Hata');
+                        } finally {
+                          setCrmBusy(false);
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {crmBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                      Not &amp; hatırlatmayı kaydet
+                    </button>
+                  </div>
+                  {Object.keys(messageTemplates).length > 0 ? (
+                    <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-600">
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Mesaj şablonları (kopyala)</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {Object.entries(messageTemplates).map(([key, text]) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(text);
+                                toast.success('Panoya kopyalandı', key);
+                              } catch {
+                                toast.error('Panoya kopyalanamadı', 'Tarayıcı izni gerekli olabilir.');
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+                          >
+                            <Copy className="h-3 w-3" />
+                            {key}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {formatDate(selectedRequest.createdAt)}
+                  {selectedRequest.updatedAt ? ` · Güncelleme: ${formatDate(selectedRequest.updatedAt)}` : ''}
+                </p>
               </div>
 
               <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">

@@ -185,7 +185,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const secret =
       process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
     const token = await getToken({ req: request, secret });
-    const isAdmin = token?.role === 'ADMIN';
+    const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 
     // Fetch post with selective fields
     const post = await prisma.blogPost.findUnique({
@@ -204,6 +204,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         views: true,
         metaTitle: true,
         metaDesc: true,
+        scheduledPublishAt: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -399,6 +400,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Update published status if provided
     if (data.published !== undefined) {
       updateData.published = typeof data.published === 'boolean' ? data.published : false;
+    }
+
+    if (data.scheduledPublishAt !== undefined) {
+      if (data.scheduledPublishAt === null || data.scheduledPublishAt === '') {
+        updateData.scheduledPublishAt = null;
+      } else if (typeof data.scheduledPublishAt === 'string') {
+        const d = new Date(data.scheduledPublishAt);
+        if (!Number.isNaN(d.getTime())) {
+          updateData.scheduledPublishAt = d;
+        }
+      }
     }
 
     // Validate and update metaTitle if provided

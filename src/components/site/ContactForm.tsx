@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/store/toastStore';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
+import { trackGa4Event } from '@/lib/ga4-client';
 
 // ============================================
 // TYPES
@@ -69,6 +70,32 @@ const SERVICE_OPTIONS = [
   { value: 'Dış Cephe Temizliği', label: 'Dış Cephe Temizliği' },
   { value: 'Diğer', label: 'Diğer' },
 ];
+
+const SERVICE_COOKIE_NAME = 'gt_contact_service';
+const SERVICE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+const ALLOWED_SERVICE_VALUES = new Set(SERVICE_OPTIONS.map((o) => o.value).filter(Boolean));
+
+function readServiceCookie(): string {
+  if (typeof document === 'undefined') return '';
+  const parts = `; ${document.cookie}`.split(`; ${SERVICE_COOKIE_NAME}=`);
+  if (parts.length < 2) return '';
+  const rest = parts.pop()?.split(';').shift();
+  if (!rest) return '';
+  try {
+    return decodeURIComponent(rest);
+  } catch {
+    return '';
+  }
+}
+
+function writeServiceCookie(value: string) {
+  if (typeof document === 'undefined' || !value) return;
+  if (!ALLOWED_SERVICE_VALUES.has(value)) return;
+  const enc = encodeURIComponent(value);
+  const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${SERVICE_COOKIE_NAME}=${enc}; Path=/; Max-Age=${SERVICE_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+}
 
 /** Validasyon kuralları */
 const VALIDATION_RULES = {
@@ -233,6 +260,8 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
     [settings.phone, settings.email, settings.address, settings.workingHours]
   );
 
+  const CONTACT_DRAFT_KEY = 'contact-form-draft-v1';
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -246,6 +275,47 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    try {
+      let name = '';
+      let email = '';
+      let phone = '';
+      let service = '';
+      let message = '';
+      const raw = localStorage.getItem(CONTACT_DRAFT_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<FormData>;
+        if (typeof parsed.name === 'string') name = parsed.name;
+        if (typeof parsed.email === 'string') email = parsed.email;
+        if (typeof parsed.phone === 'string') phone = parsed.phone;
+        if (typeof parsed.service === 'string') service = parsed.service;
+        if (typeof parsed.message === 'string') message = parsed.message;
+      }
+      if (!service) {
+        const fromCookie = readServiceCookie();
+        if (fromCookie && ALLOWED_SERVICE_VALUES.has(fromCookie)) {
+          service = fromCookie;
+        }
+      }
+      setFormData({ name, email, phone, service, message });
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      try {
+        if (formData.name || formData.email || formData.message || formData.phone || formData.service) {
+          localStorage.setItem(CONTACT_DRAFT_KEY, JSON.stringify(formData));
+        }
+      } catch {
+        /* ignore */
+      }
+    }, 500);
+    return () => window.clearTimeout(id);
+  }, [formData]);
 
   // ============================================
   // MEMOIZED VALIDATION
@@ -289,6 +359,11 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
   }, []);
 
   const resetForm = useCallback(() => {
+    try {
+      localStorage.removeItem(CONTACT_DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
     setFormData({ name: '', email: '', phone: '', service: '', message: '' });
     setTouched({});
     setErrors({});
@@ -323,6 +398,14 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
       });
 
       if (res.ok) {
+        if (formData.service) {
+          writeServiceCookie(formData.service);
+        }
+        trackGa4Event('generate_lead', {
+          form_id: 'contact',
+          form_destination: '/iletisim',
+          service: formData.service || undefined,
+        });
         setSuccess(true);
         resetForm();
         toast.success('Gönderildi!', 'Mesajınız başarıyla alındı. En kısa sürede size dönüş yapacağız.');

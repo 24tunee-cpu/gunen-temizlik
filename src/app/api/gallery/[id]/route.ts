@@ -194,6 +194,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         title: true,
         description: true,
         image: true,
+        mediaKind: true,
+        videoUrl: true,
+        tags: true,
         category: true,
         isActive: true,
         order: true,
@@ -211,7 +214,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const secret =
       process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
     const token = await getToken({ req: request, secret });
-    const isAdmin = token?.role === 'ADMIN';
+    const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 
     // Only return active items for public; admins may preview drafts
     if (!item.isActive && !isAdmin) {
@@ -322,6 +325,35 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         );
       }
       updateData.image = body.image;
+    }
+
+    if (body.mediaKind !== undefined) {
+      const mk = String(body.mediaKind).toLowerCase();
+      if (mk !== 'image' && mk !== 'video') {
+        return NextResponse.json({ error: 'mediaKind image veya video olmalı' }, { status: 400, headers });
+      }
+      updateData.mediaKind = mk;
+    }
+
+    if (body.videoUrl !== undefined) {
+      if (body.videoUrl === null || body.videoUrl === '') {
+        updateData.videoUrl = null;
+      } else if (typeof body.videoUrl === 'string') {
+        const u = body.videoUrl.trim();
+        if (!/^https:\/\//i.test(u)) {
+          return NextResponse.json({ error: 'videoUrl https ile başlamalı' }, { status: 400, headers });
+        }
+        updateData.videoUrl = u.slice(0, 2000);
+      }
+    }
+
+    if (body.tags !== undefined) {
+      updateData.tags = Array.isArray(body.tags)
+        ? body.tags
+            .filter((t: unknown) => typeof t === 'string')
+            .map((t: string) => sanitizeInput(t as string).slice(0, 40))
+            .slice(0, 20)
+        : [];
     }
 
     // Update category if provided

@@ -50,9 +50,21 @@ type ReviewRow = {
   } | null;
 };
 
+type DraftQueueSummary = {
+  totalPending: number;
+  slaBreaches: number;
+  lastSync: {
+    status: string;
+    message: string | null;
+    startedAt: string;
+    provider: string;
+  } | null;
+};
+
 export function GoogleMapsConsole() {
   const [status, setStatus] = useState<GoogleStatus | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [draftSummary, setDraftSummary] = useState<DraftQueueSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [prefsSaving, setPrefsSaving] = useState(false);
@@ -84,17 +96,27 @@ export function GoogleMapsConsole() {
     setLocalDrafts((prev) => ({ ...next, ...prev }));
   }, []);
 
+  const loadDraftSummary = useCallback(async () => {
+    const res = await fetch('/api/admin/maps/review-draft', { credentials: 'include' });
+    if (!res.ok) {
+      setDraftSummary(null);
+      return;
+    }
+    const data = (await res.json()) as DraftQueueSummary;
+    setDraftSummary(data);
+  }, []);
+
   const refresh = useCallback(async () => {
     try {
       setLoading(true);
       await loadStatus();
-      await loadReviews();
+      await Promise.all([loadReviews(), loadDraftSummary()]);
     } catch {
       toast.error('Haritalar', 'Google verisi yüklenemedi.');
     } finally {
       setLoading(false);
     }
-  }, [loadStatus, loadReviews]);
+  }, [loadStatus, loadReviews, loadDraftSummary]);
 
   useEffect(() => {
     void refresh();
@@ -172,6 +194,7 @@ export function GoogleMapsConsole() {
       toast.success('Taslak', action === 'approve' ? 'Onaylandı.' : 'Taslak kaydedildi.');
       await loadReviews();
       await loadStatus();
+      await loadDraftSummary();
     } catch (e) {
       toast.error('Taslak', e instanceof Error ? e.message : 'Hata');
     } finally {
@@ -194,6 +217,7 @@ export function GoogleMapsConsole() {
       toast.success('Yanıt', 'Google’a iletildi.');
       await loadReviews();
       await loadStatus();
+      await loadDraftSummary();
     } catch (e) {
       toast.error('Yanıt', e instanceof Error ? e.message : 'Hata');
     } finally {
@@ -231,6 +255,37 @@ export function GoogleMapsConsole() {
 
   return (
     <div className="space-y-6">
+      {draftSummary && status.connected && (
+        <div
+          className={cn(
+            'rounded-2xl border p-4 text-sm shadow-sm',
+            draftSummary.slaBreaches > 0
+              ? 'border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100'
+              : 'border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100'
+          )}
+        >
+          <p className="font-semibold">Yorum yanıtı taslak kuyruğu</p>
+          <p className="mt-1 text-xs opacity-90">
+            Onay bekleyen: <span className="tabular-nums font-medium">{draftSummary.totalPending}</span>
+            {draftSummary.slaBreaches > 0 ? (
+              <>
+                {' '}
+                · <span className="font-medium">48 saati aşan bekleyen: {draftSummary.slaBreaches}</span>
+              </>
+            ) : null}
+          </p>
+          {draftSummary.lastSync ? (
+            <p className="mt-2 text-xs opacity-80">
+              Son senkron kaydı: {new Date(draftSummary.lastSync.startedAt).toLocaleString('tr-TR')} —{' '}
+              {draftSummary.lastSync.provider} / <span className="font-medium">{draftSummary.lastSync.status}</span>
+              {draftSummary.lastSync.message ? ` (${draftSummary.lastSync.message})` : ''}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs opacity-70">Henüz senkron kaydı yok.</p>
+          )}
+        </div>
+      )}
+
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>

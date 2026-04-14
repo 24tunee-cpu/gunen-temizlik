@@ -88,6 +88,13 @@ export interface SiteSettings {
   customCss: string;
   customJs: string;
   maintenanceMode: boolean;
+
+  /** API’den gelen pazarlama / hukuk alanları (admin /api/admin/site-marketing) */
+  promoBannerJson?: unknown;
+  trustBandItemsJson?: unknown;
+  messageTemplatesJson?: unknown;
+  marketingBannerVariant?: string;
+  consentPolicyVersion?: string;
 }
 
 // ============================================
