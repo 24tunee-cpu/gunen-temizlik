@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ChevronDown,
   ExternalLink,
+  Search,
 } from 'lucide-react';
 import Image from 'next/image';
 import {
@@ -36,6 +37,7 @@ export function Sidebar() {
   const shouldReduceMotion = useReducedMotion();
   const [isLg, setIsLg] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [menuQuery, setMenuQuery] = useState('');
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -116,6 +118,26 @@ export function Sidebar() {
   }, [sidebarOpen]);
 
   const drawerX = !isLg ? (sidebarOpen ? 0 : -280) : 0;
+  const visibleGroups = useMemo(() => {
+    const q = menuQuery.trim().toLowerCase();
+    if (!q) return ADMIN_MENU_GROUPS;
+
+    return ADMIN_MENU_GROUPS.map((group) => {
+      const items = group.items
+        .map((item) => {
+          const itemHit = item.label.toLowerCase().includes(q);
+          if (item.children?.length) {
+            const children = item.children.filter((ch) => ch.label.toLowerCase().includes(q));
+            if (itemHit) return item;
+            if (children.length > 0) return { ...item, children };
+            return null;
+          }
+          return itemHit ? item : null;
+        })
+        .filter((x): x is (typeof group.items)[number] => x !== null);
+      return { ...group, items };
+    }).filter((g) => g.items.length > 0);
+  }, [menuQuery]);
 
   return (
     <>
@@ -208,7 +230,23 @@ export function Sidebar() {
             className="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700"
             aria-label="Sayfa bağlantıları"
           >
-            {ADMIN_MENU_GROUPS.map((group) => (
+            {sidebarOpen && (
+              <div className="px-1">
+                <label className="relative block">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  <input
+                    value={menuQuery}
+                    onChange={(e) => setMenuQuery(e.target.value)}
+                    placeholder="Menüde ara..."
+                    className="w-full rounded-xl border border-slate-700 bg-slate-800/90 py-2 pl-9 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+                  />
+                </label>
+              </div>
+            )}
+            {visibleGroups.length === 0 && sidebarOpen ? (
+              <p className="px-3 py-4 text-xs text-slate-500">Aramanızla eşleşen menü bulunamadı.</p>
+            ) : null}
+            {visibleGroups.map((group) => (
               <div key={group.id}>
                 {sidebarOpen && (
                   <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">

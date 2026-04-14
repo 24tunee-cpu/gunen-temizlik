@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Loader2, Send } from 'lucide-react';
 import { toast } from '@/store/toastStore';
@@ -11,6 +11,13 @@ const SLOTS = [
   { value: 'afternoon', label: '12:00–17:00' },
   { value: 'evening', label: '17:00–20:00' },
   { value: 'flexible', label: 'Esnek' },
+];
+const SERVICE_HINTS = [
+  'İnşaat sonrası temizlik',
+  'Ofis temizliği',
+  'Ev temizliği',
+  'Koltuk yıkama',
+  'Halı temizliği',
 ];
 
 export function AppointmentRequestForm() {
@@ -24,6 +31,8 @@ export function AppointmentRequestForm() {
   const [serviceHint, setServiceHint] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const submit = useCallback(
     async (e: React.FormEvent) => {
@@ -32,6 +41,7 @@ export function AppointmentRequestForm() {
         toast.error('Eksik bilgi', 'İsim, e-posta ve tercih tarihi zorunludur.');
         return;
       }
+      setSubmitted(false);
       setLoading(true);
       try {
         const res = await fetch('/api/appointments', {
@@ -55,6 +65,7 @@ export function AppointmentRequestForm() {
           form_id: 'appointment_request',
           form_destination: '/randevu',
         });
+        setSubmitted(true);
         toast.success('Talebiniz alındı', 'En kısa sürede sizinle iletişime geçeceğiz.');
         setName('');
         setEmail('');
@@ -88,6 +99,11 @@ export function AppointmentRequestForm() {
       <p className="text-sm text-slate-600 dark:text-slate-400">
         Uygun olduğunuz gün ve saat dilimini seçin; ekibimiz onay ve net saat için sizi arar.
       </p>
+      {submitted ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+          Talebiniz alındı. Müsaitlik kontrolünden sonra sizinle iletişime geçeceğiz.
+        </div>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
           <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">Ad Soyad *</span>
@@ -125,6 +141,7 @@ export function AppointmentRequestForm() {
             type="date"
             value={preferredDate}
             onChange={(e) => setPreferredDate(e.target.value)}
+            min={minDate}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
           />
         </label>
@@ -164,11 +181,17 @@ export function AppointmentRequestForm() {
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">Hizmet</span>
         <input
+          list="appointment-service-hints"
           value={serviceHint}
           onChange={(e) => setServiceHint(e.target.value)}
           placeholder="Örn. Ofis temizliği"
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
         />
+        <datalist id="appointment-service-hints">
+          {SERVICE_HINTS.map((hint) => (
+            <option key={hint} value={hint} />
+          ))}
+        </datalist>
       </label>
       <label className="block text-sm">
         <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">Not</span>

@@ -24,6 +24,8 @@ import {
   Quote,
   BarChart3,
   ArrowRight,
+  CheckCircle2,
+  CircleAlert,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -372,6 +374,7 @@ export default function AdminDashboardPage() {
   if (!data) return null;
 
   const { counts, chart, recentContacts, activity, contactsWeekHint, funnel } = data;
+  const recentBlog = data.recentBlog;
 
   const contactTrend: 'up' | 'down' | 'neutral' =
     counts.contactsThisWeek > counts.contactsPrevWeek
@@ -379,6 +382,45 @@ export default function AdminDashboardPage() {
       : counts.contactsThisWeek < counts.contactsPrevWeek
         ? 'down'
         : 'neutral';
+
+  const priorityActions = [
+    counts.contactsUnread > 0
+      ? {
+          key: 'unread',
+          title: `${formatNumber(counts.contactsUnread)} okunmamış talep`,
+          description: 'Müşteri talepleri sayfasında dönüş bekleyen kayıtlar var.',
+          href: '/admin/talepler',
+          tone: 'warn' as const,
+        }
+      : null,
+    (funnel?.appointmentsPending ?? 0) > 0
+      ? {
+          key: 'appointments',
+          title: `${formatNumber(funnel?.appointmentsPending ?? 0)} bekleyen randevu`,
+          description: 'Randevu taleplerini onaylayın ve durumları güncelleyin.',
+          href: '/admin/randevular',
+          tone: 'warn' as const,
+        }
+      : null,
+    counts.blogDrafts > 0
+      ? {
+          key: 'drafts',
+          title: `${formatNumber(counts.blogDrafts)} taslak blog`,
+          description: 'Taslak yazıları gözden geçirip yayın planına alın.',
+          href: '/admin/blog',
+          tone: 'normal' as const,
+        }
+      : null,
+    (funnel?.lastMapSync?.status || '').toLowerCase() === 'error'
+      ? {
+          key: 'map-sync',
+          title: 'Harita senkronunda hata',
+          description: funnel?.lastMapSync?.message || 'Haritalar panelini kontrol edin.',
+          href: '/admin/haritalar',
+          tone: 'warn' as const,
+        }
+      : null,
+  ].filter((x): x is { key: string; title: string; description: string; href: string; tone: 'warn' | 'normal' } => Boolean(x));
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 pb-8">
@@ -522,6 +564,50 @@ export default function AdminDashboardPage() {
         </motion.div>
       ) : null}
 
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16 }}
+        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-5"
+      >
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Aksiyon merkezi
+          </p>
+          {priorityActions.length === 0 ? (
+            <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+              <CheckCircle2 size={13} />
+              Kritik iş yok
+            </span>
+          ) : null}
+        </div>
+        {priorityActions.length === 0 ? (
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Operasyon, içerik ve pazarlama tarafında bekleyen kritik uyarı bulunmuyor.
+          </p>
+        ) : (
+          <div className="grid gap-2 md:grid-cols-2">
+            {priorityActions.map((action) => (
+              <Link
+                key={action.key}
+                href={action.href}
+                className={`rounded-xl border px-3 py-3 transition ${
+                  action.tone === 'warn'
+                    ? 'border-amber-200 bg-amber-50 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-900/20 dark:hover:bg-amber-900/30'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:bg-slate-700/40'
+                }`}
+              >
+                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                  {action.tone === 'warn' ? <CircleAlert size={15} /> : <CheckCircle2 size={15} />}
+                  {action.title}
+                </p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{action.description}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       {/* İçerik özeti şeridi */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -617,6 +703,16 @@ export default function AdminDashboardPage() {
               <ArrowRight size={16} className="opacity-60" />
             </Link>
             <Link
+              href="/admin/randevular"
+              className="flex items-center justify-between gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 transition hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-100 dark:hover:bg-amber-900/40"
+            >
+              <span className="flex items-center gap-2">
+                <Calendar size={18} />
+                Randevu talepleri
+              </span>
+              <ArrowRight size={16} className="opacity-60" />
+            </Link>
+            <Link
               href="/admin/blog"
               className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-800 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700/50"
             >
@@ -630,12 +726,12 @@ export default function AdminDashboardPage() {
         </motion.div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6 lg:col-span-2"
         >
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son hareketler</h2>
@@ -696,6 +792,52 @@ export default function AdminDashboardPage() {
                       <time className="text-xs text-slate-400" dateTime={m.createdAt}>
                         {formatRelativeTr(m.createdAt)}
                       </time>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-6"
+        >
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Son blog güncellemeleri</h2>
+            <Link
+              href="/admin/blog"
+              className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              Blog’u aç
+            </Link>
+          </div>
+          {recentBlog.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              Blog kaydı bulunamadı.
+            </p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {recentBlog.slice(0, 6).map((b) => (
+                <li key={b.id} className="py-3">
+                  <Link href={`/admin/blog/${b.slug}/edit`} className="group block">
+                    <p className="line-clamp-2 text-sm font-medium text-slate-900 group-hover:text-emerald-700 dark:text-white dark:group-hover:text-emerald-300">
+                      {b.title}
+                    </p>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <span
+                        className={`rounded-full px-2 py-0.5 ${
+                          b.published
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        {b.published ? 'Yayında' : 'Taslak'}
+                      </span>
+                      <time dateTime={b.updatedAt}>{formatRelativeTr(b.updatedAt)}</time>
                     </div>
                   </Link>
                 </li>
