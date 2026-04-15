@@ -122,6 +122,10 @@ function getClientIp(request: NextRequest): string {
   return 'unknown';
 }
 
+function isMongoObjectId(value: string): boolean {
+  return /^[a-f\d]{24}$/i.test(value);
+}
+
 // ============================================
 // API HANDLERS
 // ============================================
@@ -162,27 +166,77 @@ export async function GET(request: NextRequest) {
     console.log('Fetching contact requests', { ip });
 
     // İlişkiyi ayrı çekiyoruz: MongoDB’de bozuk/uyumsuz assignedUserId Prisma include’da 500 üretebiliyor.
-    const rows = await prisma.contactRequest.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        service: true,
-        message: true,
-        read: true,
-        pipelineStatus: true,
-        internalNotes: true,
-        reminderAt: true,
-        assignedUserId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    let rows: Array<{
+      id: string;
+      name: string;
+      email: string;
+      phone: string | null;
+      service: string | null;
+      message: string;
+      read: boolean;
+      pipelineStatus: string;
+      internalNotes: string | null;
+      reminderAt: Date | null;
+      assignedUserId: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }> = [];
+
+    try {
+      rows = await prisma.contactRequest.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          service: true,
+          message: true,
+          read: true,
+          pipelineStatus: true,
+          internalNotes: true,
+          reminderAt: true,
+          assignedUserId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (queryError) {
+      // Bazı legacy kayıtlarda bozuk ObjectId alanları bulunabiliyor.
+      // Listeyi tamamen düşürmek yerine assignee alanını yok sayıp kayıtları yine döndürelim.
+      console.warn('Contact list primary query failed, retrying without assignee field', {
+        ip,
+        error: queryError instanceof Error ? queryError.message : String(queryError),
+      });
+
+      const fallbackRows = await prisma.contactRequest.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          service: true,
+          message: true,
+          read: true,
+          pipelineStatus: true,
+          internalNotes: true,
+          reminderAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      rows = fallbackRows.map((row) => ({ ...row, assignedUserId: null }));
+    }
 
     const assigneeIds = [
-      ...new Set(rows.map((r) => r.assignedUserId).filter((id): id is string => Boolean(id))),
+      ...new Set(
+        rows
+          .map((r) => r.assignedUserId)
+          .filter((id): id is string => typeof id === 'string')
+          .filter((id) => isMongoObjectId(id))
+      ),
     ];
     const assignees =
       assigneeIds.length > 0

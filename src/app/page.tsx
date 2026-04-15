@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "Günen Temizlik",
     images: [
       {
-        url: canonicalUrl('/og-image.jpg'),
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: "Günen Temizlik - İstanbul Profesyonel Temizlik",

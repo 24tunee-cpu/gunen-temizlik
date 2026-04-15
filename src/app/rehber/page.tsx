@@ -13,6 +13,30 @@ export const metadata: Metadata = {
   description:
     'İnşaat sonrası, ofis, derinlemesine ve periyodik temizlik için pratik karar rehberi.',
   alternates: { canonical: canonicalUrl('/rehber') },
+  openGraph: {
+    title: 'Hangi temizlik ne zaman? | Günen Temizlik rehberi',
+    description:
+      'İnşaat sonrası, ofis, derinlemesine ve periyodik temizlik için pratik karar rehberi.',
+    url: canonicalUrl('/rehber'),
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Günen Temizlik',
+    images: [
+      {
+        url: canonicalUrl('/logo.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Günen Temizlik - Temizlik rehberi',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hangi temizlik ne zaman? | Günen Temizlik rehberi',
+    description:
+      'İnşaat sonrası, ofis, derinlemesine ve periyodik temizlik için pratik karar rehberi.',
+    images: [canonicalUrl('/logo.png')],
+  },
 };
 
 const rehberTitle = 'Hangi temizlik ne zaman? | Günen Temizlik rehberi';

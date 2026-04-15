@@ -17,6 +17,7 @@
 import type { Metadata } from 'next';
 import { FileText, Check } from 'lucide-react';
 import SiteLayout from '../site/layout';
+import { canonicalUrl } from '@/lib/seo';
 
 // ============================================
 // METADATA (SEO)
@@ -30,7 +31,29 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: 'https://gunentemizlik.com/kullanim-kosullari',
+    canonical: canonicalUrl('/kullanim-kosullari'),
+  },
+  openGraph: {
+    title: 'Kullanım Koşulları | Günen Temizlik',
+    description: 'Günen Temizlik hizmetlerinin kullanım koşulları, sorumluluklar ve yasal bilgilendirmeler.',
+    url: canonicalUrl('/kullanim-kosullari'),
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Günen Temizlik',
+    images: [
+      {
+        url: canonicalUrl('/logo.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Günen Temizlik - Kullanım koşulları',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Kullanım Koşulları | Günen Temizlik',
+    description: 'Günen Temizlik hizmetlerinin kullanım koşulları, sorumluluklar ve yasal bilgilendirmeler.',
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

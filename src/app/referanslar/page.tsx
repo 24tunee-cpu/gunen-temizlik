@@ -16,6 +16,7 @@ import {
   computeTestimonialAggregate,
   fetchPublicTestimonialsForSeo,
 } from '@/lib/testimonials-seo';
+import { canonicalUrl } from '@/lib/seo';
 import { Star, Users, Award } from 'lucide-react';
 
 const getTestimonials = cache(fetchPublicTestimonialsForSeo);
@@ -44,18 +45,18 @@ export async function generateMetadata(): Promise<Metadata> {
       'inşaat sonrası temizlik yorum',
     ],
     alternates: {
-      canonical: 'https://gunentemizlik.com/referanslar',
+      canonical: canonicalUrl('/referanslar'),
     },
     openGraph: {
       title: 'Referanslar | Günen Temizlik',
       description,
-      url: 'https://gunentemizlik.com/referanslar',
+      url: canonicalUrl('/referanslar'),
       type: 'website',
       locale: 'tr_TR',
       siteName: 'Günen Temizlik',
       images: [
         {
-          url: 'https://gunentemizlik.com/og-references.jpg',
+          url: canonicalUrl('/logo.png'),
           width: 1200,
           height: 630,
           alt: 'Günen Temizlik müşteri yorumları',
@@ -66,7 +67,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'Referanslar | Günen Temizlik',
       description,
-      images: ['https://gunentemizlik.com/og-references.jpg'],
+      images: [canonicalUrl('/logo.png')],
     },
   };
 }

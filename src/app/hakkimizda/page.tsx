@@ -20,6 +20,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { TeamSection } from '../../components/site/TeamSection';
 import { SITE_CONTACT } from '@/config/site-contact';
+import { canonicalUrl } from '@/lib/seo';
 import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide-react';
 
 // ============================================
@@ -37,18 +38,18 @@ export const metadata: Metadata = {
     'temizlik şirketi tarihçe',
   ],
   alternates: {
-    canonical: 'https://gunentemizlik.com/hakkimizda',
+    canonical: canonicalUrl('/hakkimizda'),
   },
   openGraph: {
     title: "Hakkımızda | Günen Temizlik",
     description: "15+ yıllık deneyim, 5000+ mutlu müşteri. İstanbul'un güvenilir temizlik şirketi.",
-    url: 'https://gunentemizlik.com/hakkimizda',
+    url: canonicalUrl('/hakkimizda'),
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Günen Temizlik',
     images: [
       {
-        url: 'https://gunentemizlik.com/og-about.jpg',
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: 'Günen Temizlik - Hakkımızda',
@@ -59,7 +60,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Hakkımızda | Günen Temizlik",
     description: "15+ yıllık deneyim, 5000+ mutlu müşteri.",
-    images: ['https://gunentemizlik.com/og-about.jpg'],
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

@@ -20,6 +20,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { FAQSection } from '../../components/site/FAQSection';
 import { faqPageJsonLdObject } from '@/lib/seed-faq';
+import { canonicalUrl } from '@/lib/seo';
 import { HelpCircle } from 'lucide-react';
 
 // ============================================
@@ -41,19 +42,19 @@ export const metadata: Metadata = {
     'ücretsiz keşif temizlik',
   ],
   alternates: {
-    canonical: 'https://gunentemizlik.com/sss',
+    canonical: canonicalUrl('/sss'),
   },
   openGraph: {
     title: 'Sıkça Sorulan Sorular | Günen Temizlik',
     description:
       'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
-    url: 'https://gunentemizlik.com/sss',
+    url: canonicalUrl('/sss'),
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Günen Temizlik',
     images: [
       {
-        url: 'https://gunentemizlik.com/og-faq.jpg',
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: 'Günen Temizlik - Sıkça Sorulan Sorular',
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
     title: 'Sıkça Sorulan Sorular | Günen Temizlik',
     description:
       'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
-    images: ['https://gunentemizlik.com/og-faq.jpg'],
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

@@ -14,6 +14,28 @@ export const metadata: Metadata = {
   title: araTitle,
   description: araDescription,
   alternates: { canonical: canonicalUrl('/ara') },
+  openGraph: {
+    title: araTitle,
+    description: araDescription,
+    url: canonicalUrl('/ara'),
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Günen Temizlik',
+    images: [
+      {
+        url: canonicalUrl('/logo.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Günen Temizlik - Site içi arama',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: araTitle,
+    description: araDescription,
+    images: [canonicalUrl('/logo.png')],
+  },
 };
 
 const araJsonLd = serializeSchemaGraph([

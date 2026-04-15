@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ServicesPageClient from '@/components/site/ServicesPageClient';
 import { prisma } from '@/lib/prisma';
+import { canonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'Hizmetlerimiz | Günen Temizlik - İstanbul',
@@ -15,24 +16,31 @@ export const metadata: Metadata = {
     'profesyonel temizlik şirketi',
   ],
   alternates: {
-    canonical: 'https://gunentemizlik.com/hizmetler',
+    canonical: canonicalUrl('/hizmetler'),
   },
   openGraph: {
     title: 'Hizmetlerimiz | Günen Temizlik',
     description:
       'İstanbul için profesyonel temizlik çözümleri: ofis, inşaat sonrası, koltuk ve halı temizliği.',
-    url: 'https://gunentemizlik.com/hizmetler',
+    url: canonicalUrl('/hizmetler'),
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Günen Temizlik',
     images: [
       {
-        url: 'https://gunentemizlik.com/og-services.jpg',
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: 'Günen Temizlik Hizmetleri',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hizmetlerimiz | Günen Temizlik',
+    description:
+      'İstanbul için profesyonel temizlik çözümleri: ofis, inşaat sonrası, koltuk ve halı temizliği.',
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

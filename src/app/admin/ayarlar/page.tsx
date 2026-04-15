@@ -541,7 +541,7 @@ export default function SiteSettingsPage() {
                       )}
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
+                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon,image/ico,image/vnd.microsoft.icon,application/vnd.microsoft.icon"
                         className="hidden"
                         id="logo-up"
                         onChange={(e) => e.target.files?.[0] && void handleImageUpload('logo', e.target.files[0])}
@@ -581,7 +581,7 @@ export default function SiteSettingsPage() {
                       )}
                       <input
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
+                        accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon,image/ico,image/vnd.microsoft.icon,application/vnd.microsoft.icon"
                         className="hidden"
                         id="fav-up"
                         onChange={(e) => e.target.files?.[0] && void handleImageUpload('favicon', e.target.files[0])}

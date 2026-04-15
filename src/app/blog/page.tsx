@@ -20,6 +20,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { BlogPost, BlogSection } from '@/components/site/BlogSection';
 import { BookOpen, ArrowRight, Search } from 'lucide-react';
+import { canonicalUrl } from '@/lib/seo';
 
 // ============================================
 // METADATA (SEO)
@@ -65,8 +66,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   if (tag) query.set('tag', tag);
   if (q) query.set('q', q);
   const canonical = query.toString()
-    ? `https://gunentemizlik.com/blog?${query.toString()}`
-    : 'https://gunentemizlik.com/blog';
+    ? `${canonicalUrl('/blog')}?${query.toString()}`
+    : canonicalUrl('/blog');
 
   return {
     title,
@@ -81,7 +82,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       siteName: 'Günen Temizlik',
       images: [
         {
-          url: 'https://gunentemizlik.com/og-blog.jpg',
+          url: canonicalUrl('/logo.png'),
           width: 1200,
           height: 630,
           alt: 'Günen Temizlik - Blog',
@@ -92,7 +93,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       card: 'summary_large_image',
       title,
       description,
-      images: ['https://gunentemizlik.com/og-blog.jpg'],
+      images: [canonicalUrl('/logo.png')],
     },
   };
 }

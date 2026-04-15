@@ -20,6 +20,7 @@ import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import SiteLayout from '../site/layout';
 import { ContactForm } from '@/components/site/ContactForm';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
+import { canonicalUrl } from '@/lib/seo';
 
 // ============================================
 // METADATA (SEO)
@@ -37,18 +38,18 @@ export const metadata: Metadata = {
     'temizlik hizmeti talep',
   ],
   alternates: {
-    canonical: 'https://gunentemizlik.com/iletisim',
+    canonical: canonicalUrl('/iletisim'),
   },
   openGraph: {
     title: "İletişim | Günen Temizlik - İstanbul",
     description: "Profesyonel temizlik hizmetleri için bize ulaşın. Ücretsiz keşif, 7/24 hizmet.",
-    url: 'https://gunentemizlik.com/iletisim',
+    url: canonicalUrl('/iletisim'),
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Günen Temizlik',
     images: [
       {
-        url: 'https://gunentemizlik.com/og-contact.jpg',
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: 'Günen Temizlik - İletişim',
@@ -59,7 +60,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "İletişim | Günen Temizlik",
     description: "Profesyonel temizlik hizmetleri için hemen iletişime geçin.",
-    images: ['https://gunentemizlik.com/og-contact.jpg'],
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

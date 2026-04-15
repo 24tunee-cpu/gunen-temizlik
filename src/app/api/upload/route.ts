@@ -34,8 +34,13 @@ const ALLOWED_TYPES = [
   'image/png',
   'image/gif',
   'image/webp',
+  'image/ico',
+  'image/icon',
   'image/x-icon',
   'image/vnd.microsoft.icon',
+  'application/ico',
+  'application/x-ico',
+  'application/vnd.microsoft.icon',
 ] as const;
 
 /** Maximum file size: 5MB */
@@ -124,8 +129,13 @@ function getExtensionFromMimeType(mimeType: string): string {
     'image/png': 'png',
     'image/gif': 'gif',
     'image/webp': 'webp',
+    'image/ico': 'ico',
+    'image/icon': 'ico',
     'image/x-icon': 'ico',
     'image/vnd.microsoft.icon': 'ico',
+    'application/ico': 'ico',
+    'application/x-ico': 'ico',
+    'application/vnd.microsoft.icon': 'ico',
   };
 
   return extensionMap[mimeType] || 'jpg';
@@ -144,7 +154,21 @@ function extensionFromFilename(filename: string): string | null {
 function isAllowedImageFile(file: File): boolean {
   if (ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) return true;
   const ext = extensionFromFilename(file.name);
-  return ext === 'ico' && (!file.type || file.type === 'application/octet-stream');
+  if (ext === 'ico') {
+    // Tarayıcı/OS kombinasyonları .ico için farklı MIME döndürebiliyor.
+    return (
+      !file.type ||
+      file.type === 'application/octet-stream' ||
+      file.type === 'image/ico' ||
+      file.type === 'image/icon' ||
+      file.type === 'image/x-icon' ||
+      file.type === 'image/vnd.microsoft.icon' ||
+      file.type === 'application/ico' ||
+      file.type === 'application/x-ico' ||
+      file.type === 'application/vnd.microsoft.icon'
+    );
+  }
+  return false;
 }
 
 function resolveFileExtension(file: File): string {

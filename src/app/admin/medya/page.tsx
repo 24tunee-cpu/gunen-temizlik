@@ -282,7 +282,7 @@ export default function MediaLibraryPage() {
             ref={fileInputRef}
             onChange={handleFileSelect}
             multiple
-            accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon"
+            accept="image/jpeg,image/png,image/webp,image/gif,.ico,image/x-icon,image/ico,image/vnd.microsoft.icon,application/vnd.microsoft.icon"
             className="hidden"
           />
           <button

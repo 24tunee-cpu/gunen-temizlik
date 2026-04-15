@@ -20,6 +20,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { GallerySection } from '../../components/site/GallerySection';
 import { ImageIcon, ArrowRight } from 'lucide-react';
+import { canonicalUrl } from '@/lib/seo';
 
 // ============================================
 // METADATA (SEO)
@@ -37,18 +38,18 @@ export const metadata: Metadata = {
     'istanbul temizlik çalışmaları',
   ],
   alternates: {
-    canonical: 'https://gunentemizlik.com/galeri',
+    canonical: canonicalUrl('/galeri'),
   },
   openGraph: {
     title: 'Galeri | Günen Temizlik',
     description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri. Profesyonel hizmet kalitemizi keşfedin.',
-    url: 'https://gunentemizlik.com/galeri',
+    url: canonicalUrl('/galeri'),
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Günen Temizlik',
     images: [
       {
-        url: 'https://gunentemizlik.com/og-gallery.jpg',
+        url: canonicalUrl('/logo.png'),
         width: 1200,
         height: 630,
         alt: 'Günen Temizlik - Galeri',
@@ -59,7 +60,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Galeri | Günen Temizlik',
     description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri.',
-    images: ['https://gunentemizlik.com/og-gallery.jpg'],
+    images: [canonicalUrl('/logo.png')],
   },
 };
 
