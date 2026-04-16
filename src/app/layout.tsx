@@ -24,10 +24,6 @@ import { keywordsForPage } from "@/lib/seo-keywords";
 const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-GX9WV429Y3";
 
-const SEARCH_ATLAS_OTTO_UUID = "e6b31164-b3ed-425d-a7f1-08f9d74661f8";
-const SEARCH_ATLAS_OTTO_LOADER_SRC =
-  "data:text/javascript;base64,dmFyIHNjcmlwdCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoInNjcmlwdCIpO3NjcmlwdC5zZXRBdHRyaWJ1dGUoIm5vd3Byb2NrZXQiLCAiIik7c2NyaXB0LnNldEF0dHJpYnV0ZSgibml0cm8tZXhjbHVkZSIsICIiKTtzY3JpcHQuc3JjID0gImh0dHBzOi8vZGFzaGJvYXJkLnNlYXJjaGF0bGFzLmNvbS9zY3JpcHRzL2R5bmFtaWNfb3B0aW1pemF0aW9uLmpzIjtzY3JpcHQuZGF0YXNldC51dWlkID0gImU2YjMxMTY0LWIzZWQtNDI1ZC1hN2YxLTA4ZjlkNzQ2NjFmOCI7c2NyaXB0LmlkID0gInNhLWR5bmFtaWMtb3B0aW1pemF0aW9uLWxvYWRlciI7ZG9jdW1lbnQuaGVhZC5hcHBlbmRDaGlsZChzY3JpcHQpOw==";
-
 const siteRoot = getSiteUrl();
 
 const rootMetadataBase: Metadata = {
@@ -157,13 +153,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <Providers gaMeasurementId={GA_MEASUREMENT_ID}>
           {children}
         </Providers>
-        <Script
-          id="sa-dynamic-optimization"
-          strategy="afterInteractive"
-          type="text/javascript"
-          data-uuid={SEARCH_ATLAS_OTTO_UUID}
-          src={SEARCH_ATLAS_OTTO_LOADER_SRC}
-        />
       </body>
     </html>
   );

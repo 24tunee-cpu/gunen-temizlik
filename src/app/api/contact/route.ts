@@ -147,10 +147,19 @@ export async function GET(request: NextRequest) {
   const ip = getClientIp(request);
 
   // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
-  const authError = await requireAdminAuth(request);
-  if (authError) {
-    console.warn('Unauthorized contact requests list attempt', { ip });
-    return authError;
+  try {
+    const authError = await requireAdminAuth(request);
+    if (authError) {
+      console.warn('Unauthorized contact requests list attempt', { ip });
+      return authError;
+    }
+  } catch (authErr) {
+    const msg = authErr instanceof Error ? authErr.message : String(authErr);
+    console.error('Auth failed in GET /api/contact', { ip, error: msg });
+    return NextResponse.json(
+      { error: 'Yetkilendirme başarısız oldu' },
+      { status: 500, headers }
+    );
   }
 
   // Rate limiting
