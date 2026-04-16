@@ -16,7 +16,6 @@ import dynamic from 'next/dynamic';
 import SiteLayout from './site/layout';
 import { canonicalUrl } from '@/lib/seo';
 import DeferredHomeSections from '@/components/site/DeferredHomeSections';
-import SeoCrawlHub from '@/components/site/SeoCrawlHub';
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
@@ -105,9 +104,6 @@ export default function HomePage() {
         <Suspense fallback={<SectionLoading height="h-96" />}>
           <Services />
         </Suspense>
-
-        {/* Crawl-discovery hub for high-intent URLs */}
-        <SeoCrawlHub />
 
         {/* Below-the-fold sections (client-only deferred) */}
         <DeferredHomeSections />
