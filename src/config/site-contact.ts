@@ -3,7 +3,15 @@
  * WhatsApp: wa.me/{whatsappDigits}
  */
 export const SITE_CONTACT = {
-  phoneDisplay: '0546 715 2844',
+  companyName: 'Günen Temizlik',
+  addressLine:
+    'Gültepe Mahallesi, Talatpaşa Caddesi, Bıldırcın Sokağı No:13 kat -1, 34000 Kağıthane/İstanbul',
+  addressLocality: 'Kağıthane',
+  addressRegion: 'İstanbul',
+  postalCode: '34000',
+  addressCountry: 'TR',
+
+  phoneDisplay: '0546 715 28 44',
   /** tel: ve schema.org Telephone */
   phoneE164: '+905467152844',
   /** wa.me yolu (ülke kodu + numara, başında + yok) */

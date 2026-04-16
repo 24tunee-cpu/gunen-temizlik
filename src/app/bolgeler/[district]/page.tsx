@@ -149,6 +149,21 @@ export default async function DistrictPage({ params }: Props) {
                 </Link>
               ))}
             </section>
+
+            <section className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+              <h2 className="text-lg font-semibold text-emerald-200">Google Harita & Yorumlar</h2>
+              <p className="mt-2 text-sm text-emerald-100/80">
+                Kağıthane ve İstanbul genelindeki konumumuzu haritada görün, yorumlarınızı okuyun.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/harita-ve-yorumlar"
+                  className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-600 transition-colors"
+                >
+                  Haritayı Aç
+                </Link>
+              </div>
+            </section>
           </div>
         </div>
       </SiteLayout>

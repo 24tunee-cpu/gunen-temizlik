@@ -83,6 +83,24 @@ export default function MarketingEventTracker() {
         pushEvent('email_click', payload);
         sendToBackend({ eventType: 'email_click', ...payload });
       }
+
+      // Google Maps / Directions / Review CTA tracking
+      if (href.includes('google.com/maps')) {
+        if (
+          source === 'gmb_map_click' ||
+          source === 'gmb_review_click' ||
+          source === 'gmb_directions_click'
+        ) {
+          const payload = {
+            link_url: href,
+            link_text: text,
+            source,
+            location,
+          };
+          pushEvent(source, payload);
+          sendToBackend({ eventType: source, ...payload });
+        }
+      }
     };
 
     document.addEventListener('click', onClick);

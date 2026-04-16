@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { useState, useCallback, useMemo } from 'react';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
-import { toTelHref } from '@/config/site-contact';
+import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 import { PRIORITY_BLOG_LINKS } from '@/lib/priority-seo-links';
 
 // ============================================
@@ -340,7 +340,7 @@ export function Footer() {
               <li className="flex items-start gap-3 group">
                 <MapPin className="mt-1 h-5 w-5 shrink-0 text-emerald-500 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-400 whitespace-pre-line">
-                  {settings.address?.trim() || 'Ataşehir, İstanbul'}
+                  {settings.address?.trim() || SITE_CONTACT.addressLine}
                 </span>
               </li>
               <li className="flex items-center gap-3 group">

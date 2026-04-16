@@ -59,13 +59,13 @@ export async function buildRootSchemaGraphJson(): Promise<string> {
   const telephone =
     guessE164FromDisplay(phoneDisplay) || SITE_CONTACT.phoneE164;
   const addressLine =
-    settings?.address?.trim() || 'Ataşehir, İstanbul';
+    settings?.address?.trim() || SITE_CONTACT.addressLine;
 
   const logoUrl = toAbsoluteUrl(base, settings?.logo) ?? `${base}/logo.png`;
   const ogUrl = toAbsoluteUrl(base, settings?.ogImage) ?? `${base}/og-image.jpg`;
 
-  const lat = Number(process.env.NEXT_PUBLIC_BUSINESS_LAT ?? '41.0082');
-  const lng = Number(process.env.NEXT_PUBLIC_BUSINESS_LNG ?? '28.9784');
+  const lat = Number(process.env.NEXT_PUBLIC_BUSINESS_LAT ?? '41.080921');
+  const lng = Number(process.env.NEXT_PUBLIC_BUSINESS_LNG ?? '28.993809');
 
   const sameAs = [
     settings?.facebook,
@@ -91,8 +91,9 @@ export async function buildRootSchemaGraphJson(): Promise<string> {
     address: {
       '@type': 'PostalAddress',
       streetAddress: addressLine,
-      addressLocality: 'İstanbul',
-      addressRegion: 'İstanbul',
+      addressLocality: SITE_CONTACT.addressLocality,
+      addressRegion: SITE_CONTACT.addressRegion,
+      postalCode: SITE_CONTACT.postalCode,
       addressCountry: 'TR',
     },
     geo: {
@@ -108,10 +109,10 @@ export async function buildRootSchemaGraphJson(): Promise<string> {
         closes: '23:59',
       },
     ],
-    areaServed: ['İstanbul', 'Ataşehir', 'Kadıköy', 'Üsküdar'],
+    areaServed: ['İstanbul', 'Kağıthane', 'Kadıköy', 'Üsküdar'],
     priceRange: '₺₺',
     foundingDate: '2010',
-    hasMap: `https://www.google.com/maps?q=${lat},${lng}`,
+    hasMap: `https://www.google.com/maps?q=${encodeURIComponent(addressLine)}`,
   };
 
   if (sameAs.length > 0) {

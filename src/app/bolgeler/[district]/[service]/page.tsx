@@ -283,6 +283,12 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
                 Hizmet Detayını Gör
               </Link>
               <Link
+                href="/harita-ve-yorumlar"
+                className="rounded-lg border border-emerald-500/30 px-5 py-2.5 font-medium text-emerald-200 transition-colors hover:bg-emerald-500/10 hover:border-emerald-500/60"
+              >
+                Harita & Yorumlar
+              </Link>
+              <Link
                 href={`/bolgeler/${districtData.slug}`}
                 className="rounded-lg border border-slate-600 px-5 py-2.5 font-medium text-slate-200 transition-colors hover:bg-slate-800"
               >

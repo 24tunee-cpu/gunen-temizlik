@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Phone, MessageCircle, Mail, BarChart3 } from 'lucide-react';
+import { RefreshCw, Phone, MessageCircle, Mail, BarChart3, MapPin, Star, Route } from 'lucide-react';
 
 type MarketingEvent = {
   id: string;
-  eventType: 'phone_click' | 'whatsapp_click' | 'email_click';
+  eventType: 'phone_click' | 'whatsapp_click' | 'email_click' | 'gmb_map_click' | 'gmb_review_click' | 'gmb_directions_click';
   source: string | null;
   linkUrl: string | null;
   linkText: string | null;
@@ -20,6 +20,9 @@ type ResponsePayload = {
     phoneClicks: number;
     whatsappClicks: number;
     emailClicks: number;
+    gmbMapClicks: number;
+    gmbReviewClicks: number;
+    gmbDirectionsClicks: number;
   };
   events: MarketingEvent[];
 };
@@ -104,7 +107,7 @@ export default function MarketingAnalyticsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Pazarlama Analitik</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Telefon, WhatsApp ve e-posta tıklamalarının kaynak bazlı performansı.
+            Telefon, WhatsApp, e-posta ve Google harita/yorum aksiyonlarının kaynak bazlı performansı.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -167,6 +170,30 @@ export default function MarketingAnalyticsPage() {
                 E-posta Tıklama
               </div>
               <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{data?.summary.emailClicks || 0}</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                <MapPin className="h-4 w-4" />
+                Haritada Aç Tıklaması
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{data?.summary.gmbMapClicks || 0}</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                <Star className="h-4 w-4" />
+                Yorum Yaz Tıklaması
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{data?.summary.gmbReviewClicks || 0}</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                <Route className="h-4 w-4" />
+                Yol Tarifi Tıklaması
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{data?.summary.gmbDirectionsClicks || 0}</p>
             </div>
           </div>
 

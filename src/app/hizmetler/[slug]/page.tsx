@@ -23,6 +23,7 @@ import SiteLayout from '../../site/layout';
 import { Sparkles, Check, ArrowRight, Phone, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
+import { SITE_CONTACT } from '@/config/site-contact';
 import {
   canonicalUrl,
   generateBreadcrumbSchema,
@@ -163,7 +164,10 @@ function generateServiceSchema(service: ServiceData) {
       "url": canonicalUrl('/'),
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "İstanbul",
+        "streetAddress": SITE_CONTACT.addressLine,
+        "addressLocality": SITE_CONTACT.addressLocality,
+        "addressRegion": SITE_CONTACT.addressRegion,
+        "postalCode": SITE_CONTACT.postalCode,
         "addressCountry": "TR"
       }
     },
@@ -316,7 +320,7 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
                 <Clock className="h-6 w-6 text-emerald-500" aria-hidden="true" />
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-white">7/24 Hizmet</p>
+                  <p className="font-medium text-slate-900 dark:text-white">24 saat açık</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Acil durumlar için her zaman</p>
                 </div>
               </div>
@@ -352,6 +356,14 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               >
                 <ArrowRight size={20} aria-hidden="true" />
                 Tüm Hizmetler
+              </Link>
+
+              <Link
+                href="/harita-ve-yorumlar"
+                className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 px-8 py-4 text-emerald-700 dark:text-emerald-300 font-semibold hover:bg-emerald-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              >
+                <Sparkles size={20} aria-hidden="true" />
+                Harita ve Yorumlar
               </Link>
             </nav>
           </article>

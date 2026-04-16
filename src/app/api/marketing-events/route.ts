@@ -32,7 +32,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     const eventType = typeof body.eventType === 'string' ? body.eventType.trim() : '';
-    if (!['phone_click', 'whatsapp_click', 'email_click'].includes(eventType)) {
+    if (
+      ![
+        'phone_click',
+        'whatsapp_click',
+        'email_click',
+        'gmb_map_click',
+        'gmb_review_click',
+        'gmb_directions_click',
+      ].includes(eventType)
+    ) {
       return NextResponse.json({ error: 'Invalid eventType' }, { status: 400, headers });
     }
 
@@ -69,7 +78,8 @@ export async function GET(request: NextRequest) {
   const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
   try {
-    const [events, total, phoneClicks, whatsappClicks, emailClicks] = await Promise.all([
+    const [events, total, phoneClicks, whatsappClicks, emailClicks, gmbMapClicks, gmbReviewClicks, gmbDirectionsClicks] =
+      await Promise.all([
       prisma.marketingEvent.findMany({
         where: { createdAt: { gte: from } },
         orderBy: { createdAt: 'desc' },
@@ -79,12 +89,29 @@ export async function GET(request: NextRequest) {
       prisma.marketingEvent.count({ where: { createdAt: { gte: from }, eventType: 'phone_click' } }),
       prisma.marketingEvent.count({ where: { createdAt: { gte: from }, eventType: 'whatsapp_click' } }),
       prisma.marketingEvent.count({ where: { createdAt: { gte: from }, eventType: 'email_click' } }),
+      prisma.marketingEvent.count({
+        where: { createdAt: { gte: from }, eventType: 'gmb_map_click' },
+      }),
+      prisma.marketingEvent.count({
+        where: { createdAt: { gte: from }, eventType: 'gmb_review_click' },
+      }),
+      prisma.marketingEvent.count({
+        where: { createdAt: { gte: from }, eventType: 'gmb_directions_click' },
+      }),
     ]);
 
     return NextResponse.json(
       {
         rangeDays: days,
-        summary: { total, phoneClicks, whatsappClicks, emailClicks },
+        summary: {
+          total,
+          phoneClicks,
+          whatsappClicks,
+          emailClicks,
+          gmbMapClicks,
+          gmbReviewClicks,
+          gmbDirectionsClicks,
+        },
         events,
       },
       { headers }

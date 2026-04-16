@@ -64,15 +64,16 @@ const SITE_CONFIG = {
   telephone: SITE_CONTACT.phoneE164,
   email: SITE_CONTACT.email,
   address: {
-    street: 'Atatürk Mah. Turgut Özal Bulvarı No:123',
-    locality: 'Ataşehir',
+    street:
+      'Gültepe Mahallesi, Talatpaşa Caddesi, Bıldırcın Sokağı No:13 kat -1',
+    locality: 'Kağıthane',
     region: 'İstanbul',
-    postalCode: '34758',
+    postalCode: '34000',
     country: 'TR',
   },
   geo: {
-    latitude: 41.0082,
-    longitude: 28.9784,
+    latitude: 41.080921,
+    longitude: 28.993809,
   },
   social: {
     facebook: 'https://facebook.com/gunentemizlik',

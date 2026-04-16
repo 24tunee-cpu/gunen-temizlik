@@ -220,8 +220,8 @@ export function ContactForm({ variant = 'light' }: ContactFormProps) {
     () => {
       const phone = settings.phone?.trim() || SITE_CONTACT.phoneDisplay;
       const email = settings.email?.trim() || SITE_CONTACT.email;
-      const addr = settings.address?.trim() || 'Ataşehir, İstanbul';
-      const hours = settings.workingHours?.trim() || '7/24 Hizmet';
+      const addr = settings.address?.trim() || SITE_CONTACT.addressLine;
+      const hours = settings.workingHours?.trim() || '24 saat açık';
       return [
         {
           icon: Phone,

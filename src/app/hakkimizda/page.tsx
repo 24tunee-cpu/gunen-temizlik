@@ -80,11 +80,11 @@ const organizationSchema = {
   ],
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Atatürk Mah. Turgut Özal Bulvarı No:123",
-    "addressLocality": "Ataşehir",
-    "addressRegion": "İstanbul",
-    "postalCode": "34758",
-    "addressCountry": "TR"
+    "streetAddress": SITE_CONTACT.addressLine,
+    "addressLocality": SITE_CONTACT.addressLocality,
+    "addressRegion": SITE_CONTACT.addressRegion,
+    "postalCode": SITE_CONTACT.postalCode,
+    "addressCountry": SITE_CONTACT.addressCountry
   },
   "contactPoint": {
     "@type": "ContactPoint",
@@ -108,7 +108,7 @@ const STATS_CONFIG = [
   { value: '15+', label: 'Yıllık Deneyim', id: 'experience' },
   { value: '5000+', label: 'Mutlu Müşteri', id: 'customers' },
   { value: '50+', label: 'Profesyonel Ekip', id: 'team' },
-  { value: '7/24', label: 'Hizmet', id: 'service' },
+  { value: '24 saat', label: 'Hizmet', id: 'service' },
 ] as const;
 
 /** Değerler - Admin panelden güncellenebilir */

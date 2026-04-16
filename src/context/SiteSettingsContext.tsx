@@ -111,8 +111,8 @@ const defaultSettings: SiteSettings = {
 
   phone: SITE_CONTACT.phoneDisplay,
   email: SITE_CONTACT.email,
-  address: 'Ataşehir, İstanbul',
-  workingHours: '7/24 Hizmet',
+  address: SITE_CONTACT.addressLine,
+  workingHours: '24 saat açık',
   whatsapp: SITE_CONTACT.whatsappDigits,
 
   seoTitle: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24",

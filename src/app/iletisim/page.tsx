@@ -87,11 +87,11 @@ const contactStructuredData = {
   ],
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Atatürk Mah. Turgut Özal Bulvarı No:123",
-    "addressLocality": "Ataşehir",
-    "addressRegion": "İstanbul",
-    "postalCode": "34758",
-    "addressCountry": "TR"
+    "streetAddress": SITE_CONTACT.addressLine,
+    "addressLocality": SITE_CONTACT.addressLocality,
+    "addressRegion": SITE_CONTACT.addressRegion,
+    "postalCode": SITE_CONTACT.postalCode,
+    "addressCountry": SITE_CONTACT.addressCountry
   }
 };
 
@@ -117,14 +117,14 @@ const CONTACT_INFO = {
   },
   address: {
     label: 'Adres',
-    value: 'Atatürk Mah. Turgut Özal Bulvarı No:123, Ataşehir/İstanbul',
-    href: 'https://maps.google.com/?q=41.0082,28.9784',
+    value: SITE_CONTACT.addressLine,
+    href: `https://www.google.com/maps?q=${encodeURIComponent(SITE_CONTACT.addressLine)}`,
     icon: MapPin,
     description: 'Tüm İstanbul\'da hizmet veriyoruz',
   },
   hours: {
     label: 'Çalışma Saatleri',
-    value: '7/24 Hizmet',
+    value: '24 saat açık',
     icon: Clock,
     description: 'Acil durumlar için her zaman hazırız',
   },

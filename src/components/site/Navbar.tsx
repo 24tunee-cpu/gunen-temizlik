@@ -43,6 +43,7 @@ const resourcesNavLinks: NavLink[] = [
   { href: '/rehber', label: 'Rehber' },
   { href: '/sss', label: 'SSS' },
   { href: '/referanslar', label: 'Referanslar' },
+  { href: '/harita-ve-yorumlar', label: 'Harita & Yorumlar' },
 ];
 
 // ============================================
