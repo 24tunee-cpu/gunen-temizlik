@@ -94,10 +94,10 @@ export default function ContactRequestsPage() {
         let errorMessage = 'Talepler yüklenirken bir hata oluştu.';
         if (res.status === 401) {
           errorMessage = 'Yetkiniz bulunmuyor. Lütfen giriş yapın.';
-        } else if (res.status >= 500) {
-          errorMessage = 'Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.';
         } else if (errorData?.error) {
           errorMessage = errorData.error;
+        } else if (res.status >= 500) {
+          errorMessage = 'Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.';
         }
         throw new Error(errorMessage);
       }

@@ -238,13 +238,30 @@ export async function GET(request: NextRequest) {
           .filter((id) => isMongoObjectId(id))
       ),
     ];
-    const assignees =
-      assigneeIds.length > 0
-        ? await prisma.user.findMany({
-            where: { id: { in: assigneeIds } },
-            select: { id: true, name: true, email: true },
-          })
-        : [];
+    // Bazı legacy kayıtlar assignedUserId alanında bozuk değer barındırabiliyor.
+    // Bu durumda `prisma.user.findMany` adımı 500 döndürebiliyor; listeyi kırmamak için burada güvenli fallback yapıyoruz.
+    let assignees:
+      | Array<{
+          id: string;
+          name: string | null;
+          email: string | null;
+        }>
+      | [] = [];
+
+    if (assigneeIds.length > 0) {
+      try {
+        assignees = await prisma.user.findMany({
+          where: { id: { in: assigneeIds } },
+          select: { id: true, name: true, email: true },
+        });
+      } catch (assigneeError) {
+        console.warn('Assignees fetch failed, returning contacts without assignee', {
+          ip,
+          error: assigneeError instanceof Error ? assigneeError.message : String(assigneeError),
+        });
+        assignees = [];
+      }
+    }
     const byId = new Map(assignees.map((u) => [u.id, u]));
 
     const contacts = rows.map((r) => ({

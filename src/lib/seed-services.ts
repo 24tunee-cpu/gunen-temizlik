@@ -165,6 +165,32 @@ Endüstriyel süpürgeler, yüzey uyumlu kimyasallar ve detay fırçaları ile f
     metaDesc:
       'İstanbul cam temizliği: iç/dış cephe, vitrin ve yüksek cam. Profesyonel ekip, güvenli erişim, düzenli paketler. Teklif alın.',
   },
+  {
+    title: 'Dış Cephe Temizliği',
+    slug: 'dis-cephe-temizligi',
+    shortDesc:
+      'Dış cephe cam ve cephe yüzeylerinde güvenli erişimle profesyonel temizlik. İş güvenliği prosedürleriyle düzenli bakım hizmeti.',
+    description: `Dış cephe cam ve cephe yüzeylerinde biriken kir, yağmur izi ve zamanla oluşan matlaşma görüntüsünü profesyonel ekipmanlarla gideriyoruz.
+
+Yüksek erişim gerektiren alanlarda iş güvenliği prosedürlerine uygun şekilde çalışır; uygun kimyasal ve temizleme yöntemiyle yüzeye zarar vermeden net ve parlak sonuç hedefleriz.
+
+Düzenli dış cephe cam temizliği paketleriyle işletmenizin vitrin görünürlüğünü ve bina estetiğini korumanıza yardımcı oluyoruz. İş kapsamı keşif sonrası netleştirilir, buna göre şeffaf bir plan ve fiyatlendirme yapılır.`,
+    image: 'https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?w=800',
+    icon: 'Droplets',
+    features: [
+      'Dış cephe cam ve cephe yüzey temizliği',
+      'Yüksek erişim için güvenli çalışma düzeni',
+      'Su izi, lekelenme ve kir giderimi',
+      'İş güvenliği prosedürleri ve kontrol adımları',
+      'Düzenli bakım planı ile zaman kazanımı',
+    ],
+    priceRange: '350 TL – 3.500 TL (erişim ve metrekareye göre)',
+    order: 7,
+    isActive: true,
+    metaTitle: 'Dış Cephe Temizliği | İstanbul | Günen Temizlik',
+    metaDesc:
+      'İstanbul dış cephe temizliği ve dış cephe cam silme hizmeti. Güvenli erişim, su izi/yağmur izi giderme ve düzenli bakım planları. Teklif al.',
+  },
 ];
 
 const LEGACY_SLUGS_TO_DEACTIVATE = ['hali-yikama'] as const;
