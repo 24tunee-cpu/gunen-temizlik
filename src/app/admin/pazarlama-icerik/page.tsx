@@ -37,6 +37,16 @@ export default function AdminMarketingContentPage() {
     void load();
   }, [load]);
 
+  const togglePromoActive = (nextActive: boolean) => {
+    try {
+      const current = JSON.parse(promoJson || '{}') as Record<string, unknown>;
+      const updated = { ...current, active: nextActive };
+      setPromoJson(JSON.stringify(updated, null, 2));
+    } catch {
+      toast.error('JSON', 'Önce geçerli bir promo JSON girin');
+    }
+  };
+
   const save = async () => {
     let promo;
     let trust;
@@ -83,7 +93,34 @@ export default function AdminMarketingContentPage() {
         <br />
         <code>trustBandItemsJson</code>: kısa metin dizisi. <code>messageTemplatesJson</code>: kopyalanacak şablon metinleri.
       </p>
-      <label className="block text-sm font-medium">Üst banner (JSON)</label>
+      <div className="flex items-center justify-between gap-4">
+        <label className="block text-sm font-medium">Üst banner (JSON)</label>
+        <div className="flex items-center gap-2 text-xs sm:text-sm">
+          <span className="text-slate-500 dark:text-slate-400">Durum:</span>
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                const parsed = JSON.parse(promoJson || '{}') as { active?: boolean };
+                togglePromoActive(!parsed.active);
+              } catch {
+                togglePromoActive(true);
+              }
+            }}
+            className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            {/* basit text toggle */}
+            {(function () {
+              try {
+                const parsed = JSON.parse(promoJson || '{}') as { active?: boolean };
+                return parsed.active ? 'Kapat' : 'Aç';
+              } catch {
+                return 'Aç/Kapat';
+              }
+            })()}
+          </button>
+        </div>
+      </div>
       <textarea
         value={promoJson}
         onChange={(e) => setPromoJson(e.target.value)}
