@@ -28,8 +28,30 @@ import { SITE_CONTACT } from '@/config/site-contact';
 // SITE CONFIGURATION
 // ============================================
 
-/** Site domain - ortama göre değişebilir */
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gunentemizlik.com';
+/** Kanonik host standardı: www */
+const DEFAULT_SITE_URL = 'https://www.gunentemizlik.com';
+
+function normalizeSiteUrl(raw?: string): string {
+  const input = raw?.trim();
+  if (!input) return DEFAULT_SITE_URL;
+
+  try {
+    const withProtocol = input.startsWith('http://') || input.startsWith('https://') ? input : `https://${input}`;
+    const parsed = new URL(withProtocol);
+
+    // Alan adında tek kanonik host kullan: www.gunentemizlik.com
+    if (parsed.hostname === 'gunentemizlik.com') {
+      parsed.hostname = 'www.gunentemizlik.com';
+    }
+
+    return parsed.toString().replace(/\/$/, '');
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
+/** Site domain - ortama göre değişebilir, ancak kanonik olarak normalize edilir. */
+const SITE_URL = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
 /**
  * Kanonik site kökü (sonunda `/` yok). Sitemap ve robots için kullanılır.
@@ -37,9 +59,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://gunentemizlik.com'
  * yalnızca mülk alan adıyla eşleşen URL’lere izin verir.
  */
 export function getSiteUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, '');
-  return 'https://gunentemizlik.com';
+  return normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 }
 
 /**

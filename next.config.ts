@@ -104,7 +104,7 @@ const nextConfig: NextConfig = {
       {
         key: 'Access-Control-Allow-Origin',
         value: process.env.NODE_ENV === 'production'
-          ? process.env.NEXT_PUBLIC_SITE_URL || 'https://gunentemizlik.com'
+          ? process.env.NEXT_PUBLIC_SITE_URL || 'https://www.gunentemizlik.com'
           : '*',
       },
       {
@@ -217,7 +217,7 @@ const nextConfig: NextConfig = {
           },
         ],
         permanent: true,
-        destination: 'https://gunentemizlik.com/:path*',
+        destination: 'https://www.gunentemizlik.com/:path*',
       },
       // Legacy redirects (example)
       {

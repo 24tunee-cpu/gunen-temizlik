@@ -13,12 +13,12 @@
 - Çelişki durumunda öncelik sırası: `llms.txt`, `llms-full.txt`, canlı sayfa içeriği.
 
 ## En Önemli Sayfalar
-- [Ana Sayfa](https://gunentemizlik.com/): Hizmetlerin genel özeti ve hızlı yönlendirmeler.
-- [Hizmetlerimiz](https://gunentemizlik.com/hizmetler): Aktif hizmetlerin ana listeleme sayfası.
-- [İletişim](https://gunentemizlik.com/iletisim): Telefon, e-posta, adres ve iletişim formu.
-- [Randevu](https://gunentemizlik.com/randevu): Ücretsiz keşif ve randevu talep formu.
-- [Hakkımızda](https://gunentemizlik.com/hakkimizda): Kurumsal geçmiş, ekip ve değerler.
-- [Blog](https://gunentemizlik.com/blog): Temizlik ve hijyen odaklı bilgilendirici içerikler.
+- [Ana Sayfa](https://www.gunentemizlik.com/): Hizmetlerin genel özeti ve hızlı yönlendirmeler.
+- [Hizmetlerimiz](https://www.gunentemizlik.com/hizmetler): Aktif hizmetlerin ana listeleme sayfası.
+- [İletişim](https://www.gunentemizlik.com/iletisim): Telefon, e-posta, adres ve iletişim formu.
+- [Randevu](https://www.gunentemizlik.com/randevu): Ücretsiz keşif ve randevu talep formu.
+- [Hakkımızda](https://www.gunentemizlik.com/hakkimizda): Kurumsal geçmiş, ekip ve değerler.
+- [Blog](https://www.gunentemizlik.com/blog): Temizlik ve hijyen odaklı bilgilendirici içerikler.
 
 ## Kritik Gerçekler
 - Marka adı: Günen Temizlik.

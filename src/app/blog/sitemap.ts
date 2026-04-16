@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
   } catch {
-    const fallbackBase = 'https://gunentemizlik.com';
+    const fallbackBase = 'https://www.gunentemizlik.com';
     return PRIORITY_BLOG_LINKS.map((item) => ({
       url: `${fallbackBase}${item.href}`,
       lastModified: new Date(),

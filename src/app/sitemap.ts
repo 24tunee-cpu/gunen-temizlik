@@ -72,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...staticEntries, ...programmaticEntries, ...serviceEntries];
   } catch {
     // Her durumda çalışır: en azından temel URL'leri döndür.
-    const fallbackBase = 'https://gunentemizlik.com';
+    const fallbackBase = 'https://www.gunentemizlik.com';
     return [
       { url: `${fallbackBase}/`, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
       { url: `${fallbackBase}/hizmetler`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },

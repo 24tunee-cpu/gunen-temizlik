@@ -34,20 +34,20 @@
 - Site, temizlik hizmetleri için hem içerik hem dönüşüm odaklı yapıdadır.
 
 ## Ana Sayfalar ve Niyetleri
-- [Ana Sayfa](https://gunentemizlik.com/): Marka özeti, temel hizmet çerçevesi ve ilk temas noktaları.
-- [Hizmetlerimiz](https://gunentemizlik.com/hizmetler): Hizmet katalogu ve hizmet detaylarına geçiş.
-- [Hizmet Detayı](https://gunentemizlik.com/hizmetler/{slug}): Tekil hizmet açıklaması, kapsam ve kullanıcıya özel yönlendirme.
-- [İletişim](https://gunentemizlik.com/iletisim): Doğrudan iletişim kanalları ve iletişim formu.
-- [Randevu](https://gunentemizlik.com/randevu): Ücretsiz keşif ve randevu talebi.
-- [Hakkımızda](https://gunentemizlik.com/hakkimizda): Kurumsal hikaye, değerler ve ekip güven sinyalleri.
-- [Referanslar](https://gunentemizlik.com/referanslar): Müşteri geri bildirimleri ve sosyal kanıt.
-- [Galeri](https://gunentemizlik.com/galeri): Görsel örnekler ve hizmet çıktıları.
-- [SSS](https://gunentemizlik.com/sss): En sık sorulan sorular ve kısa yanıtlar.
-- [Blog](https://gunentemizlik.com/blog): Bilgilendirici içerik, hijyen ve temizlik rehberleri.
-- [Harita ve Yorumlar](https://gunentemizlik.com/harita-ve-yorumlar): Harita görünürlüğü ve yorum odağı.
-- [Rehber](https://gunentemizlik.com/rehber): Hangi temizlik türünün hangi senaryoda uygun olduğunu açıklayan içerik.
-- [Kullanım Koşulları](https://gunentemizlik.com/kullanim-kosullari): Yasal kullanım şartları.
-- [Gizlilik](https://gunentemizlik.com/gizlilik): Veri işleme ve gizlilik ilkeleri.
+- [Ana Sayfa](https://www.gunentemizlik.com/): Marka özeti, temel hizmet çerçevesi ve ilk temas noktaları.
+- [Hizmetlerimiz](https://www.gunentemizlik.com/hizmetler): Hizmet katalogu ve hizmet detaylarına geçiş.
+- [Hizmet Detayı](https://www.gunentemizlik.com/hizmetler/{slug}): Tekil hizmet açıklaması, kapsam ve kullanıcıya özel yönlendirme.
+- [İletişim](https://www.gunentemizlik.com/iletisim): Doğrudan iletişim kanalları ve iletişim formu.
+- [Randevu](https://www.gunentemizlik.com/randevu): Ücretsiz keşif ve randevu talebi.
+- [Hakkımızda](https://www.gunentemizlik.com/hakkimizda): Kurumsal hikaye, değerler ve ekip güven sinyalleri.
+- [Referanslar](https://www.gunentemizlik.com/referanslar): Müşteri geri bildirimleri ve sosyal kanıt.
+- [Galeri](https://www.gunentemizlik.com/galeri): Görsel örnekler ve hizmet çıktıları.
+- [SSS](https://www.gunentemizlik.com/sss): En sık sorulan sorular ve kısa yanıtlar.
+- [Blog](https://www.gunentemizlik.com/blog): Bilgilendirici içerik, hijyen ve temizlik rehberleri.
+- [Harita ve Yorumlar](https://www.gunentemizlik.com/harita-ve-yorumlar): Harita görünürlüğü ve yorum odağı.
+- [Rehber](https://www.gunentemizlik.com/rehber): Hangi temizlik türünün hangi senaryoda uygun olduğunu açıklayan içerik.
+- [Kullanım Koşulları](https://www.gunentemizlik.com/kullanim-kosullari): Yasal kullanım şartları.
+- [Gizlilik](https://www.gunentemizlik.com/gizlilik): Veri işleme ve gizlilik ilkeleri.
 
 ## Route Mimarisi
 - Statik ana route'lar: `/`, `/hizmetler`, `/iletisim`, `/randevu`, `/hakkimizda`, `/blog`, `/galeri`, `/referanslar`, `/sss`, `/rehber`.
@@ -63,9 +63,9 @@
 - Yerel SEO kurgusu, ilçe ve hizmet kombinasyonları üzerinden genişletilir.
 
 ## Dönüşüm Odaklı Sayfalar
-- Birincil dönüşüm noktaları: [İletişim](https://gunentemizlik.com/iletisim), [Randevu](https://gunentemizlik.com/randevu).
-- Destekleyici dönüşüm sayfaları: [Hizmetlerimiz](https://gunentemizlik.com/hizmetler), [Hizmet Detayı](https://gunentemizlik.com/hizmetler/{slug}).
-- Güven artırıcı destek sayfaları: [Hakkımızda](https://gunentemizlik.com/hakkimizda), [Referanslar](https://gunentemizlik.com/referanslar), [Galeri](https://gunentemizlik.com/galeri).
+- Birincil dönüşüm noktaları: [İletişim](https://www.gunentemizlik.com/iletisim), [Randevu](https://www.gunentemizlik.com/randevu).
+- Destekleyici dönüşüm sayfaları: [Hizmetlerimiz](https://www.gunentemizlik.com/hizmetler), [Hizmet Detayı](https://www.gunentemizlik.com/hizmetler/{slug}).
+- Güven artırıcı destek sayfaları: [Hakkımızda](https://www.gunentemizlik.com/hakkimizda), [Referanslar](https://www.gunentemizlik.com/referanslar), [Galeri](https://www.gunentemizlik.com/galeri).
 
 ## Niyet Eşleme Kuralları
 - Kullanıcı hizmet türü soruyorsa: önce `/hizmetler`, sonra uygun `/hizmetler/{slug}`.
