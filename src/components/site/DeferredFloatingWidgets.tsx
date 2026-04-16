@@ -16,9 +16,15 @@ const CookieConsent = dynamic(
   { ssr: false }
 );
 
+const MarketingPopup = dynamic(
+  () => import('@/components/site/MarketingPopup').then((mod) => mod.MarketingPopup),
+  { ssr: false }
+);
+
 export default function DeferredFloatingWidgets() {
   return (
     <>
+      <MarketingPopup />
       <FloatingWhatsApp />
       <MobileCallBar />
       <CookieConsent />
