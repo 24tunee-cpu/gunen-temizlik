@@ -3,30 +3,29 @@ import { SITE_CONTACT } from '@/config/site-contact';
 import SiteLayout from '../site/layout';
 
 const address = SITE_CONTACT.addressLine;
-const reviewQuery = `Günen Temizlik ${SITE_CONTACT.addressLocality}`;
+// Kullanıcının doğrudan Google işletme linkleri
+const GOOGLE_MAPS_PLACE = 'https://maps.app.goo.gl/Q2Sp2mRcEdFQMnog7';
+const GOOGLE_REVIEW_URL = 'https://g.page/r/CS2Mx2c1UpqwEBM/review';
 
 const utmBase = {
   utm_source: 'website',
   utm_medium: 'gmb',
 };
 
-const qs = new URLSearchParams(utmBase);
-
 function withUtm(path: string, extra: Record<string, string>) {
   const params = new URLSearchParams({ ...utmBase, ...extra });
   return `${path}?${params.toString()}`;
 }
 
-const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
-const mapsOpenHref = withUtm(
-  `https://www.google.com/maps?q=${encodeURIComponent(address)}`,
-  { utm_campaign: 'gmb-harita' }
-);
+// Embed: adres + marka ismi ile, sayfa içinde konumu gösteriyoruz
+const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(
+  `Günen Temizlik, ${address}`
+)}&output=embed`;
+// Haritada Aç: kullanıcıdan gelen Google Maps kısa linki
+const mapsOpenHref = withUtm(GOOGLE_MAPS_PLACE, { utm_campaign: 'gmb-harita' });
 
-const reviewHref = withUtm(
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(reviewQuery)}`,
-  { utm_campaign: 'gmb-yorum' }
-);
+// Yorum Yaz: doğrudan Google yorum isteme linki
+const reviewHref = withUtm(GOOGLE_REVIEW_URL, { utm_campaign: 'gmb-yorum' });
 
 const directionsHref = withUtm(
   `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`,
@@ -131,33 +130,20 @@ export default function MapsAndReviewsPage() {
             </div>
           </section>
 
-          <section className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-800 bg-slate-800/20 p-5">
-              <h2 className="text-sm font-semibold text-slate-200">İşletme Bilgileri</h2>
-              <p className="mt-2 text-sm text-slate-300">
-                <span className="text-slate-200">Adres: </span>
-                {SITE_CONTACT.addressLine}
-              </p>
-              <p className="mt-2 text-sm text-slate-300">
-                <span className="text-slate-200">Telefon: </span>
-                {SITE_CONTACT.phoneDisplay}
-              </p>
-              <p className="mt-2 text-sm text-slate-300">
-                <span className="text-slate-200">Çalışma: </span>
-                24 saat açık
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-800/20 p-5">
-              <h2 className="text-sm font-semibold text-slate-200">Neden önemli?</h2>
-              <p className="mt-2 text-sm text-slate-300">
-                Harita pinlerinin güçlenmesi için NAP uyumu ve kullanıcı aksiyonları (haritada açma,
-                yol tarifi, yorum) kritik sinyallerdendir.
-              </p>
-              <p className="mt-3 text-xs text-slate-400">
-                Bu sayfadaki dış bağlantılar için UTM + event tracking ekliyoruz.
-              </p>
-            </div>
+          <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-800/20 p-5">
+            <h2 className="text-sm font-semibold text-slate-200">İşletme Bilgileri</h2>
+            <p className="mt-2 text-sm text-slate-300">
+              <span className="text-slate-200">Adres: </span>
+              {SITE_CONTACT.addressLine}
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              <span className="text-slate-200">Telefon: </span>
+              {SITE_CONTACT.phoneDisplay}
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              <span className="text-slate-200">Çalışma: </span>
+              24 saat açık
+            </p>
           </section>
         </div>
       </div>
