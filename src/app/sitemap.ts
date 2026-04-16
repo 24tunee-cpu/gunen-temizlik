@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
-import { prisma } from '@/lib/prisma';
 import { getSiteUrl } from '@/lib/seo';
 import { allProgrammaticLandingPaths } from '@/config/programmatic-seo';
+import { SERVICE_SEED_DATA } from '@/lib/seed-services';
 
 type StaticEntry = {
   path: string;
@@ -42,44 +42,42 @@ function toAbsoluteUrl(base: string, path: string): string {
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = getSiteUrl();
-  const now = new Date();
+  try {
+    const base = getSiteUrl();
+    const now = new Date();
 
-  const staticEntries: MetadataRoute.Sitemap = STATIC_PAGES.map(({ path, changeFrequency, priority }) => ({
-    url: toAbsoluteUrl(base, path),
-    lastModified: now,
-    changeFrequency,
-    priority,
-  }));
-  const programmaticEntries: MetadataRoute.Sitemap = allProgrammaticLandingPaths()
-    .filter((p) => p !== '/bolgeler')
-    .map((path) => ({
+    const staticEntries: MetadataRoute.Sitemap = STATIC_PAGES.map(({ path, changeFrequency, priority }) => ({
       url: toAbsoluteUrl(base, path),
       lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      changeFrequency,
+      priority,
     }));
 
-  let dynamicEntries: MetadataRoute.Sitemap = [];
-
-  try {
-    const services = await prisma.service.findMany({
-        where: { isActive: true },
-        select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: 'desc' },
-      });
-
-    dynamicEntries = [
-      ...services.map((s) => ({
-        url: `${base}/hizmetler/${s.slug}`,
-        lastModified: s.updatedAt,
+    const programmaticEntries: MetadataRoute.Sitemap = allProgrammaticLandingPaths()
+      .filter((p) => p !== '/bolgeler')
+      .map((path) => ({
+        url: toAbsoluteUrl(base, path),
+        lastModified: now,
         changeFrequency: 'weekly' as const,
-        priority: 0.85,
-      })),
-    ];
-  } catch {
-    // Örn. build sırasında DB yoksa yalnızca statik URL'ler döner.
-  }
+        priority: 0.8,
+      }));
 
-  return [...staticEntries, ...programmaticEntries, ...dynamicEntries];
+    const serviceEntries: MetadataRoute.Sitemap = SERVICE_SEED_DATA.filter((s) => s.isActive !== false).map((s) => ({
+      url: `${base}/hizmetler/${s.slug}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    }));
+
+    return [...staticEntries, ...programmaticEntries, ...serviceEntries];
+  } catch {
+    // Her durumda çalışır: en azından temel URL'leri döndür.
+    const fallbackBase = 'https://gunentemizlik.com';
+    return [
+      { url: `${fallbackBase}/`, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+      { url: `${fallbackBase}/hizmetler`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
+      { url: `${fallbackBase}/iletisim`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+      { url: `${fallbackBase}/blog`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
+    ];
+  }
 }
