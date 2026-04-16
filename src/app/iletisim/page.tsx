@@ -17,6 +17,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { ContactForm } from '@/components/site/ContactForm';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
@@ -232,6 +233,29 @@ export default function ContactPage() {
                   </a>
                 );
               })}
+            </div>
+
+            <div className="mt-8 rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">
+                Hızlı geçiş
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  { href: '/randevu', label: 'Randevu Oluştur' },
+                  { href: '/hizmetler', label: 'Hizmetlerimiz' },
+                  { href: '/hizmetler/ofis-temizligi', label: 'Ofis Temizliği' },
+                  { href: '/hizmetler/insaat-sonrasi-temizlik', label: 'İnşaat Sonrası' },
+                  { href: '/blog', label: 'Blog Rehberleri' },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full border border-slate-600 px-3 py-1.5 text-sm text-slate-200 transition-colors hover:border-emerald-500/60 hover:text-emerald-300"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>

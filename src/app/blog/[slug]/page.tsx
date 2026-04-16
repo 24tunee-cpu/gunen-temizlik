@@ -27,6 +27,7 @@ import { BlogShareButton } from '@/components/site/BlogShareButton';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import styles from './blog-content.module.css';
 import { resolveIntentLinks } from '@/lib/keyword-intent-routing';
+import { keywordsForPage } from '@/lib/seo-keywords';
 import {
   canonicalUrl,
   generateBreadcrumbSchema,
@@ -107,7 +108,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: metaTitle,
       description: metaDesc,
-      keywords: post.tags,
+      keywords: keywordsForPage('blog', post.tags),
       alternates: {
         canonical: canonicalUrl(`/blog/${post.slug}`),
       },

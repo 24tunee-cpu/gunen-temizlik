@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { AppointmentRequestForm } from '@/components/site/AppointmentRequestForm';
 import {
@@ -104,6 +105,28 @@ export default function RandevuPage() {
                 <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
                   <p className="font-medium text-slate-900 dark:text-white">Acil taleplerde ne yapmalıyım?</p>
                   <p className="mt-1 text-slate-600 dark:text-slate-300">Formla birlikte not bırakabilir veya direkt bizi arayabilirsiniz.</p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">
+                  En çok talep edilen hizmetler
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    { href: '/hizmetler/ofis-temizligi', label: 'Ofis Temizliği' },
+                    { href: '/hizmetler/insaat-sonrasi-temizlik', label: 'İnşaat Sonrası' },
+                    { href: '/hizmetler/ev-temizligi', label: 'Ev Temizliği' },
+                    { href: '/hizmetler/koltuk-yikama', label: 'Koltuk Yıkama' },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs text-slate-700 transition-colors hover:border-emerald-500/60 hover:text-emerald-700 dark:border-slate-600 dark:text-slate-200 dark:hover:text-emerald-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
             </section>

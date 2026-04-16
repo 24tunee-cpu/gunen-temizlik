@@ -23,6 +23,15 @@ import SiteLayout from '../../site/layout';
 import { Sparkles, Check, ArrowRight, Phone, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
+import {
+  canonicalUrl,
+  generateBreadcrumbSchema,
+  generateFAQSchema,
+  getSiteUrl,
+  serializeSchemaGraph,
+} from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
+import { serviceFaqFromFeatures, serviceKeywordsFromTitleAndSlug } from '@/lib/service-seo-targets';
 
 // ============================================
 // TYPES
@@ -49,6 +58,14 @@ interface ServiceData {
   updatedAt: Date;
 }
 
+function toAbsoluteUrl(pathOrUrl: string | null | undefined): string | undefined {
+  if (!pathOrUrl?.trim()) return undefined;
+  const input = pathOrUrl.trim();
+  if (/^https?:\/\//i.test(input)) return input;
+  const base = getSiteUrl();
+  return `${base}${input.startsWith('/') ? input : `/${input}`}`;
+}
+
 // ============================================
 // METADATA GENERATION
 // ============================================
@@ -73,32 +90,44 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       };
     }
 
+    const title = service.metaTitle?.trim() || `${service.title} | Günen Temizlik - İstanbul`;
+    const description = service.metaDesc || service.shortDesc;
+    const canonical = canonicalUrl(`/hizmetler/${service.slug}`);
+    const imageUrl = toAbsoluteUrl(service.image) ?? canonicalUrl('/logo.png');
+    const derivedKeywords = serviceKeywordsFromTitleAndSlug(`${service.title} ${service.slug}`);
+
     return {
-      title: service.metaTitle?.trim() || `${service.title} | Günen Temizlik - İstanbul`,
-      description: service.metaDesc || service.shortDesc,
-      keywords: service.features,
+      title,
+      description,
+      keywords: keywordsForPage('hizmetler', [...derivedKeywords, ...service.features]),
       alternates: {
-        canonical: `https://gunentemizlik.com/hizmetler/${service.slug}`,
+        canonical,
       },
       openGraph: {
-        title: service.title,
-        description: service.shortDesc,
-        type: 'article',
-        url: `https://gunentemizlik.com/hizmetler/${service.slug}`,
-        images: service.image ? [
+        title,
+        description,
+        type: 'website',
+        url: canonical,
+        locale: 'tr_TR',
+        siteName: 'Günen Temizlik',
+        images: [
           {
-            url: service.image,
+            url: imageUrl,
             width: 1200,
             height: 630,
             alt: service.title,
-          }
-        ] : undefined,
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',
-        title: service.title,
-        description: service.shortDesc,
-        images: service.image ? [service.image] : undefined,
+        title,
+        description,
+        images: [imageUrl],
+      },
+      robots: {
+        index: true,
+        follow: true,
       },
     };
   } catch (error) {
@@ -119,14 +148,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * @returns JSON-LD object
  */
 function generateServiceSchema(service: ServiceData) {
+  const image = toAbsoluteUrl(service.image);
+  const url = canonicalUrl(`/hizmetler/${service.slug}`);
   return {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": `${url}#service`,
+    "name": service.title,
+    "url": url,
     "serviceType": service.title,
     "provider": {
       "@type": "LocalBusiness",
       "name": "Günen Temizlik Şirketi",
-      "url": "https://gunentemizlik.com",
+      "url": canonicalUrl('/'),
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "İstanbul",
@@ -135,7 +169,7 @@ function generateServiceSchema(service: ServiceData) {
     },
     "areaServed": "İstanbul",
     "description": service.description || service.shortDesc,
-    "image": service.image || undefined,
+    "image": image || canonicalUrl('/logo.png'),
   };
 }
 
@@ -166,42 +200,23 @@ export default async function ServiceDetailPage({ params }: PageProps) {
 
   // Generate structured data
   const serviceSchema = generateServiceSchema(service as ServiceData);
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Ana Sayfa',
-        item: 'https://gunentemizlik.com/',
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Hizmetler',
-        item: 'https://gunentemizlik.com/hizmetler',
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: service.title,
-        item: `https://gunentemizlik.com/hizmetler/${service.slug}`,
-      },
-    ],
-  };
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Ana Sayfa', url: '/' },
+    { name: 'Hizmetler', url: '/hizmetler' },
+    { name: service.title, url: `/hizmetler/${service.slug}` },
+  ]);
+  const serviceFaq = serviceFaqFromFeatures(service.features || []);
+  const faqSchema = generateFAQSchema(serviceFaq);
+  const schemaGraph = serializeSchemaGraph([
+    serviceSchema as Record<string, unknown>,
+    breadcrumbSchema,
+    faqSchema,
+  ]);
 
   return (
     <>
       {/* JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaGraph }} />
 
       <SiteLayout>
         {/* Hero Section */}
@@ -304,6 +319,18 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                   <p className="font-medium text-slate-900 dark:text-white">7/24 Hizmet</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Acil durumlar için her zaman</p>
                 </div>
+              </div>
+            </section>
+
+            <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sık sorulanlar</h2>
+              <div className="mt-4 space-y-3">
+                {serviceFaq.map((faq) => (
+                  <div key={faq.question} className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{faq.question}</h3>
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{faq.answer}</p>
+                  </div>
+                ))}
               </div>
             </section>
 
