@@ -18,7 +18,6 @@
 
 import { Navbar } from '@/components/site/Navbar';
 import { Footer } from '@/components/site/Footer';
-import { TrustBand } from '@/components/site/PromoTrustBars';
 import DeferredFloatingWidgets from '@/components/site/DeferredFloatingWidgets';
 
 // ============================================
@@ -52,8 +51,6 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
       >
         İçeriğe atla
       </a>
-
-      <TrustBand />
 
       {/* Navigation */}
       <header role="banner">
