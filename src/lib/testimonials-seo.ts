@@ -43,13 +43,13 @@ export function computeTestimonialAggregate(rows: { rating: number }[]) {
 }
 
 /**
- * Referanslar sayfası JSON-LD:
+ * Referanslar sayfası JSON-LD (Google uyumlu güvenli sürüm):
  * - LocalBusiness düğümünü temel işletme bilgileriyle verir.
- * - Yorumları LocalBusiness yerine Service düğümüne bağlar.
- *   (Review Snippet doğrulamasında "parent object type" hatalarını azaltır.)
+ * - Self-serving review snippet reddi yaşamamak için aggregateRating/review eklenmez.
+ *   (Google, işletmenin kendi sitesindeki Organization/LocalBusiness puanlarını
+ *    rich result olarak çoğunlukla kabul etmez.)
  */
 export function buildReferanslarLocalBusinessJsonLd(rows: PublicTestimonialRow[]) {
-  const agg = computeTestimonialAggregate(rows);
   const localBusiness: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -64,45 +64,7 @@ export function buildReferanslarLocalBusinessJsonLd(rows: PublicTestimonialRow[]
       addressCountry: 'TR',
     },
   };
-
-  if (!(agg && agg.reviewCount > 0)) {
-    return localBusiness;
-  }
-
-  const serviceId = `${SITE_ORIGIN}/#temizlik-hizmeti`;
-  const reviewedService: Record<string, unknown> = {
-    '@type': 'Service',
-    '@id': serviceId,
-    name: 'İstanbul Profesyonel Temizlik Hizmeti',
-    serviceType: 'Temizlik Hizmeti',
-    areaServed: 'İstanbul',
-    provider: { '@id': BUSINESS_ID },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: agg.ratingValue,
-      reviewCount: agg.reviewCount,
-      bestRating: 5,
-      worstRating: 1,
-    },
-    review: rows.slice(0, MAX_REVIEW_ENTITIES).map((t) => ({
-      '@type': 'Review',
-      author: { '@type': 'Person', name: t.name },
-      datePublished: t.createdAt.toISOString().slice(0, 10),
-      reviewBody: t.content.slice(0, 8000),
-      reviewRating: {
-        '@type': 'Rating',
-        ratingValue: t.rating,
-        bestRating: 5,
-        worstRating: 1,
-      },
-      itemReviewed: { '@id': serviceId },
-    })),
-  };
-
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [localBusiness, reviewedService],
-  };
+  return localBusiness;
 }
 
 export function buildReferanslarBreadcrumbJsonLd() {
