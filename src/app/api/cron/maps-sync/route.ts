@@ -11,13 +11,13 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET?.trim() || process.env.MAPS_CRON_SECRET?.trim();
+  if (!secret) {
+    return NextResponse.json({ error: 'Cron secret is not configured' }, { status: 500 });
+  }
+
   const auth = request.headers.get('authorization');
-  const vercelCron = request.headers.get('x-vercel-cron');
-
-  const okSecret = secret && auth === `Bearer ${secret}`;
-  const okVercel = vercelCron === '1' && process.env.VERCEL === '1';
-
-  if (!okSecret && !okVercel) {
+  const okSecret = auth === `Bearer ${secret}`;
+  if (!okSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

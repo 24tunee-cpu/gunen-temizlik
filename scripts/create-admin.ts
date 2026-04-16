@@ -9,6 +9,19 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gunentemizlik.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
 
+function validateRuntimeConfig() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) return;
+
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD || !process.env.ADMIN_NAME) {
+    throw new Error('In production, ADMIN_EMAIL, ADMIN_PASSWORD and ADMIN_NAME must be set');
+  }
+
+  if (ADMIN_PASSWORD === 'admin123') {
+    throw new Error('Default admin password is not allowed in production');
+  }
+}
+
 interface CreateAdminResult {
   created: boolean;
   email: string;
@@ -17,6 +30,7 @@ interface CreateAdminResult {
 
 async function main(): Promise<CreateAdminResult> {
   try {
+    validateRuntimeConfig();
     logger.info('Checking for existing admin user', { email: ADMIN_EMAIL });
 
     // Check if admin exists

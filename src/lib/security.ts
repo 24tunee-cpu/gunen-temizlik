@@ -343,6 +343,22 @@ export function sanitizeArray<T>(data: T[]): T[] {
   });
 }
 
+export function sanitizeStringList(
+  value: unknown,
+  options: { maxItems?: number; maxLength?: number } = {}
+): string[] {
+  if (!Array.isArray(value)) return [];
+  const maxItems = options.maxItems ?? 20;
+  const maxLength = options.maxLength ?? 120;
+
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => sanitizeInput(item).slice(0, maxLength))
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .slice(0, maxItems);
+}
+
 /**
  * Object içeriği için recursive sanitization
  * @param data Sanitize edilecek object

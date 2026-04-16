@@ -398,7 +398,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors focus:outline-none"
+        className="absolute bottom-28 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-slate-400 transition-colors hover:text-emerald-400 focus:outline-none md:flex"
         aria-label="Sayfayı aşağı kaydır"
       >
         <span className="text-xs font-medium">Aşağı Kaydır</span>

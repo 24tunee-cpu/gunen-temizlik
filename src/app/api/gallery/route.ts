@@ -24,6 +24,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 // ============================================
 // CONFIGURATION
@@ -150,8 +151,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const secret =
-      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 

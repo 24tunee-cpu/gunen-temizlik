@@ -218,7 +218,7 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-5 xl:gap-6">
+            <div className="hidden xl:flex items-center gap-5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -273,7 +273,7 @@ export function Navbar() {
             </div>
 
             {/* CTA Button */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden xl:flex items-center gap-4">
               <a
                 href={telHref}
                 data-source="navbar-desktop"
@@ -295,7 +295,7 @@ export function Navbar() {
             <button
               ref={mobileButtonRef}
               onClick={toggleMenu}
-              className={`rounded-lg p-2 lg:hidden ${scrolled ? 'text-slate-700' : 'text-white'}`}
+              className={`rounded-lg p-2 xl:hidden ${scrolled ? 'text-slate-700' : 'text-white'}`}
               aria-expanded={isOpen}
               aria-controls="mobile-menu"
               aria-label={isOpen ? 'Menüyü kapat' : 'Menüyü aç'}
@@ -311,7 +311,7 @@ export function Navbar() {
       {isOpen && (
         <div
             ref={mobileMenuRef}
-            className="fixed inset-0 z-40 lg:hidden"
+            className="fixed inset-0 z-[70] xl:hidden"
             role="dialog"
             aria-modal="true"
             aria-label="Mobil menü"

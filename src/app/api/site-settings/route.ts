@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 import type { SiteSettings as SiteSettingsRow } from '@prisma/client';
 import { SITE_CONTACT } from '@/config/site-contact';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -269,8 +270,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const secret =
-      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     const isAdmin = token?.role === 'ADMIN' || token?.role === 'EDITOR';
 

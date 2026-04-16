@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { requireAdminAuth, sanitizeInput, sanitizeStringList } from '@/lib/security';
 
 // ============================================
 // CONFIGURATION
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
         description: body.description && typeof body.description === 'string'
           ? sanitizeInput(body.description)
           : null,
-        features: Array.isArray(body.features) ? body.features : [],
+        features: sanitizeStringList(body.features, { maxItems: 20, maxLength: 100 }),
         isActive: typeof body.isActive === 'boolean' ? body.isActive : true,
         order: typeof body.order === 'number' ? body.order : 0,
       },
@@ -322,7 +322,7 @@ export async function PUT(request: NextRequest) {
         : null;
     }
     if (data.features !== undefined) {
-      updateData.features = Array.isArray(data.features) ? data.features : [];
+      updateData.features = sanitizeStringList(data.features, { maxItems: 20, maxLength: 100 });
     }
     if (data.isActive !== undefined) {
       updateData.isActive = typeof data.isActive === 'boolean' ? data.isActive : true;

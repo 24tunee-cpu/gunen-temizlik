@@ -15,7 +15,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
-    "seo:gsc:generate-meta": "tsx scripts/seo-meta-from-gsc.ts"
+    "seo:gsc:generate-meta": "tsx scripts/seo-meta-from-gsc.ts",
+    "predeploy:check": "tsx scripts/predeploy-check.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

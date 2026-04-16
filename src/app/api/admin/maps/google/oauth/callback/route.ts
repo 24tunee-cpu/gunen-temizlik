@@ -4,6 +4,7 @@ import { google } from 'googleapis';
 import { getMapsGoogleRedirectUri, mapsGoogleOAuthConfigured } from '@/lib/maps-env';
 import { saveGoogleOAuthTokens } from '@/lib/google-maps-sync';
 import { ensureMapPlatformRows } from '@/lib/map-platforms';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 function baseUrl(req: NextRequest) {
   return (
@@ -14,7 +15,7 @@ function baseUrl(req: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+  const secret = getNextAuthJwtSecret();
   const jwt = await getToken({ req: request, secret });
   if (!jwt || jwt.role !== 'ADMIN') {
     return NextResponse.redirect(new URL('/admin/haritalar?maps_error=unauthorized', baseUrl(request)));
@@ -76,14 +77,14 @@ export async function GET(request: NextRequest) {
     // isteğe bağlı
   }
 
+  await ensureMapPlatformRows();
+
   await saveGoogleOAuthTokens({
     refreshToken: refresh,
     accessToken: tokens.access_token ?? null,
     expiryDate: tokens.expiry_date ?? null,
     email,
   });
-
-  await ensureMapPlatformRows();
 
   return redirectWithClear('/admin/haritalar?maps_tab=google&maps_ok=connected');
 }

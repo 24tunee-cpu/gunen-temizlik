@@ -35,7 +35,7 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-label="Çerez ve gizlilik"
-      className="fixed inset-x-0 bottom-[5.5rem] z-[110] border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 lg:bottom-0"
+      className="fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] z-[110] border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 lg:bottom-0"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-600 dark:text-slate-300">

@@ -25,7 +25,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
-import { requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { requireAdminAuth, sanitizeInput, sanitizeStringList } from '@/lib/security';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 // ============================================
 // CONFIGURATION
@@ -162,8 +163,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const limit = searchParams.get('limit');
 
-    const secret =
-      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     const isAdmin = token?.role === 'ADMIN';
 
@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
         category: data.category && typeof data.category === 'string'
           ? sanitizeInput(data.category).slice(0, MAX_LENGTHS.category)
           : 'Genel',
-        tags: Array.isArray(data.tags) ? data.tags : [],
+        tags: sanitizeStringList(data.tags, { maxItems: 16, maxLength: 60 }),
         author: data.author && typeof data.author === 'string'
           ? sanitizeInput(data.author).slice(0, MAX_LENGTHS.author)
           : 'Günen Temizlik',
@@ -470,7 +470,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (data.tags !== undefined) {
-      updateData.tags = Array.isArray(data.tags) ? data.tags : [];
+      updateData.tags = sanitizeStringList(data.tags, { maxItems: 16, maxLength: 60 });
     }
 
     if (data.author !== undefined) {

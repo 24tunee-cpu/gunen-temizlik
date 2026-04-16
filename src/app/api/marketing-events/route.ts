@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
-import { getClientIp, requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { checkRateLimit, getClientIp, requireAdminAuth, sanitizeInput } from '@/lib/security';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -9,18 +9,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60_000;
 const MAX_POSTS_PER_MINUTE = 60;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const hits = (rateLimitMap.get(ip) || []).filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
-  if (hits.length >= MAX_POSTS_PER_MINUTE) return true;
-  hits.push(now);
-  rateLimitMap.set(ip, hits);
-  return false;
-}
 
 function hashIp(ip: string): string {
   const salt = process.env.NEXTAUTH_SECRET || 'marketing-events-salt';
@@ -35,7 +24,8 @@ export async function POST(request: NextRequest) {
   const headers = { ...CORS_HEADERS };
   const ip = getClientIp(request);
 
-  if (isRateLimited(ip)) {
+  const limit = checkRateLimit(`marketing-events:${ip}`, MAX_POSTS_PER_MINUTE, 60_000);
+  if (!limit.allowed) {
     return NextResponse.json({ error: 'Too many events' }, { status: 429, headers });
   }
 
@@ -65,8 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true }, { status: 201, headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500, headers });
+    return NextResponse.json({ error: 'Event could not be recorded' }, { status: 500, headers });
   }
 }
 
@@ -101,7 +90,6 @@ export async function GET(request: NextRequest) {
       { headers }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500, headers });
+    return NextResponse.json({ error: 'Events could not be loaded' }, { status: 500, headers });
   }
 }

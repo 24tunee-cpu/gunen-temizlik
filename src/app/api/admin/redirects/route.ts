@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, requireAdminOnly, sanitizeInput } from '@/lib/security';
 import { writeAuditLog } from '@/lib/audit-log';
 import { getToken } from 'next-auth/jwt';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
         active: body.active !== false,
       },
     });
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,
@@ -62,6 +63,6 @@ export async function POST(request: NextRequest) {
     if (msg.includes('Unique')) {
       return NextResponse.json({ error: 'Bu kaynak yolu zaten tanımlı' }, { status: 409 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: 'Yönlendirme kuralı oluşturulamadı' }, { status: 500 });
   }
 }

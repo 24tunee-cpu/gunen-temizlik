@@ -27,6 +27,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, requireAdminOnly } from '@/lib/security';
 import { writeAuditLog } from '@/lib/audit-log';
 import { getToken } from 'next-auth/jwt';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 const PIPELINE = new Set(['new', 'contacted', 'quoted', 'won', 'lost']);
 
@@ -255,7 +256,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       include: { assignedUser: { select: { id: true, name: true, email: true } } },
     });
 
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,
@@ -340,7 +341,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
     });
 
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,

@@ -11,6 +11,7 @@ type Topic = {
 const TARGET_COUNT = 80;
 const AUTHOR = 'Günen Temizlik';
 const DEFAULT_IMAGE = '/logo.png';
+const SHOULD_APPLY = process.argv.includes('--apply');
 
 const DISTRICTS = [
   'Kadikoy',
@@ -296,6 +297,11 @@ async function run() {
     console.log(`Current blog count: ${existingCount}`);
     console.log(`Target blog count: ${TARGET_COUNT}`);
     console.log(`Posts to create: ${needed}`);
+
+    if (!SHOULD_APPLY) {
+      console.log('Dry run mode: no data will be written. Pass --apply to create posts.');
+      return;
+    }
 
     if (needed === 0) {
       console.log('Target already reached. Nothing to create.');

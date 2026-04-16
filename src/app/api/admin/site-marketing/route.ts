@@ -5,6 +5,7 @@ import { writeAuditLog } from '@/lib/audit-log';
 import { getToken } from 'next-auth/jwt';
 import { revalidatePath } from 'next/cache';
 import { SITE_CONTACT } from '@/config/site-contact';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,7 +78,7 @@ export async function PUT(request: NextRequest) {
       where: { id: row.id },
       data: data as Parameters<typeof prisma.siteSettings.update>[0]['data'],
     });
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,
@@ -97,9 +98,9 @@ export async function PUT(request: NextRequest) {
       marketingBannerVariant: updated.marketingBannerVariant ?? 'A',
       consentPolicyVersion: updated.consentPolicyVersion ?? '1',
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Kaydedilemedi' },
+      { error: 'Pazarlama ayarları kaydedilemedi' },
       { status: 500 }
     );
   }

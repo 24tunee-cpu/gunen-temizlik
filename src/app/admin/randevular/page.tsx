@@ -66,24 +66,13 @@ export default function AdminAppointmentsPage() {
       const res = await fetch(`/api/admin/appointments${query}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Yüklenemedi');
       const data = (await res.json()) as Row[];
-      const list = Array.isArray(data) ? data : [];
-      setRows(list);
-
-      if (selectedId) {
-        const stillThere = list.find((r) => r.id === selectedId);
-        if (stillThere) {
-          setNotesDraft(stillThere.adminNotes ?? '');
-        } else {
-          setSelectedId(null);
-          setNotesDraft('');
-        }
-      }
+      setRows(Array.isArray(data) ? data : []);
     } catch {
       toast.error('Hata', 'Randevu talepleri alınamadı');
     } finally {
       setLoading(false);
     }
-  }, [selectedId, statusFilter]);
+  }, [statusFilter]);
 
   useEffect(() => {
     void load();
@@ -111,6 +100,20 @@ export default function AdminAppointmentsPage() {
     () => (selectedId ? rows.find((r) => r.id === selectedId) ?? null : null),
     [rows, selectedId]
   );
+
+  useEffect(() => {
+    if (!selectedId) {
+      setNotesDraft('');
+      return;
+    }
+    const stillThere = rows.find((r) => r.id === selectedId);
+    if (!stillThere) {
+      setSelectedId(null);
+      setNotesDraft('');
+      return;
+    }
+    setNotesDraft(stillThere.adminNotes ?? '');
+  }, [rows, selectedId]);
 
   const patch = useCallback(
     async (id: string, payload: { status?: StatusKey; adminNotes?: string | null }) => {

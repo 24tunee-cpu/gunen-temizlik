@@ -33,6 +33,7 @@ import { upsertCanonicalTestimonials } from '@/lib/seed-testimonials';
 import { upsertCanonicalBlogPosts } from '@/lib/seed-blog';
 import { upsertCanonicalTeamMembers } from '@/lib/seed-team';
 import { upsertCanonicalFaqs } from '@/lib/seed-faq';
+import { checkRateLimit } from '@/lib/security';
 import bcrypt from 'bcryptjs';
 
 // ============================================
@@ -48,9 +49,6 @@ const DEFAULT_ADMIN = {
   name: 'Admin',
 } as const;
 
-/** Rate limiting map (IP -> timestamp array) */
-const rateLimitMap = new Map<string, number[]>();
-
 /** Rate limit window: 10 minutes */
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
 
@@ -63,39 +61,13 @@ const MAX_REQUESTS = 5;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
-
-/**
- * Check rate limit for IP address
- * @param ip Client IP address
- * @returns boolean - true if rate limited
- */
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = rateLimitMap.get(ip) || [];
-
-  // Filter out old timestamps outside the window
-  const validTimestamps = timestamps.filter(
-    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW
-  );
-
-  // Check if limit exceeded
-  if (validTimestamps.length >= MAX_REQUESTS) {
-    return true;
-  }
-
-  // Add current timestamp
-  validTimestamps.push(now);
-  rateLimitMap.set(ip, validTimestamps);
-
-  return false;
-}
 
 /**
  * Get client IP from request headers
@@ -133,12 +105,31 @@ export async function OPTIONS() {
  * @param request NextRequest object
  * @returns Seed operation result JSON
  */
-export async function GET(request: NextRequest) {
+async function runSeed(request: NextRequest) {
   const headers = { ...CORS_HEADERS };
   const ip = getClientIp(request);
 
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('Blocked seed-admin in production', { ip });
+    return NextResponse.json({ error: 'Not Found' }, { status: 404, headers });
+  }
+
+  const setupSecret = process.env.SEED_ADMIN_SECRET?.trim();
+  if (!setupSecret) {
+    console.error('SEED_ADMIN_SECRET is missing');
+    return NextResponse.json(
+      { error: 'Seed endpoint is not configured' },
+      { status: 500, headers }
+    );
+  }
+  const auth = request.headers.get('authorization');
+  if (auth !== `Bearer ${setupSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers });
+  }
+
   // Rate limiting
-  if (checkRateLimit(ip)) {
+  const limit = checkRateLimit(`seed-admin:${ip}`, MAX_REQUESTS, RATE_LIMIT_WINDOW);
+  if (!limit.allowed) {
     console.warn('Rate limit exceeded on seed-admin endpoint', { ip });
     return NextResponse.json(
       { error: 'Çok fazla istek. Lütfen 10 dakika bekleyin.' },
@@ -146,15 +137,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Production environment check
-  const isProduction = process.env.NODE_ENV === 'production';
-  if (isProduction) {
-    console.warn('Seed endpoint accessed in production environment', { ip });
-    // Allow but warn - in real production this should be disabled entirely
-  }
-
   try {
-    console.log('Starting seed data creation', { ip, isProduction });
+    console.log('Starting seed data creation', { ip });
 
     // Check if admin exists, create if not
     const existingAdmin = await prisma.user.findUnique({
@@ -318,9 +302,7 @@ export async function GET(request: NextRequest) {
         gallery: existingGallery,
         certificates: existingCertificates,
       },
-      warnings: isProduction
-        ? ['⚠️ PRODUCTION ORTAMINDA ÇALIŞIYOR - Bu endpoint productionda devre dışı bırakılmalı!']
-        : [],
+      warnings: [],
       nextSteps: adminCreated
         ? [
           '1. /admin sayfasına gidin',
@@ -333,7 +315,6 @@ export async function GET(request: NextRequest) {
 
     console.log('Seed data operation completed', {
       adminCreated,
-      isProduction,
       createdCounts: responseData.created
     });
 
@@ -342,11 +323,19 @@ export async function GET(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error creating seed data', { error: errorMessage });
     return NextResponse.json(
-      {
-        error: 'Seed verileri oluşturulamadı',
-        details: errorMessage
-      },
+      { error: 'Seed verileri oluşturulamadı' },
       { status: 500, headers }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Method Not Allowed' },
+    { status: 405, headers: CORS_HEADERS }
+  );
+}
+
+export async function POST(request: NextRequest) {
+  return runSeed(request);
 }

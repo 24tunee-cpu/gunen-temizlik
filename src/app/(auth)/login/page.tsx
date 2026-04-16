@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { AUTH_DEFAULT_REDIRECT_PATH } from '@/lib/auth-paths';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,7 +32,15 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
-  const callbackUrl = searchParams.get('callbackUrl') || '/admin/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl');
+  const resolveSafeCallbackUrl = useCallback((url: string | null): string => {
+    if (!url) return AUTH_DEFAULT_REDIRECT_PATH;
+    const trimmed = url.trim();
+    if (!trimmed.startsWith('/')) return AUTH_DEFAULT_REDIRECT_PATH;
+    if (trimmed.startsWith('//')) return AUTH_DEFAULT_REDIRECT_PATH;
+    return trimmed;
+  }, []);
+  const safeCallbackUrl = resolveSafeCallbackUrl(callbackUrl);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,18 +51,18 @@ function LoginForm() {
 
   // Eğer kullanıcı zaten giriş yapmışsa, dashboard'a yönlendir
   useEffect(() => {
-    console.log('Login page mounted', { status, callbackUrl });
+    console.log('Login page mounted', { status, callbackUrl: safeCallbackUrl });
 
     if (status === 'authenticated') {
       console.log('User already authenticated, redirecting to dashboard');
-      router.push(callbackUrl);
+      router.push(safeCallbackUrl);
       return;
     }
 
     if (status !== 'loading') {
       setIsChecking(false);
     }
-  }, [status, router, callbackUrl]);
+  }, [status, router, safeCallbackUrl]);
 
   // Clear error when user starts typing
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +104,7 @@ function LoginForm() {
         email: email.trim().toLowerCase(),
         password,
         redirect: false,
-        callbackUrl,
+        callbackUrl: safeCallbackUrl,
       });
 
       if (result?.error) {
@@ -111,8 +120,8 @@ function LoginForm() {
 
         setError(errorMessages[result.error] || errorMessages['Default']);
       } else if (result?.ok) {
-        console.log('Login successful', { email, callbackUrl });
-        router.push(callbackUrl);
+        console.log('Login successful', { email, callbackUrl: safeCallbackUrl });
+        router.push(safeCallbackUrl);
       }
     } catch (error) {
       console.error('Login error', { error: error instanceof Error ? error.message : 'Unknown' });

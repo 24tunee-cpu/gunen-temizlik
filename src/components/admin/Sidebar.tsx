@@ -145,7 +145,7 @@ export function Sidebar() {
         type="button"
         onClick={toggleSidebar}
         whileTap={shouldReduceMotion ? {} : { scale: 0.96 }}
-        className="fixed left-4 top-4 z-[60] flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-900/20 ring-1 ring-white/10 lg:hidden"
+        className="fixed left-4 top-4 z-[40] flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-900/20 ring-1 ring-white/10 lg:hidden"
         aria-label={sidebarOpen ? 'Menüyü kapat' : 'Menüyü aç'}
         aria-expanded={sidebarOpen}
         aria-controls="admin-sidebar"

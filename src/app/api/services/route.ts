@@ -30,9 +30,11 @@ import { withErrorHandler } from '@/lib/error-handler';
 import {
   requireAdminAuth,
   sanitizeInput,
+  sanitizeStringList,
   rateLimitMiddleware,
   addSecurityHeaders,
 } from '@/lib/security';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 
 // ============================================
@@ -75,8 +77,7 @@ const getHandler = async (req: NextRequest) => {
   }
 
   try {
-    const secret =
-      process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req, secret });
     const isAdmin = token?.role === 'ADMIN';
 
@@ -183,7 +184,7 @@ const postHandler = async (req: NextRequest) => {
         description: data.description && typeof data.description === 'string' ? sanitizeInput(data.description) : '',
         image: data.image && typeof data.image === 'string' ? data.image : null,
         icon: data.icon && typeof data.icon === 'string' ? data.icon : 'Sparkles',
-        features: Array.isArray(data.features) ? data.features : [],
+        features: sanitizeStringList(data.features, { maxItems: 24, maxLength: 120 }),
         priceRange: data.priceRange && typeof data.priceRange === 'string' ? data.priceRange : null,
         order: typeof data.order === 'number' ? data.order : 0,
         isActive: typeof data.isActive === 'boolean' ? data.isActive : true,
@@ -279,7 +280,7 @@ const putHandler = async (req: NextRequest) => {
     }
     if (data.image !== undefined) updateData.image = data.image && typeof data.image === 'string' ? data.image : null;
     if (data.icon !== undefined) updateData.icon = data.icon && typeof data.icon === 'string' ? data.icon : 'Sparkles';
-    if (data.features !== undefined) updateData.features = Array.isArray(data.features) ? data.features : [];
+    if (data.features !== undefined) updateData.features = sanitizeStringList(data.features, { maxItems: 24, maxLength: 120 });
     if (data.priceRange !== undefined) updateData.priceRange = data.priceRange && typeof data.priceRange === 'string' ? data.priceRange : null;
     if (data.order !== undefined) updateData.order = typeof data.order === 'number' ? data.order : 0;
     if (data.isActive !== undefined) updateData.isActive = typeof data.isActive === 'boolean' ? data.isActive : true;

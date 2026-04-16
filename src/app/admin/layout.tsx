@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/admin/Sidebar';
 import { AdminHeader } from '@/components/admin/Header';
 import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
 import { ToastContainer } from '@/components/ui/Toast';
-import { useAdminStore } from '@/store/adminStore';
+import { initAdminStore, useAdminStore } from '@/store/adminStore';
 import { initTheme } from '@/store/themeStore';
 import { cn } from '@/lib/utils';
 import { SessionProvider } from 'next-auth/react';
@@ -18,7 +18,10 @@ export default function AdminLayout({
   const { sidebarOpen } = useAdminStore();
 
   useEffect(() => {
+    void useAdminStore.persist.rehydrate();
+    const cleanupAdminStore = initAdminStore();
     initTheme();
+    return cleanupAdminStore;
   }, []);
 
   return (

@@ -24,7 +24,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAdminAuth, sanitizeInput } from '@/lib/security';
+import { requireAdminAuth, sanitizeInput, sanitizeStringList } from '@/lib/security';
 
 // ============================================
 // CONFIGURATION
@@ -304,7 +304,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : null;
     }
     if (body.features !== undefined) {
-      updateData.features = Array.isArray(body.features) ? body.features : [];
+      updateData.features = sanitizeStringList(body.features, { maxItems: 20, maxLength: 100 });
     }
     if (body.isActive !== undefined) {
       updateData.isActive = typeof body.isActive === 'boolean' ? body.isActive : true;

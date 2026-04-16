@@ -115,8 +115,8 @@ export function FloatingWhatsApp({
   return (
     <div
       ref={rootRef}
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-end p-4 sm:p-6"
-      style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      className="pointer-events-none fixed inset-x-0 bottom-[5.75rem] z-[95] flex justify-end p-4 sm:p-6 lg:bottom-0"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="pointer-events-none flex w-full max-w-[min(100%,22rem)] flex-col items-end gap-3">
         <AnimatePresence mode="sync">

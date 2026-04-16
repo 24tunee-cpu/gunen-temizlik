@@ -17,6 +17,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { createLogger } from '@/lib/logger';
+import { AUTH_LOGIN_PATH } from '@/lib/auth-paths';
 
 // ============================================
 // TYPES
@@ -103,7 +104,8 @@ export function ProtectedRoute({
     // Kullanıcı giriş yapmamışsa login'e yönlendir
     if (status === 'unauthenticated') {
       loggerRef.current.warn('Unauthenticated access attempt', { path: pathname });
-      router.push(`/admin/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      setAuthState({ isAuthorized: false, isChecking: false });
+      router.push(`${AUTH_LOGIN_PATH}?callbackUrl=${encodeURIComponent(pathname)}`);
       return;
     }
 
@@ -121,7 +123,8 @@ export function ProtectedRoute({
         });
 
         // Yetkisiz erişim - login'e yönlendir
-        router.push('/admin/login?error=unauthorized');
+        setAuthState({ isAuthorized: false, isChecking: false });
+        router.push(`${AUTH_LOGIN_PATH}?error=unauthorized`);
         return;
       }
 
@@ -202,7 +205,7 @@ export function ProtectedRoute({
             Bu sayfaya erişim yetkiniz yok. Lütfen yönetici hesabı ile giriş yapın.
           </p>
           <button
-            onClick={() => router.push('/admin/login')}
+            onClick={() => router.push(AUTH_LOGIN_PATH)}
             className="px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
             aria-label="Giriş sayfasına dön"
           >

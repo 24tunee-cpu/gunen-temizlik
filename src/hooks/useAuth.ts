@@ -19,6 +19,7 @@
 import { useSession, signOut, SessionContextValue } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useCallback, useMemo } from 'react';
+import { AUTH_LOGIN_PATH } from '@/lib/auth-paths';
 
 // ============================================
 // TYPES
@@ -77,7 +78,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   const {
     requireAuth = true,
     requiredRole,
-    redirectTo = '/admin/login',
+    redirectTo = AUTH_LOGIN_PATH,
   } = options;
 
   const { data: session, status, update: updateSession } = useSession();

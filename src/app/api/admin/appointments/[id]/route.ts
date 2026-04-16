@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/security';
 import { writeAuditLog } from '@/lib/audit-log';
 import { getToken } from 'next-auth/jwt';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       where: { id },
       data,
     });
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,

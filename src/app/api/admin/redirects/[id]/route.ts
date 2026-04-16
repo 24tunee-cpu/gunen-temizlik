@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdminOnly } from '@/lib/security';
 import { writeAuditLog } from '@/lib/audit-log';
 import { getToken } from 'next-auth/jwt';
+import { getNextAuthJwtSecret } from '@/lib/auth-secret';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       where: { id },
       data,
     });
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,
@@ -50,9 +51,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
       ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
     });
     return NextResponse.json(row);
-  } catch (e) {
+  } catch {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Güncellenemedi' },
+      { error: 'Yönlendirme kuralı güncellenemedi' },
       { status: 400 }
     );
   }
@@ -64,7 +65,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   const { id } = await params;
   try {
     await prisma.redirectRule.delete({ where: { id } });
-    const secret = process.env.NEXTAUTH_SECRET || 'development-secret-do-not-use-in-production';
+    const secret = getNextAuthJwtSecret();
     const token = await getToken({ req: request, secret });
     await writeAuditLog({
       userId: token?.sub ?? null,

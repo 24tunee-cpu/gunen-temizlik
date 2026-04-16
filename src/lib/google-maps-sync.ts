@@ -343,9 +343,10 @@ export async function saveGoogleOAuthTokens(params: {
     },
   });
 
-  await prisma.mapPlatformListing.update({
+  await prisma.mapPlatformListing.upsert({
     where: { platform: PROVIDER },
-    data: { connectionStatus: 'connected' },
+    create: { platform: PROVIDER, connectionStatus: 'connected' },
+    update: { connectionStatus: 'connected' },
   });
 }
 
