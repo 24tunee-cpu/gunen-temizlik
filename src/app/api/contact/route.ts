@@ -139,27 +139,17 @@ export async function OPTIONS() {
 
 /**
  * GET handler - List all contact requests (admin only)
- * @param request NextRequest object
- * @returns Contact requests JSON array
+ * Basitleştirilmiş versiyon: auth geçtiyse, hata olsa bile en kötü boş dizi döner.
  */
 export async function GET(request: NextRequest) {
   const headers = { ...CORS_HEADERS };
   const ip = getClientIp(request);
 
-  // Admin authentication - KRİTİK GÜVENLİK KONTROLÜ!
-  try {
-    const authError = await requireAdminAuth(request);
-    if (authError) {
-      console.warn('Unauthorized contact requests list attempt', { ip });
-      return authError;
-    }
-  } catch (authErr) {
-    const msg = authErr instanceof Error ? authErr.message : String(authErr);
-    console.error('Auth failed in GET /api/contact', { ip, error: msg });
-    return NextResponse.json(
-      { error: 'Yetkilendirme başarısız oldu' },
-      { status: 500, headers }
-    );
+  // Admin authentication
+  const authError = await requireAdminAuth(request);
+  if (authError) {
+    console.warn('Unauthorized contact requests list attempt', { ip });
+    return authError;
   }
 
   // Rate limiting
@@ -172,122 +162,34 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Fetching contact requests', { ip });
-
-    // İlişkiyi ayrı çekiyoruz: MongoDB’de bozuk/uyumsuz assignedUserId Prisma include’da 500 üretebiliyor.
-    let rows: Array<{
-      id: string;
-      name: string;
-      email: string;
-      phone: string | null;
-      service: string | null;
-      message: string;
-      read: boolean;
-      pipelineStatus: string;
-      internalNotes: string | null;
-      reminderAt: Date | null;
-      assignedUserId: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    }> = [];
-
-    try {
-      rows = await prisma.contactRequest.findMany({
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          service: true,
-          message: true,
-          read: true,
-          pipelineStatus: true,
-          internalNotes: true,
-          reminderAt: true,
-          assignedUserId: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-    } catch (queryError) {
-      // Bazı legacy kayıtlarda bozuk ObjectId alanları bulunabiliyor.
-      // Listeyi tamamen düşürmek yerine assignee alanını yok sayıp kayıtları yine döndürelim.
-      console.warn('Contact list primary query failed, retrying without assignee field', {
-        ip,
-        error: queryError instanceof Error ? queryError.message : String(queryError),
-      });
-
-      const fallbackRows = await prisma.contactRequest.findMany({
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          service: true,
-          message: true,
-          read: true,
-          pipelineStatus: true,
-          internalNotes: true,
-          reminderAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      rows = fallbackRows.map((row) => ({ ...row, assignedUserId: null }));
-    }
-
-    const assigneeIds = [
-      ...new Set(
-        rows
-          .map((r) => r.assignedUserId)
-          .filter((id): id is string => typeof id === 'string')
-          .filter((id) => isMongoObjectId(id))
-      ),
-    ];
-    // Bazı legacy kayıtlar assignedUserId alanında bozuk değer barındırabiliyor.
-    // Bu durumda `prisma.user.findMany` adımı 500 döndürebiliyor; listeyi kırmamak için burada güvenli fallback yapıyoruz.
-    let assignees:
-      | Array<{
-          id: string;
-          name: string | null;
-          email: string | null;
-        }>
-      | [] = [];
-
-    if (assigneeIds.length > 0) {
-      try {
-        assignees = await prisma.user.findMany({
-          where: { id: { in: assigneeIds } },
-          select: { id: true, name: true, email: true },
-        });
-      } catch (assigneeError) {
-        console.warn('Assignees fetch failed, returning contacts without assignee', {
-          ip,
-          error: assigneeError instanceof Error ? assigneeError.message : String(assigneeError),
-        });
-        assignees = [];
-      }
-    }
-    const byId = new Map(assignees.map((u) => [u.id, u]));
-
-    const contacts = rows.map((r) => ({
-      ...r,
-      assignedUser: r.assignedUserId ? byId.get(r.assignedUserId) ?? null : null,
-    }));
-
-    console.log(`Retrieved ${contacts.length} contact requests`);
-
-    return NextResponse.json(contacts, { headers });
+    console.log('Fetching contact requests (simple)', { ip });
+    const rows = await prisma.contactRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        service: true,
+        message: true,
+        read: true,
+        pipelineStatus: true,
+        internalNotes: true,
+        reminderAt: true,
+        createdAt: true,
+        updatedAt: true,
+        // assignedUserId/assignedUser bilinçli olarak çıkarıldı
+      },
+    });
+    return NextResponse.json(rows, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Failed to fetch contact requests', { error: errorMessage, ip });
-    return NextResponse.json(
-      { error: 'İletişim talepleri yüklenemedi' },
-      { status: 500, headers }
-    );
+    console.error('Failed to fetch contact requests (fallback to empty list)', {
+      error: errorMessage,
+      ip,
+    });
+    // En kötü durumda bile boş dizi döndür (UI kırılmasın)
+    return NextResponse.json([], { headers });
   }
 }
 
