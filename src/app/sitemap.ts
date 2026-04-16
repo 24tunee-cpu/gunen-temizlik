@@ -20,6 +20,7 @@ const STATIC_PAGES: StaticEntry[] = [
   { path: '/ara', changeFrequency: 'weekly', priority: 0.75 },
   { path: '/blog', changeFrequency: 'daily', priority: 0.85 },
   { path: '/galeri', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/harita-ve-yorumlar', changeFrequency: 'weekly', priority: 0.84 },
   { path: '/referanslar', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/hakkimizda', changeFrequency: 'monthly', priority: 0.75 },
   { path: '/ekibimiz', changeFrequency: 'monthly', priority: 0.75 },
