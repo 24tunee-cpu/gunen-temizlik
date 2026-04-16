@@ -12,6 +12,8 @@ type StaticEntry = {
 /** Herkese açık sayfalar (admin / auth hariç). */
 const STATIC_PAGES: StaticEntry[] = [
   { path: '', changeFrequency: 'weekly', priority: 1 },
+  { path: '/llms.txt', changeFrequency: 'weekly', priority: 0.95 },
+  { path: '/llms-full.txt', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/hizmetler', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/bolgeler', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/iletisim', changeFrequency: 'monthly', priority: 0.9 },

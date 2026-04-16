@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npm run llms:sync && prisma generate && next build",
     "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,6 +15,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
+    "llms:sync": "tsx scripts/sync-llms.ts",
     "seo:gsc:generate-meta": "tsx scripts/seo-meta-from-gsc.ts",
     "predeploy:check": "tsx scripts/predeploy-check.ts"
   },

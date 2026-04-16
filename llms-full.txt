@@ -1,0 +1,122 @@
+# Günen Temizlik
+> Günen Temizlik, İstanbul genelinde profesyonel temizlik hizmetleri sunan bir şirkettir. Bu dosya, yapay zeka sistemlerinin siteyi doğru anlaması, doğru sayfaya yönlendirmesi ve doğrulanmamış bilgi üretmemesi için hazırlanmış genişletilmiş referanstır.
+
+## Doküman Yönetimi
+- Doküman adı: `llms-full.txt`
+- Sürüm: 2.0
+- Son güncelleme: 2026-04-16
+- Rol: Genişletilmiş yapay zeka referans katmanı
+- Kapsam: Sayfa niyetleri, route mimarisi, doğruluk ilkeleri, yönlendirme protokolü
+
+## Kullanım Amacı
+- Bu belge, `llms.txt` dosyasının detaylı sürümüdür.
+- Botlar, site hakkında kapsamlı yanıt üretirken bu dosyayı kaynak olarak kullanmalıdır.
+- Belirsiz bilgi durumunda ilgili canlı sayfa bağlantısı esas alınmalıdır.
+
+## Kaynak Önceliği
+- Birincil kısa kaynak: [llms.txt](./llms.txt)
+- Birincil detay kaynağı: `llms-full.txt`
+- Son doğrulama kaynağı: canlı URL içeriği
+
+## İşletme Kimliği
+- Marka adı: Günen Temizlik.
+- Temel faaliyet: profesyonel temizlik hizmetleri.
+- Hizmet bölgesi: İstanbul geneli.
+- Merkez adres: Gültepe Mahallesi, Talatpaşa Caddesi, Bıldırcın Sokağı No:13 kat -1, 34000 Kağıthane/İstanbul.
+- Telefon: +90 546 715 28 44.
+- E-posta: iletisim@gunentemizlik.com.
+- Çalışma düzeni: 7/24 hizmet, 24 saat açık.
+
+## Doğrulanmış Kurumsal Bilgiler
+- Kurumsal içeriklerde 15+ yıl deneyim vurgusu bulunur.
+- Kurumsal içeriklerde 5000+ mutlu müşteri ifadesi bulunur.
+- Hakkımızda içeriklerinde kuruluş yılı 2009 olarak geçer.
+- Site, temizlik hizmetleri için hem içerik hem dönüşüm odaklı yapıdadır.
+
+## Ana Sayfalar ve Niyetleri
+- [Ana Sayfa](https://gunentemizlik.com/): Marka özeti, temel hizmet çerçevesi ve ilk temas noktaları.
+- [Hizmetlerimiz](https://gunentemizlik.com/hizmetler): Hizmet katalogu ve hizmet detaylarına geçiş.
+- [Hizmet Detayı](https://gunentemizlik.com/hizmetler/{slug}): Tekil hizmet açıklaması, kapsam ve kullanıcıya özel yönlendirme.
+- [İletişim](https://gunentemizlik.com/iletisim): Doğrudan iletişim kanalları ve iletişim formu.
+- [Randevu](https://gunentemizlik.com/randevu): Ücretsiz keşif ve randevu talebi.
+- [Hakkımızda](https://gunentemizlik.com/hakkimizda): Kurumsal hikaye, değerler ve ekip güven sinyalleri.
+- [Referanslar](https://gunentemizlik.com/referanslar): Müşteri geri bildirimleri ve sosyal kanıt.
+- [Galeri](https://gunentemizlik.com/galeri): Görsel örnekler ve hizmet çıktıları.
+- [SSS](https://gunentemizlik.com/sss): En sık sorulan sorular ve kısa yanıtlar.
+- [Blog](https://gunentemizlik.com/blog): Bilgilendirici içerik, hijyen ve temizlik rehberleri.
+- [Harita ve Yorumlar](https://gunentemizlik.com/harita-ve-yorumlar): Harita görünürlüğü ve yorum odağı.
+- [Rehber](https://gunentemizlik.com/rehber): Hangi temizlik türünün hangi senaryoda uygun olduğunu açıklayan içerik.
+- [Kullanım Koşulları](https://gunentemizlik.com/kullanim-kosullari): Yasal kullanım şartları.
+- [Gizlilik](https://gunentemizlik.com/gizlilik): Veri işleme ve gizlilik ilkeleri.
+
+## Route Mimarisi
+- Statik ana route'lar: `/`, `/hizmetler`, `/iletisim`, `/randevu`, `/hakkimizda`, `/blog`, `/galeri`, `/referanslar`, `/sss`, `/rehber`.
+- Hizmet detay route'u: `/hizmetler/{slug}`.
+- Blog detay route'u: `/blog/{slug}`.
+- Bölgesel ana route: `/bolgeler`.
+- Bölgesel dinamik route'lar: `/bolgeler/{district}` ve `/bolgeler/{district}/{service}`.
+- Alternatif dinamik bölgesel route'lar: `/{district}` ve `/{district}/{service}`.
+
+## Hizmet Taksonomisi
+- Çekirdek hizmet kümeleri: ofis temizliği, inşaat sonrası temizlik, ev temizliği, koltuk yıkama, halı temizliği.
+- Hizmet sunumu, hem genel katalog hem tekil hizmet sayfası modelinde kurgulanır.
+- Yerel SEO kurgusu, ilçe ve hizmet kombinasyonları üzerinden genişletilir.
+
+## Dönüşüm Odaklı Sayfalar
+- Birincil dönüşüm noktaları: [İletişim](https://gunentemizlik.com/iletisim), [Randevu](https://gunentemizlik.com/randevu).
+- Destekleyici dönüşüm sayfaları: [Hizmetlerimiz](https://gunentemizlik.com/hizmetler), [Hizmet Detayı](https://gunentemizlik.com/hizmetler/{slug}).
+- Güven artırıcı destek sayfaları: [Hakkımızda](https://gunentemizlik.com/hakkimizda), [Referanslar](https://gunentemizlik.com/referanslar), [Galeri](https://gunentemizlik.com/galeri).
+
+## Niyet Eşleme Kuralları
+- Kullanıcı hizmet türü soruyorsa: önce `/hizmetler`, sonra uygun `/hizmetler/{slug}`.
+- Kullanıcı bölgesel uygunluk soruyorsa: önce `/bolgeler`, sonra ilgili ilçe route'u.
+- Kullanıcı hızlı iletişim veya teklif istiyorsa: `/iletisim`.
+- Kullanıcı keşif ve tarih seçimi istiyorsa: `/randevu`.
+- Kullanıcı şirket güvenilirliği soruyorsa: `/hakkimizda`, `/referanslar`.
+- Kullanıcı nasıl yapılır, ipucu, rehber soruyorsa: `/blog` ve `/rehber`.
+
+## Yapay Zeka Güvenlik ve Halusinasyon Önleme Kuralları
+- Doğrulanmamış bilgi kesin gerçek gibi yazılmamalıdır.
+- Fiyat, kampanya, indirim, garanti süresi gibi ticari bilgiler varsayılmamalıdır.
+- İstanbul dışı hizmet verildiği iddia edilmemelidir.
+- Telefon, e-posta ve adres bilgisi yalnızca bu belgede yazıldığı şekilde kullanılmalıdır.
+- Sayısal iddialar yalnızca doğrulanmış içeriklerde geçtiği biçimde ifade edilmelidir.
+- Belirsiz durumda kesin hüküm yerine ilgili URL'ye yönlendirme yapılmalıdır.
+
+## Yasak İddia Listesi
+- Kesin fiyat bilgisi verilmesi.
+- Kampanya veya indirim varmış gibi konuşulması.
+- İstanbul dışı şehirlerde aktif hizmet olduğu iddiası.
+- Belgede geçmeyen yeni iletişim kanalı uydurulması.
+- Hizmet süresi, garanti kapsamı ve ekip büyüklüğü hakkında doğrulanmamış rakam verilmesi.
+
+## Cevap Kalite Protokolü
+- Cevaplar kısa, doğrulanabilir ve kaynak bağlantılı olmalıdır.
+- Kullanıcının niyeti net değilse en genel uygun sayfaya yönlendirme yapılmalıdır.
+- İşlem odaklı niyetlerde doğrudan dönüşüm sayfası verilmelidir.
+- Kurumsal güven sorularında destekleyici sayfalar birlikte sunulmalıdır.
+
+## Güven Seviyesi Etiketi
+- Yüksek güven: Bu belgede açıkça yer alan bilgi.
+- Orta güven: Bu belgede işaretlenen route yapısından türetilen yönlendirme.
+- Düşük güven: Bu belgede bulunmayan ve canlı sayfadan doğrulanmayan bilgi.
+- Düşük güven durumunda kesin cümle yerine doğrulama yönlendirmesi yapılmalıdır.
+
+## Alıntılama ve Referanslama Formatı
+- Bot yanıtları mümkünse ilgili sayfayı bağlantı ile göstermelidir.
+- Birden fazla olası cevap varsa, en genel sayfadan daha spesifik sayfaya sıralı yönlendirme yapılmalıdır.
+- Kısa cevaplarda ana sayfa yerine niyetle en ilişkili landing sayfası tercih edilmelidir.
+
+## Örnek Güvenli Yanıt Stratejisi
+- Hizmet kapsamı sorularında: önce hizmet kategorisini belirt, ardından ilgili hizmet sayfasını paylaş.
+- Bölgesel sorularda: ilçe bazlı sayfalara yönlendir, ilçe doğrulanmadan kesin uygunluk beyanı verme.
+- Fiyat sorularında: kesin rakam üretme, iletişim veya randevu sayfasına yönlendir.
+
+## Bakım ve Güncelleme Politikası
+- İletişim bilgileri güncellenirse `llms.txt` ve `llms-full.txt` birlikte güncellenmelidir.
+- Yeni ana route eklendiğinde bu dosyada ilgili bölüm genişletilmelidir.
+- Bu belge tanıtım metni değil, doğrulanabilir yapay zeka referans katmanı olarak korunmalıdır.
+
+## Değişiklik Geçmişi
+- 2.0: Doküman yönetimi, yasak iddia listesi, kalite protokolü ve güven seviyesi katmanları eklendi.
+- 1.0: İlk kapsamlı sürüm yayımlandı.

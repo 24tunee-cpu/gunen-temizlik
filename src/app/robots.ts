@@ -7,13 +7,28 @@ import { getSiteUrl } from '@/lib/seo';
  */
 export default function robots(): MetadataRoute.Robots {
   const base = getSiteUrl();
+  const disallow = ['/admin/', '/api/', '/login'];
 
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin/', '/api/', '/login'],
-    },
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow,
+      },
+      {
+        // LLM crawler'lar için kritik referans dosyalarına açık erişim sinyali
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'ClaudeBot',
+          'Google-Extended',
+          'PerplexityBot',
+        ],
+        allow: ['/llms.txt', '/llms-full.txt', '/sitemap.xml', '/blog/sitemap.xml'],
+        disallow,
+      },
+    ],
     sitemap: [`${base}/sitemap.xml`, `${base}/blog/sitemap.xml`],
     host: base,
   };
