@@ -3,7 +3,13 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api')) {
+  const isSitemapPath = pathname === '/sitemap.xml' || pathname.endsWith('/sitemap.xml');
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname === '/robots.txt' ||
+    isSitemapPath
+  ) {
     return NextResponse.next();
   }
 
@@ -28,5 +34,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|.*sitemap\\.xml$).*)'],
 };
