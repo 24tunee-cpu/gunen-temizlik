@@ -163,24 +163,53 @@ export async function GET(request: NextRequest) {
 
   try {
     console.log('Fetching contact requests (simple)', { ip });
-    const rows = await prisma.contactRequest.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        service: true,
-        message: true,
-        read: true,
-        pipelineStatus: true,
-        internalNotes: true,
-        reminderAt: true,
-        createdAt: true,
-        updatedAt: true,
-        // assignedUserId/assignedUser bilinçli olarak çıkarıldı
-      },
-    });
+
+    // Önce tam alanlarla dene; bazı legacy kayıtlarda updatedAt/null problemi varsa
+    // daha dar bir seçimle yeniden deneyeceğiz.
+    let rows: Array<Record<string, unknown>> = [];
+
+    try {
+      rows = await prisma.contactRequest.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          service: true,
+          message: true,
+          read: true,
+          pipelineStatus: true,
+          internalNotes: true,
+          reminderAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (primaryError) {
+      console.warn('Contact list primary query failed, retrying with limited fields', {
+        ip,
+        error: primaryError instanceof Error ? primaryError.message : String(primaryError),
+      });
+
+      // Problemli timestamp alanlarını tamamen dışarıda bırakarak tekrar dene
+      rows = await prisma.contactRequest.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          service: true,
+          message: true,
+          read: true,
+          pipelineStatus: true,
+          internalNotes: true,
+          reminderAt: true,
+        },
+      });
+    }
+
     return NextResponse.json(rows, { headers });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
