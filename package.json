@@ -15,7 +15,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
-    "llms:sync": "tsx scripts/sync-llms.ts",
+    "llms:sync": "node scripts/sync-llms.mjs",
     "seo:gsc:generate-meta": "tsx scripts/seo-meta-from-gsc.ts",
     "predeploy:check": "tsx scripts/predeploy-check.ts"
   },

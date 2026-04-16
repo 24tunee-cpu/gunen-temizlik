@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const FILES = ['llms.txt', 'llms-full.txt'] as const;
+const FILES = ['llms.txt', 'llms-full.txt'];
 
-function syncFile(rootDir: string, fileName: (typeof FILES)[number]) {
+function syncFile(rootDir, fileName) {
   const sourcePath = path.resolve(rootDir, fileName);
   const targetPath = path.resolve(rootDir, 'public', fileName);
 
