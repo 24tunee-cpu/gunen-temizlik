@@ -21,6 +21,8 @@ import SiteLayout from '../site/layout';
 import { BlogPost, BlogSection } from '@/components/site/BlogSection';
 import { BookOpen, ArrowRight, Search } from 'lucide-react';
 import { canonicalUrl } from '@/lib/seo';
+import { PRIORITY_BLOG_LINKS, PRIORITY_CONVERSION_LINKS } from '@/lib/priority-seo-links';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
 // METADATA (SEO)
@@ -68,10 +70,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const canonical = query.toString()
     ? `${canonicalUrl('/blog')}?${query.toString()}`
     : canonicalUrl('/blog');
+  const shouldIndexListing = page === 1 && !tag && !q;
 
   return {
     title,
     description,
+    keywords: keywordsForPage('blog', [tag, q].filter(Boolean)),
     alternates: { canonical },
     openGraph: {
       title,
@@ -95,6 +99,23 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       description,
       images: [canonicalUrl('/logo.png')],
     },
+    robots: shouldIndexListing
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+          },
+        }
+      : {
+          index: false,
+          follow: true,
+          googleBot: {
+            index: false,
+            follow: true,
+          },
+        },
   };
 }
 
@@ -328,6 +349,34 @@ export default async function BlogPage({ searchParams }: PageProps) {
                   SSS sayfamıza göz atın
                 </Link>
               </span>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/40 p-4">
+              <p className="text-sm font-semibold text-emerald-300">Google icin oncelikli linkler</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="space-y-2">
+                  {PRIORITY_BLOG_LINKS.slice(0, 6).map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {PRIORITY_CONVERSION_LINKS.slice(0, 6).map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>

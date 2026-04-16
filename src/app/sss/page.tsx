@@ -21,6 +21,7 @@ import SiteLayout from '../site/layout';
 import { FAQSection } from '../../components/site/FAQSection';
 import { faqPageJsonLdObject } from '@/lib/seed-faq';
 import { canonicalUrl } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 import { HelpCircle } from 'lucide-react';
 
 // ============================================
@@ -31,16 +32,7 @@ export const metadata: Metadata = {
   title: 'Sıkça Sorulan Sorular | Günen Temizlik - İstanbul',
   description:
     'İstanbul profesyonel temizlik: fiyatlandırma, ofis ve ev temizliği, inşaat sonrası, koltuk yıkama, randevu ve bölgeler hakkında yanıtlar. Günen Temizlik SSS.',
-  keywords: [
-    'istanbul temizlik şirketi',
-    'profesyonel temizlik istanbul',
-    'ofis temizliği fiyat',
-    'inşaat sonrası temizlik süresi',
-    'koltuk yıkama yerinde',
-    'temizlik şirketi nasıl seçilir',
-    'günen temizlik sss',
-    'ücretsiz keşif temizlik',
-  ],
+  keywords: keywordsForPage('sss'),
   alternates: {
     canonical: canonicalUrl('/sss'),
   },

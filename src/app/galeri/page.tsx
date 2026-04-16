@@ -21,6 +21,7 @@ import SiteLayout from '../site/layout';
 import { GallerySection } from '../../components/site/GallerySection';
 import { ImageIcon, ArrowRight } from 'lucide-react';
 import { canonicalUrl } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
 // METADATA (SEO)
@@ -29,14 +30,7 @@ import { canonicalUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'Galeri | Günen Temizlik - İstanbul',
   description: 'Temizlik çalışmalarımızdan örnekler, before/after görselleri. İnşaat sonrası, ofis, ev temizliği projelerimizi inceleyin.',
-  keywords: [
-    'temizlik galeri',
-    'before after temizlik',
-    'inşaat sonrası temizlik görselleri',
-    'ofis temizliği örnekleri',
-    'ev temizliği projeleri',
-    'istanbul temizlik çalışmaları',
-  ],
+  keywords: keywordsForPage('galeri'),
   alternates: {
     canonical: canonicalUrl('/galeri'),
   },

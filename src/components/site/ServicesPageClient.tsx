@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
+import { PRIORITY_BLOG_LINKS } from '@/lib/priority-seo-links';
 
 interface Service {
   id: string;
@@ -85,6 +86,27 @@ export default function ServicesPageClient({ services }: Props) {
 
         <section className="flex-1 border-t border-slate-800 bg-slate-50 py-16 dark:bg-slate-900" aria-label="Hizmetler listesi">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 rounded-xl border border-slate-300 bg-white/90 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">Populer temizlik aramalari</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  { href: '/hizmetler/ofis-temizligi', label: 'Ofis Temizligi Istanbul' },
+                  { href: '/hizmetler/insaat-sonrasi-temizlik', label: 'Insaat Sonrasi Temizlik Istanbul' },
+                  { href: '/hizmetler/ev-temizligi', label: 'Ev Temizligi Istanbul' },
+                  { href: '/hizmetler/koltuk-yikama', label: 'Koltuk Yikama Istanbul' },
+                  { href: '/randevu', label: 'Temizlik Randevu ve Kesif' },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-700 transition-colors hover:border-emerald-500/60 hover:text-emerald-700 dark:border-slate-600 dark:text-slate-200 dark:hover:text-emerald-300"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
             {services.length === 0 ? (
               <EmptyState />
             ) : (
@@ -96,6 +118,23 @@ export default function ServicesPageClient({ services }: Props) {
                 ))}
               </div>
             )}
+
+            <div className="mt-10 rounded-xl border border-slate-300 bg-white/90 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">
+                Hizmete gore rehber yazilari
+              </h3>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {PRIORITY_BLOG_LINKS.slice(0, 6).map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-sm text-slate-700 underline decoration-slate-400/70 underline-offset-4 transition-colors hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 

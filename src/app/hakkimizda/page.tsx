@@ -21,6 +21,7 @@ import SiteLayout from '../site/layout';
 import { TeamSection } from '../../components/site/TeamSection';
 import { SITE_CONTACT } from '@/config/site-contact';
 import { canonicalUrl } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide-react';
 
 // ============================================
@@ -30,13 +31,7 @@ import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide
 export const metadata: Metadata = {
   title: "Hakkımızda | Günen Temizlik - İstanbul",
   description: "15+ yıllık deneyimle İstanbul'un her bölgesinde profesyonel temizlik hizmetleri sunuyoruz. Güvenilir, hızlı ve garantili hizmet. 5000+ mutlu müşteri.",
-  keywords: [
-    'günen temizlik hakkında',
-    'istanbul temizlik şirketi',
-    'temizlik firması kurumsal',
-    'profesyonel temizlik ekibi',
-    'temizlik şirketi tarihçe',
-  ],
+  keywords: keywordsForPage('hakkimizda'),
   alternates: {
     canonical: canonicalUrl('/hakkimizda'),
   },

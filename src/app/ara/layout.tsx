@@ -14,6 +14,14 @@ export const metadata: Metadata = {
   title: araTitle,
   description: araDescription,
   alternates: { canonical: canonicalUrl('/ara') },
+  robots: {
+    index: false,
+    follow: true,
+    googleBot: {
+      index: false,
+      follow: true,
+    },
+  },
   openGraph: {
     title: araTitle,
     description: araDescription,

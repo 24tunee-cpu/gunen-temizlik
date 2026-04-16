@@ -7,10 +7,12 @@ import {
   generateWebPageSchema,
   serializeSchemaGraph,
 } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
   title: 'Ücretsiz keşif ve randevu | Günen Temizlik',
   description: 'Uygun tarih ve saat diliminde ücretsiz keşif talebi oluşturun.',
+  keywords: keywordsForPage('randevu'),
   alternates: { canonical: canonicalUrl('/randevu') },
   openGraph: {
     title: 'Ücretsiz keşif ve randevu | Günen Temizlik',

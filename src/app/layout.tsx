@@ -18,6 +18,7 @@ import { Providers } from "./providers";
 import { getSiteIconHref } from "@/lib/site-branding";
 import { canonicalUrl, getSiteUrl } from "@/lib/seo";
 import { buildRootSchemaGraphJson } from "@/lib/root-schema";
+import { keywordsForPage } from "@/lib/seo-keywords";
 
 /** Google Analytics 4 — `NEXT_PUBLIC_GA_MEASUREMENT_ID` ile değiştirilebilir */
 const GA_MEASUREMENT_ID =
@@ -35,20 +36,7 @@ const rootMetadataBase: Metadata = {
     template: "%s | Günen Temizlik",
   },
   description: "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, koltuk yıkama, halı temizliği. 15+ yıl deneyim, 5000+ mutlu müşteri, %100 memnuniyet garantisi. Hemen fiyat alın!",
-  keywords: [
-    "istanbul temizlik şirketi",
-    "profesyonel temizlik hizmetleri",
-    "ofis temizliği istanbul",
-    "inşaat sonrası temizlik",
-    "koltuk yıkama hizmeti",
-    "halı temizliği",
-    "ev temizliği şirketi",
-    "kurumsal temizlik firması",
-    "ataşehir temizlik",
-    "kadıköy temizlik",
-    "7/24 temizlik hizmeti",
-    "acil temizlik",
-  ],
+  keywords: keywordsForPage("root"),
   authors: [{ name: "Günen Temizlik" }],
   creator: "Günen Temizlik",
   publisher: "Günen Temizlik",

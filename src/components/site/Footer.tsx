@@ -27,6 +27,7 @@ import {
 import { useState, useCallback, useMemo } from 'react';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { toTelHref } from '@/config/site-contact';
+import { PRIORITY_BLOG_LINKS } from '@/lib/priority-seo-links';
 
 // ============================================
 // TYPES
@@ -363,6 +364,23 @@ export function Footer() {
                 </a>
               </li>
             </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-xl border border-slate-800 bg-slate-800/30 p-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-300">
+            One cikan bloglar
+          </h3>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {PRIORITY_BLOG_LINKS.slice(0, 6).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm text-slate-300 underline decoration-slate-500/70 underline-offset-4 transition-colors hover:text-emerald-300"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
 

@@ -16,6 +16,8 @@ import dynamic from 'next/dynamic';
 import SiteLayout from './site/layout';
 import { canonicalUrl } from '@/lib/seo';
 import DeferredHomeSections from '@/components/site/DeferredHomeSections';
+import SeoCrawlHub from '@/components/site/SeoCrawlHub';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
 // DYNAMIC IMPORTS (Code Splitting)
@@ -36,19 +38,7 @@ const Services = dynamic(() => import('@/components/site/Services').then(mod => 
 export const metadata: Metadata = {
   title: "İstanbul'un En İyi Temizlik Şirketi | 7/24 Profesyonel Hizmet",
   description: "İstanbul'un önde gelen temizlik şirketi. İnşaat sonrası, ofis, koltuk yıkama, halı temizliği. 15+ yıl deneyim, 5000+ mutlu müşteri, %100 memnuniyet garantisi. Ücretsiz keşif!",
-  keywords: [
-    "istanbul temizlik şirketi",
-    "profesyonel temizlik hizmetleri",
-    "ofis temizliği istanbul",
-    "inşaat sonrası temizlik",
-    "koltuk yıkama hizmeti",
-    "halı temizliği",
-    "ev temizliği şirketi",
-    "kurumsal temizlik firması",
-    "ataşehir temizlik",
-    "kadıköy temizlik",
-    "7/24 temizlik hizmeti",
-  ],
+  keywords: keywordsForPage('home'),
   alternates: {
     canonical: canonicalUrl('/'),
   },
@@ -115,6 +105,9 @@ export default function HomePage() {
         <Suspense fallback={<SectionLoading height="h-96" />}>
           <Services />
         </Suspense>
+
+        {/* Crawl-discovery hub for high-intent URLs */}
+        <SeoCrawlHub />
 
         {/* Below-the-fold sections (client-only deferred) */}
         <DeferredHomeSections />

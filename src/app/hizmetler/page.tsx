@@ -2,19 +2,13 @@ import type { Metadata } from 'next';
 import ServicesPageClient from '@/components/site/ServicesPageClient';
 import { prisma } from '@/lib/prisma';
 import { canonicalUrl } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
   title: 'Hizmetlerimiz | Günen Temizlik - İstanbul',
   description:
     'İstanbul genelinde profesyonel ofis temizliği, inşaat sonrası temizlik, koltuk yıkama, halı temizliği ve detaylı hijyen hizmetlerimizi keşfedin.',
-  keywords: [
-    'istanbul temizlik hizmetleri',
-    'ofis temizliği istanbul',
-    'inşaat sonrası temizlik',
-    'koltuk yıkama istanbul',
-    'halı temizliği hizmeti',
-    'profesyonel temizlik şirketi',
-  ],
+  keywords: keywordsForPage('hizmetler'),
   alternates: {
     canonical: canonicalUrl('/hizmetler'),
   },

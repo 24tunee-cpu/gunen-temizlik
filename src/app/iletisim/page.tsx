@@ -21,6 +21,7 @@ import SiteLayout from '../site/layout';
 import { ContactForm } from '@/components/site/ContactForm';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
 import { canonicalUrl } from '@/lib/seo';
+import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
 // METADATA (SEO)
@@ -29,14 +30,7 @@ import { canonicalUrl } from '@/lib/seo';
 export const metadata: Metadata = {
   title: "İletişim | Günen Temizlik - İstanbul",
   description: `Günen Temizlik ile iletişime geçin. İstanbul'un her bölgesinde profesyonel temizlik hizmetleri için hemen arayın: ${SITE_CONTACT.phoneDisplay}. Ücretsiz keşif, uygun fiyatlar.`,
-  keywords: [
-    'istanbul temizlik iletişim',
-    'günen temizlik telefon',
-    'temizlik şirketi istanbul',
-    'ofis temizliği fiyat al',
-    'ev temizliği randevu',
-    'temizlik hizmeti talep',
-  ],
+  keywords: keywordsForPage('iletisim'),
   alternates: {
     canonical: canonicalUrl('/iletisim'),
   },

@@ -34,7 +34,8 @@ function toAbsoluteUrl(base: string, path: string): string {
 }
 
 /**
- * Sitemap — statik sayfalar + yayında blog yazıları + aktif hizmet detayları.
+ * Sitemap — statik sayfalar + aktif hizmet detayları + programatik landing URL'leri.
+ * Blog URL'leri `app/blog/sitemap.ts` içinde ayrı üretilir.
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -59,26 +60,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dynamicEntries: MetadataRoute.Sitemap = [];
 
   try {
-    const [posts, services] = await Promise.all([
-      prisma.blogPost.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-        orderBy: { updatedAt: 'desc' },
-      }),
-      prisma.service.findMany({
+    const services = await prisma.service.findMany({
         where: { isActive: true },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: 'desc' },
-      }),
-    ]);
+      });
 
     dynamicEntries = [
-      ...posts.map((p) => ({
-        url: `${base}/blog/${p.slug}`,
-        lastModified: p.updatedAt,
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      })),
       ...services.map((s) => ({
         url: `${base}/hizmetler/${s.slug}`,
         lastModified: s.updatedAt,

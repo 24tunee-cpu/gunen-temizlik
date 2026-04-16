@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { BlogShareButton } from '@/components/site/BlogShareButton';
 import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
 import styles from './blog-content.module.css';
+import { resolveIntentLinks } from '@/lib/keyword-intent-routing';
 import {
   canonicalUrl,
   generateBreadcrumbSchema,
@@ -60,12 +61,6 @@ interface BlogPostData {
   createdAt: Date;
   updatedAt: Date;
 }
-
-const RELATED_SERVICE_LINKS = [
-  { href: '/hizmetler/insaat-sonrasi-temizlik', label: 'İnşaat Sonrası Temizlik' },
-  { href: '/hizmetler/ofis-temizligi', label: 'Ofis Temizliği' },
-  { href: '/hizmetler/koltuk-yikama', label: 'Koltuk Yıkama' },
-] as const;
 
 const RELATED_SEO_UTILITY_LINKS = [
   { href: '/randevu', label: 'Randevu / keşif' },
@@ -263,6 +258,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   // Calculate reading time (approximate)
   const wordCount = post.content.split(/\s+/).length;
   const readingTime = Math.ceil(wordCount / 200); // 200 words per minute
+  const intentLinks = resolveIntentLinks(
+    [post.title, post.category, ...(post.tags || [])].join(' ')
+  );
 
   return (
     <>
@@ -361,7 +359,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 Bu konuyla ilgili profesyonel destek almak için en çok tercih edilen hizmetlerimiz:
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                {RELATED_SERVICE_LINKS.map((service) => (
+                {intentLinks.map((service) => (
                   <Link
                     key={service.href}
                     href={service.href}
