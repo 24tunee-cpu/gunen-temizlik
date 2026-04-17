@@ -28,6 +28,130 @@ export type BlogSeedPost = {
   metaDesc?: string;
 };
 
+const ISTANBUL_DISTRICTS = [
+  'Kağıthane',
+  'Şişli',
+  'Beşiktaş',
+  'Kadıköy',
+  'Üsküdar',
+  'Ataşehir',
+  'Bakırköy',
+  'Maltepe',
+  'Kartal',
+  'Pendik',
+];
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function pickByHash<T>(items: T[], seed: number, offset = 0): T {
+  return items[(seed + offset) % items.length] as T;
+}
+
+function keywordFromPost(post: BlogSeedPost): string {
+  const fromTitle = post.title.split(':')[0]?.trim();
+  const fromTag = post.tags[0]?.trim();
+  return fromTitle || fromTag || post.category;
+}
+
+function buildSeoExcerpt(post: BlogSeedPost): string {
+  const seed = hashString(post.slug);
+  const districtA = pickByHash(ISTANBUL_DISTRICTS, seed, 1);
+  const districtB = pickByHash(ISTANBUL_DISTRICTS, seed, 4);
+  const keyword = keywordFromPost(post);
+  const base = stripHtml(post.excerpt);
+  return `${keyword} konusunda ${districtA} ve ${districtB} dahil İstanbul genelinde uygulanan pratik yöntemleri, sık yapılan hataları ve profesyonel yaklaşımı adım adım anlattık. ${base}`.slice(
+    0,
+    490
+  );
+}
+
+function buildLongFormContent(post: BlogSeedPost): string {
+  const seed = hashString(post.slug);
+  const districtA = pickByHash(ISTANBUL_DISTRICTS, seed, 0);
+  const districtB = pickByHash(ISTANBUL_DISTRICTS, seed, 2);
+  const districtC = pickByHash(ISTANBUL_DISTRICTS, seed, 5);
+  const keyword = keywordFromPost(post);
+  const currentPlain = stripHtml(post.content);
+  const intro = stripHtml(post.excerpt);
+  const originalHtml = post.content.trim();
+
+  const actionPlan = [
+    `İhtiyacı doğru tanımlayın: ${keyword} sürecinde önce kapsamı ve öncelikli alanları netleştirin.`,
+    'Alan ve yüzey analizini yapın: malzeme türü, erişim koşulu ve işlem sırası kaliteyi doğrudan etkiler.',
+    'Uygulama adımlarını standartlaştırın: kontrol listesiyle ilerlemek tekrar eden hataları azaltır.',
+    'Son kontrol ve bakım planı oluşturun: tek seferlik işlem yerine sürdürülebilir bakım takvimi kurun.',
+  ];
+
+  const commonMistakes = [
+    'Sadece hızlı çözüm arayıp kök nedeni görmezden gelmek',
+    'Yanlış ürün veya yanlış dozaj nedeniyle yüzeye zarar vermek',
+    'İş sırasını plansız yürütüp aynı alanı tekrar tekrar temizlemek',
+    'Düzenli bakım planı kurmadan yalnızca problem çıktığında müdahale etmek',
+  ];
+
+  const faq = [
+    {
+      q: `${keyword} işlemi ne kadar sürer?`,
+      a: 'Süre, alan büyüklüğü, kirlilik seviyesi ve işlem detayına göre değişir. Keşif sonrası net bir plan yapılması en sağlıklı yöntemdir.',
+    },
+    {
+      q: 'Hangi sıklıkla tekrar etmek gerekir?',
+      a: 'Yoğun kullanım alanlarında daha kısa periyotlar önerilir. Ev ve ofislerde kullanım alışkanlığına göre aylık veya sezonluk plan idealdir.',
+    },
+    {
+      q: 'İstanbul içinde bölgeye göre fark oluyor mu?',
+      a: `${districtA}, ${districtB} ve ${districtC} gibi yoğun ilçelerde trafik ve erişim saatleri planlamayı etkileyebilir; doğru zamanlama hizmet kalitesini artırır.`,
+    },
+    {
+      q: 'Profesyonel destek ne zaman gerekli olur?',
+      a: 'Yüzey riski yüksek alanlarda, kalıcı lekelerde, kapsamlı hijyen ihtiyaçlarında ve zaman baskısı olan durumlarda profesyonel ekip desteği önerilir.',
+    },
+  ];
+
+  const planListHtml = actionPlan.map((item) => `<li>${item}</li>`).join('');
+  const mistakesListHtml = commonMistakes.map((item) => `<li>${item}</li>`).join('');
+  const faqHtml = faq
+    .map(
+      (item) =>
+        `<div><h3>${item.q}</h3><p>${item.a}</p></div>`
+    )
+    .join('');
+
+  return `
+<p><strong>${keyword}</strong> konusunda doğru sonuç almak için yalnızca hızlı bir uygulama değil, planlı ve ölçülebilir bir süreç gerekir. İstanbul gibi yoğun bir şehirde zaman, erişim ve kalite dengesini kuran içerikler her zaman daha yüksek fayda üretir.</p>
+<p>${intro}</p>
+<h2>İstanbul bağlamında neden önemli?</h2>
+<p>${districtA}, ${districtB} ve ${districtC} gibi farklı yoğunluk ve yapı tipine sahip ilçelerde aynı yaklaşım her zaman aynı sonucu vermez. Bu nedenle sahadaki gerçek koşullara göre ilerlemek gerekir. Özellikle ev ve ofis kullanımında hijyen standardını korumak için işlem kapsamı, ürün seçimi ve uygulama sırası birlikte değerlendirilmelidir.</p>
+<h2>Temel durum analizi</h2>
+<p>${currentPlain}</p>
+${originalHtml}
+<h2>Adım adım uygulama planı</h2>
+<ol>${planListHtml}</ol>
+<h2>Uzmanlardan pratik öneriler</h2>
+<p>Uygulamayı küçük parçalara bölmek, her adım için net bir kontrol maddesi yazmak ve tamamlanan işi görsel olarak doğrulamak sonuç kalitesini artırır. Bu yaklaşım özellikle düzenli bakım gereken alanlarda zaman kaybını azaltır.</p>
+<p>Yüksek temas alanlarında kısa ama sık periyotlu bakım, düşük temas alanlarında ise daha kapsamlı aralıklı bakım modeli daha verimli çalışır. Böylece hem iş yükü dengelenir hem de kalite standardı korunur.</p>
+<h2>Sık yapılan hatalar</h2>
+<ul>${mistakesListHtml}</ul>
+<h2>Profesyonel destek ile bireysel uygulama farkı</h2>
+<p>Profesyonel ekipler; yüzey uyumlu ürün, uygun ekipman ve kalite kontrol disiplini ile çalıştığı için sonuçlar daha tutarlı olur. Bireysel uygulama ise hızlı çözümler için yeterli olabilir ancak kapsam büyüdükçe standardizasyon zorlaşır.</p>
+<p>Günen Temizlik olarak İstanbul genelinde randevu öncesi kapsam netleştirme, uygulama sonrası kontrol ve sürdürülebilir bakım planı yaklaşımıyla çalışıyoruz.</p>
+<h2>Sık sorulan sorular</h2>
+${faqHtml}
+<h2>Sonuç ve önerilen aksiyon</h2>
+<p>${keyword} için uzun vadede en doğru yaklaşım; doğru planlama, ölçülebilir uygulama ve düzenli takip modelidir. İstanbul genelinde ev veya ofisiniz için kapsamı net bir hizmet planı oluşturmak isterseniz <a href="/randevu">randevu sayfasından</a> talep bırakabilir veya <a href="/iletisim">iletişim</a> üzerinden detay paylaşabilirsiniz.</p>
+  `.trim();
+}
+
 /** 20 — temizlik dışı, yüksek arama hacimli konular + İstanbul/yerel bağlantı (kurumsal blog trafiği mantığı) */
 const TRAFFIC_POSTS: BlogSeedPost[] = [
   {
@@ -602,21 +726,74 @@ const CLEANING_POSTS: BlogSeedPost[] = [
 
 export const BLOG_SEED_POSTS: BlogSeedPost[] = [...TRAFFIC_POSTS, ...CLEANING_POSTS];
 
+const BLOG_CTR_META_OVERRIDES: Record<string, { title: string; desc: string }> = {
+  'ev-temizliginde-5-altin-kural': {
+    title: "Ev Temizliğinde 5 Altın Kural (İstanbul) | Hızlı ve Kalıcı Hijyen",
+    desc: "İstanbul'da ev temizliğinde en çok işe yarayan 5 adımı öğrenin. Mutfak, banyo ve yaşam alanlarında daha az eforla daha uzun süre temiz kalan düzen kurun.",
+  },
+  'ofis-temizligi-is-verimliligini-nasil-artirir': {
+    title: "Ofis Temizliği Verimliliği Nasıl Artırır? | İstanbul Kurumsal Rehber",
+    desc: "Çalışan odaklanmasını ve kurumsal imajı güçlendiren ofis temizlik modeli: günlük, haftalık ve aylık plan örnekleriyle İstanbul için uygulanabilir rehber.",
+  },
+  'insaat-sonrasi-temizlik-neden-onemli': {
+    title: "İnşaat Sonrası Temizlik Neden Şart? | İstanbul Teslim Öncesi Rehber",
+    desc: "İnce toz, boya kalıntısı ve yüzey risklerini azaltan inşaat sonrası temizlik adımlarını öğrenin. İstanbul'da daire/ofis teslimi öncesi kontrol listesi burada.",
+  },
+  'koltuk-yikama-ne-siklikla-yapilmali': {
+    title: "Koltuk Yıkama Kaç Ayda Bir Yapılmalı? | İstanbul İçin Net Rehber",
+    desc: "Evcil hayvan, çocuk ve yoğun kullanım senaryolarına göre koltuk yıkama periyotları. İstanbul'da yerinde uygulama ve kuruma süresi için pratik öneriler.",
+  },
+  'cam-temizliginde-iz-kalmamasi': {
+    title: "Cam Temizliğinde İz Kalmaması İçin 7 Pratik Yöntem | İstanbul",
+    desc: "İç ve dış camlarda iz bırakmayan doğru teknikleri adım adım keşfedin. Bez seçimi, su izi kontrolü ve güvenli uygulama ipuçlarıyla net sonuç alın.",
+  },
+  'profesyonel-temizlik-fiyatini-etkileyenler': {
+    title: "Temizlik Fiyatını Ne Belirler? | İstanbul İçin Şeffaf Fiyat Rehberi",
+    desc: "Metrekare, kapsam, ekipman ve süre fiyatı nasıl değiştirir? İstanbul'da profesyonel temizlik tekliflerini doğru karşılaştırmak için net bir kontrol listesi.",
+  },
+  'istanbul-ofis-temizlik-sozlesmesi-dikkat': {
+    title: "Ofis Temizlik Sözleşmesinde Dikkat Edilecekler | İstanbul Rehberi",
+    desc: "Kurumsal temizlik anlaşmalarında kapsam, SLA, ek ücret ve kalite kontrol maddelerini kaçırmayın. İstanbul ofisleri için sözleşme öncesi kısa kontrol listesi.",
+  },
+  'tasinma-oncesi-sonrasi-temizlik': {
+    title: "Taşınma Öncesi/Sonrası Temizlik Rehberi | İstanbul'da Hızlı Hazırlık",
+    desc: "Yeni eve geçmeden önce atlamamanız gereken temizlik adımları. Depozito iadesi, hijyen ve yerleşim konforu için İstanbul odaklı pratik plan.",
+  },
+  'derin-temizlik-ne-zaman-gerekir': {
+    title: "Derin Temizlik Ne Zaman Gerekir? | İstanbul İçin Sezonluk Plan",
+    desc: "Tek seferlik genel temizlik yeterli mi? Derin temizlik ihtiyacını doğru zamanda belirlemek için semptomlar, alan bazlı öneriler ve uygulama planı.",
+  },
+  'istanbul-ev-temizlik-randevu-ipuclari': {
+    title: "Ev Temizlik Randevusu Öncesi 10 İpucu | İstanbul'da Daha İyi Sonuç",
+    desc: "Randevu öncesi hazırlıkla hem süreyi kısaltın hem kaliteyi artırın. İstanbul'da ev temizliği hizmeti almadan önce uygulanabilir 10 net öneri.",
+  },
+};
+
 export async function upsertCanonicalBlogPosts(prisma: PrismaClient): Promise<number> {
   for (const post of BLOG_SEED_POSTS) {
     const { slug, metaTitle, metaDesc, ...rest } = post;
-    const resolvedTitle = resolveBlogMetaTitle(rest.title, metaTitle ?? null);
-    const resolvedDesc = resolveBlogMetaDesc(rest.excerpt, metaDesc ?? null);
+    const enrichedExcerpt = buildSeoExcerpt(post);
+    const enrichedContent = buildLongFormContent(post);
+    const ctrOverride = BLOG_CTR_META_OVERRIDES[slug];
+    const resolvedTitle = resolveBlogMetaTitle(
+      rest.title,
+      ctrOverride?.title ?? metaTitle ?? null
+    );
+    const resolvedDesc = resolveBlogMetaDesc(
+      enrichedExcerpt,
+      ctrOverride?.desc ?? metaDesc ?? null
+    );
+    const normalizedTags = [...new Set([...rest.tags, 'istanbul', 'gunen temizlik blog'])].slice(0, 12);
     await prisma.blogPost.upsert({
       where: { slug },
       create: {
         slug,
         title: rest.title,
-        content: rest.content,
-        excerpt: rest.excerpt,
+        content: enrichedContent,
+        excerpt: enrichedExcerpt,
         image: rest.image ?? null,
         category: rest.category,
-        tags: rest.tags,
+        tags: normalizedTags,
         author: 'Günen Temizlik',
         published: true,
         views: 0,
@@ -625,11 +802,11 @@ export async function upsertCanonicalBlogPosts(prisma: PrismaClient): Promise<nu
       },
       update: {
         title: rest.title,
-        content: rest.content,
-        excerpt: rest.excerpt,
+        content: enrichedContent,
+        excerpt: enrichedExcerpt,
         image: rest.image ?? null,
         category: rest.category,
-        tags: rest.tags,
+        tags: normalizedTags,
         published: true,
         metaTitle: resolvedTitle,
         metaDesc: resolvedDesc,
