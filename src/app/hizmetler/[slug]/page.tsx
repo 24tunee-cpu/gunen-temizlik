@@ -22,7 +22,7 @@ import { prisma } from '@/lib/prisma';
 import SiteLayout from '../../site/layout';
 import { Sparkles, Check, ArrowRight, Phone, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { DISTRICT_LANDINGS } from '@/config/programmatic-seo';
+import { DISTRICT_LANDINGS, getServiceBySlug } from '@/config/programmatic-seo';
 import { SITE_CONTACT } from '@/config/site-contact';
 import {
   canonicalUrl,
@@ -258,23 +258,25 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               </figure>
             )}
 
-            <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Bu hizmetin verildiği bölgeler</h2>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                Bölgenize özel sayfalardan hızlıca teklif alabilir, süreç detaylarını görebilirsiniz.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {DISTRICT_LANDINGS.slice(0, 6).map((district) => (
-                  <Link
-                    key={district.slug}
-                    href={`/bolgeler/${district.slug}/${service.slug}`}
-                    className="rounded-full border border-emerald-500/30 px-3 py-1.5 text-sm text-emerald-600 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300"
-                  >
-                    {district.name} {service.title}
-                  </Link>
-                ))}
-              </div>
-            </section>
+            {getServiceBySlug(service.slug) && (
+              <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Bu hizmetin verildiği bölgeler</h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Bölgenize özel sayfalardan hızlıca teklif alabilir, süreç detaylarını görebilirsiniz.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {DISTRICT_LANDINGS.slice(0, 6).map((district) => (
+                    <Link
+                      key={district.slug}
+                      href={`/bolgeler/${district.slug}/${service.slug}`}
+                      className="rounded-full border border-emerald-500/30 px-3 py-1.5 text-sm text-emerald-600 transition-colors hover:bg-emerald-500/10 dark:text-emerald-300"
+                    >
+                      {district.name} {service.title}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Description */}
             <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-600 dark:prose-p:text-slate-300">

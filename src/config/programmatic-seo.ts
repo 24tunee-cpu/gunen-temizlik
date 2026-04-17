@@ -233,6 +233,24 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
     ],
   },
   {
+    slug: 'ev-temizligi',
+    name: 'Ev Temizliği',
+    shortPitch:
+      'Mutfak, banyo ve yaşam alanlarında derinlemesine hijyen; tek seferlik veya düzenli paketlerle güvenilir ev temizliği.',
+    intentKeywords: ['ev temizliği istanbul', 'profesyonel ev temizliği', 'daire temizliği', 'genel ev temizliği'],
+    blogTagHints: ['ev temizliği', 'temizlik', 'hijyen'],
+    faq: [
+      {
+        q: 'Ev temizliği ne kadar sürer?',
+        a: 'Metrekare, kirlilik ve talep edilen kapsama göre değişir; keşif sonrası net süre paylaşırız.',
+      },
+      {
+        q: 'Malzemeleri siz mi getiriyorsunuz?',
+        a: 'Evet, yüzeye uygun profesyonel ürün ve ekipmanlarla hizmet veriyoruz.',
+      },
+    ],
+  },
+  {
     slug: 'koltuk-yikama',
     name: 'Koltuk Yıkama',
     shortPitch: 'Yerinde koltuk yıkama ile kumaşa uygun uygulama yapar, kuruma süresini optimize ederiz.',
@@ -280,6 +298,24 @@ export const SERVICE_LANDINGS: ServiceLanding[] = [
       {
         q: 'Ne sıklıkla dış cephe temizliği gerekir?',
         a: 'Bina konumu ve kirlilik durumuna göre periyot belirlenir, genelde sezonluk plan önerilir.',
+      },
+    ],
+  },
+  {
+    slug: 'cam-temizligi',
+    name: 'Cam Temizliği',
+    shortPitch:
+      'İç ve dış cephe cam, vitrin ve yüksek erişim gerektiren yüzeylerde lekesiz parlaklık ve düzenli bakım paketleri.',
+    intentKeywords: ['cam temizliği istanbul', 'ofis cam silme', 'vitrin cam temizliği', 'yüksek cam temizliği'],
+    blogTagHints: ['cam', 'ofis', 'hijyen'],
+    faq: [
+      {
+        q: 'Dış cephe cam ile iç mekan cam aynı gün yapılabilir mi?',
+        a: 'Erişim, güvenlik ve hava koşullarına göre planlanır; keşif sonrası en uygun sırayı öneririz.',
+      },
+      {
+        q: 'Periyodik cam temizliği paketi var mı?',
+        a: 'Evet, işletme ve site yönetimleri için haftalık/aylık planlar oluşturabiliyoruz.',
       },
     ],
   },
