@@ -128,13 +128,13 @@ const blogSchema = {
   "@type": "Blog",
   "name": "Günen Temizlik Blog",
   "description": "Profesyonel temizlik hakkında faydalı bilgiler, ipuçları ve güncel makaleler",
-  "url": "https://gunentemizlik.com/blog",
+  "url": canonicalUrl('/blog'),
   "publisher": {
     "@type": "Organization",
     "name": "Günen Temizlik Şirketi",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://gunentemizlik.com/logo.png"
+      "url": canonicalUrl('/logo.png')
     }
   },
   "about": {
@@ -151,13 +151,13 @@ const blogBreadcrumbSchema = {
       '@type': 'ListItem',
       position: 1,
       name: 'Ana Sayfa',
-      item: 'https://gunentemizlik.com/',
+      item: canonicalUrl('/'),
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Blog',
-      item: 'https://gunentemizlik.com/blog',
+      item: canonicalUrl('/blog'),
     },
   ],
 };
@@ -260,7 +260,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
     itemListElement: pageItems.map((post, index) => ({
       '@type': 'ListItem',
       position: (safeCurrentPage - 1) * PAGE_SIZE + index + 1,
-      url: `https://gunentemizlik.com/blog/${post.slug}`,
+      url: canonicalUrl(`/blog/${post.slug}`),
       name: post.title,
     })),
   };

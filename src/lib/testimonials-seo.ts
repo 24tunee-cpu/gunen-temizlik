@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { SITE_CONTACT } from '@/config/site-contact';
+import { getSiteUrl } from '@/lib/seo';
 
-const BUSINESS_ID = 'https://gunentemizlik.com/#business';
-const SITE_ORIGIN = 'https://gunentemizlik.com';
+const SITE_ORIGIN = getSiteUrl();
+const BUSINESS_ID = `${SITE_ORIGIN}/#business`;
 
 export type PublicTestimonialRow = {
   id: string;
@@ -99,7 +100,7 @@ export function buildReferanslarFaqJsonLd() {
         name: 'Günen Temizlik müşteri yorumları gerçek mi?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Evet. gunentemizlik.com/referanslar sayfasındaki yorumlar yönetim panelinden yayınlanan aktif müşteri referanslarıdır; her yorum için isim ve metin site üzerinde görünür.',
+          text: `Evet. ${SITE_ORIGIN}/referanslar sayfasındaki yorumlar yönetim panelinden yayınlanan aktif müşteri referanslarıdır; her yorum için isim ve metin site üzerinde görünür.`,
         },
       },
       {

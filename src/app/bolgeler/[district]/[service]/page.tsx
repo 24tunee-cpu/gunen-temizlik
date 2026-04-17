@@ -14,6 +14,7 @@ import {
 } from '@/config/programmatic-seo';
 import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
+import { canonicalUrl, getSiteUrl } from '@/lib/seo';
 
 type Props = {
   params: Promise<{ district: string; service: string }>;
@@ -50,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     (override?.isActive && override?.description?.trim()) ||
     `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
-  const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
+  const canonical = canonicalUrl(`/bolgeler/${districtData.slug}/${serviceData.slug}`);
 
   return {
     title,
@@ -74,7 +75,8 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
   const serviceData = getServiceBySlug(service);
   if (!districtData || !serviceData) notFound();
 
-  const canonical = `https://gunentemizlik.com/bolgeler/${districtData.slug}/${serviceData.slug}`;
+  const canonical = canonicalUrl(`/bolgeler/${districtData.slug}/${serviceData.slug}`);
+  const siteRoot = getSiteUrl();
   const contentVariant = buildProgrammaticContentVariant(districtData, serviceData);
   const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
     .map((slug) => getDistrictBySlug(slug))
@@ -109,7 +111,7 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
     provider: {
       '@type': 'LocalBusiness',
       name: 'Günen Temizlik',
-      url: 'https://gunentemizlik.com',
+      url: siteRoot,
     },
     url: canonical,
     description: `${districtData.name} bölgesinde ${contentVariant.heroLead}`,
@@ -129,13 +131,13 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://gunentemizlik.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: 'https://gunentemizlik.com/bolgeler' },
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: canonicalUrl('/') },
+      { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: canonicalUrl('/bolgeler') },
       {
         '@type': 'ListItem',
         position: 3,
         name: districtData.name,
-        item: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
+        item: canonicalUrl(`/bolgeler/${districtData.slug}`),
       },
       {
         '@type': 'ListItem',

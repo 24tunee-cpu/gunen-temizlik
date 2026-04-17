@@ -3,6 +3,7 @@
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { DISTRICT_LANDINGS, SERVICE_LANDINGS } from '@/config/programmatic-seo';
 import { buildSmartMetaForPair } from '@/lib/programmatic-smart-meta';
+import { getSiteUrl } from '@/lib/seo';
 import {
   RefreshCw,
   Upload,
@@ -560,7 +561,7 @@ export default function SeoAutomationPage() {
                       </p>
                     </div>
                     <a
-                      href={`https://gunentemizlik.com/bolgeler/${d.slug}`}
+                      href={`${getSiteUrl()}/bolgeler/${d.slug}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-500"

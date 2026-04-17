@@ -21,7 +21,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { ContactForm } from '@/components/site/ContactForm';
 import { SITE_CONTACT, toTelHref } from '@/config/site-contact';
-import { canonicalUrl } from '@/lib/seo';
+import { canonicalUrl, getSiteUrl } from '@/lib/seo';
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 // ============================================
@@ -67,8 +67,8 @@ const contactStructuredData = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Günen Temizlik Şirketi",
-  "url": "https://gunentemizlik.com",
-  "logo": "https://gunentemizlik.com/logo.png",
+  "url": getSiteUrl(),
+  "logo": canonicalUrl('/logo.png'),
   "contactPoint": [
     {
       "@type": "ContactPoint",

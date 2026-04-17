@@ -63,10 +63,12 @@ interface FormData {
 /** Hizmet seçenekleri */
 const SERVICE_OPTIONS = [
   { value: '', label: 'Seçiniz...' },
+  { value: 'Ev Temizliği', label: 'Ev Temizliği' },
   { value: 'İnşaat Sonrası Temizlik', label: 'İnşaat Sonrası Temizlik' },
   { value: 'Ofis Temizliği', label: 'Ofis Temizliği' },
   { value: 'Koltuk Yıkama', label: 'Koltuk Yıkama' },
   { value: 'Halı Temizliği', label: 'Halı Temizliği' },
+  { value: 'Cam Temizliği', label: 'Cam Temizliği' },
   { value: 'Dış Cephe Temizliği', label: 'Dış Cephe Temizliği' },
   { value: 'Diğer', label: 'Diğer' },
 ];

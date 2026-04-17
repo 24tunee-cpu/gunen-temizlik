@@ -6,6 +6,7 @@ import { getToken } from 'next-auth/jwt';
 import { revalidatePath } from 'next/cache';
 import { SITE_CONTACT } from '@/config/site-contact';
 import { getNextAuthJwtSecret } from '@/lib/auth-secret';
+import { getSiteUrl } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ async function getRow() {
       data: {
         siteName: 'Günen Temizlik',
         siteDescription: "İstanbul'un güvenilir profesyonel temizlik şirketi",
-        siteUrl: 'https://gunentemizlik.com',
+        siteUrl: getSiteUrl(),
         email: SITE_CONTACT.email,
         phone: SITE_CONTACT.phoneDisplay,
         whatsapp: SITE_CONTACT.whatsappDigits,

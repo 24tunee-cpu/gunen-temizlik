@@ -12,6 +12,7 @@ import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 import type { SiteSettings as SiteSettingsRow } from '@prisma/client';
 import { SITE_CONTACT } from '@/config/site-contact';
 import { getNextAuthJwtSecret } from '@/lib/auth-secret';
+import { getSiteUrl } from '@/lib/seo';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -27,14 +28,14 @@ const DEFAULT_ROBOTS = `User-agent: *
 Disallow: /admin/
 Disallow: /api/
 Allow: /
-Sitemap: https://gunentemizlik.com/sitemap.xml`;
+Sitemap: ${getSiteUrl()}/sitemap.xml`;
 
 /** Prisma create için varsayılanlar (şema ile birebir) */
 function defaultCreateData(): Omit<SiteSettingsRow, 'id' | 'updatedAt'> {
   return {
     siteName: 'Günen Temizlik',
     siteDescription: "İstanbul'un güvenilir profesyonel temizlik şirketi",
-    siteUrl: 'https://gunentemizlik.com',
+    siteUrl: getSiteUrl(),
     logo: null,
     favicon: '/favicon.ico',
     primaryColor: '#10b981',
@@ -56,7 +57,7 @@ function defaultCreateData(): Omit<SiteSettingsRow, 'id' | 'updatedAt'> {
     seoKeywords: 'temizlik, ofis temizliği, ev temizliği, istanbul temizlik',
     ogImage: '/og-image.jpg',
     twitterHandle: '@gunentemizlik',
-    canonicalUrl: 'https://gunentemizlik.com',
+    canonicalUrl: getSiteUrl(),
     googleAnalyticsId: null,
     googleTagManagerId: null,
     facebookPixelId: null,

@@ -20,7 +20,7 @@ import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { TeamSection } from '../../components/site/TeamSection';
 import { SITE_CONTACT } from '@/config/site-contact';
-import { canonicalUrl } from '@/lib/seo';
+import { canonicalUrl, getSiteUrl } from '@/lib/seo';
 import { keywordsForPage } from '@/lib/seo-keywords';
 import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide-react';
 
@@ -30,14 +30,16 @@ import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide
 
 export const metadata: Metadata = {
   title: "Hakkımızda | Günen Temizlik - İstanbul",
-  description: "15+ yıllık deneyimle İstanbul'un her bölgesinde profesyonel temizlik hizmetleri sunuyoruz. Güvenilir, hızlı ve garantili hizmet. 5000+ mutlu müşteri.",
+  description:
+    "15+ yıllık deneyimle İstanbul'un her bölgesinde profesyonel temizlik hizmetleri sunuyoruz. Güvenilir ekip, şeffaf süreç ve tekrarlayan müşteri memnuniyeti odağı.",
   keywords: keywordsForPage('hakkimizda'),
   alternates: {
     canonical: canonicalUrl('/hakkimizda'),
   },
   openGraph: {
     title: "Hakkımızda | Günen Temizlik",
-    description: "15+ yıllık deneyim, 5000+ mutlu müşteri. İstanbul'un güvenilir temizlik şirketi.",
+    description:
+      "15+ yıllık deneyim, İstanbul genelinde profesyonel temizlik. Güvenilir ekip ve şeffaf iletişim.",
     url: canonicalUrl('/hakkimizda'),
     type: 'website',
     locale: 'tr_TR',
@@ -54,7 +56,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "Hakkımızda | Günen Temizlik",
-    description: "15+ yıllık deneyim, 5000+ mutlu müşteri.",
+    description: "15+ yıllık deneyim, İstanbul genelinde profesyonel temizlik.",
     images: [canonicalUrl('/logo.png')],
   },
 };
@@ -68,9 +70,9 @@ const organizationSchema = {
   "@type": "Organization",
   "name": "Günen Temizlik Şirketi",
   "alternateName": "Günen Temizlik",
-  "url": "https://gunentemizlik.com",
-  "logo": "https://gunentemizlik.com/logo.png",
-  "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. 15+ yıllık deneyim, 5000+ mutlu müşteri.",
+  "url": getSiteUrl(),
+  "logo": canonicalUrl('/logo.png'),
+  "description": "İstanbul'un önde gelen profesyonel temizlik şirketi. 15+ yıllık deneyim ve kurumsal süreklilik odağı.",
   "foundingDate": "2009",
   "founders": [
     {
@@ -204,13 +206,14 @@ export default function AboutPage() {
                 prensibiyle yolumuza devam ediyoruz.
               </p>
               <p>
-                Yıllar içinde ekibimizi ve hizmet yelpazemizi genişleterek, bugün İstanbul'un
-                en çok tercih edilen temizlik şirketlerinden biri olduk. 5000'den fazla
-                mutlu müşterimiz ve %98 memnuniyet oranımızla gurur duyuyoruz.
+                Yıllar içinde ekibimizi ve hizmet yelpazemizi genişleterek, bugün İstanbul genelinde
+                kurumsal ve konut müşterileri tarafından sık tercih edilen temizlik ekiplerinden biri
+                olduk. Binlerce tamamlanan operasyon ve tekrarlayan randevu talepleriyle sürekliliğimizi
+                sürdürüyoruz.
               </p>
               <p>
                 Profesyonel ekibimiz, modern ekipmanlarımız ve çevre dostu ürünlerimizle
-                her zaman en iyi hizmeti sunmak için çalışıyoruz.
+                her zaman tutarlı kalite ve şeffaf iletişimle hizmet vermek için çalışıyoruz.
               </p>
             </article>
           </div>

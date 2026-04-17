@@ -190,7 +190,7 @@ export function Hero() {
               >
                 <Sparkles size={16} />
               </motion.div>
-              <span className="text-sm font-medium">İstanbul&apos;un #1 Temizlik Şirketi</span>
+              <span className="text-sm font-medium">İstanbul genelinde profesyonel temizlik ekibi</span>
             </motion.div>
 
             {/* Heading with staggered text animation */}
@@ -364,8 +364,8 @@ export function Hero() {
                         <Shield className="h-5 w-5 text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-emerald-400">%98</p>
-                        <p className="text-xs text-slate-400 font-medium">Memnuniyet</p>
+                        <p className="text-2xl font-bold text-emerald-400">7/24</p>
+                        <p className="text-xs text-slate-400 font-medium">Destek hattı</p>
                       </div>
                     </div>
                   </div>

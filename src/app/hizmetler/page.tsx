@@ -42,7 +42,7 @@ const servicesSchema = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
   name: 'Hizmetlerimiz',
-  url: 'https://gunentemizlik.com/hizmetler',
+  url: canonicalUrl('/hizmetler'),
   about: 'Profesyonel temizlik hizmetleri',
 };
 
@@ -54,13 +54,13 @@ const breadcrumbSchema = {
       '@type': 'ListItem',
       position: 1,
       name: 'Ana Sayfa',
-      item: 'https://gunentemizlik.com/',
+      item: canonicalUrl('/'),
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Hizmetlerimiz',
-      item: 'https://gunentemizlik.com/hizmetler',
+      item: canonicalUrl('/hizmetler'),
     },
   ],
 };
@@ -85,7 +85,7 @@ export default async function ServicesPage() {
       '@type': 'ListItem',
       position: index + 1,
       name: service.title,
-      url: `https://gunentemizlik.com/hizmetler/${service.slug}`,
+      url: canonicalUrl(`/hizmetler/${service.slug}`),
     })),
   };
 

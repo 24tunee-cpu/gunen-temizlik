@@ -27,6 +27,7 @@ import {
 import { toast } from '@/store/toastStore';
 import { trackError } from '@/lib/client-error-handler';
 import { formatDate } from '@/lib/utils';
+import { getSiteUrl } from '@/lib/seo';
 
 type TabId = 'general' | 'appearance' | 'social' | 'seo' | 'advanced';
 
@@ -68,7 +69,7 @@ interface FormState {
 const emptyForm = (): FormState => ({
   siteName: '',
   siteDescription: '',
-  siteUrl: 'https://gunentemizlik.com',
+  siteUrl: getSiteUrl(),
   logo: '',
   favicon: '/favicon.ico',
   primaryColor: '#10b981',
@@ -106,7 +107,7 @@ function apiRowToForm(row: Record<string, unknown>): FormState {
   return {
     siteName: s('siteName') || 'Günen Temizlik',
     siteDescription: s('siteDescription'),
-    siteUrl: s('siteUrl') || 'https://gunentemizlik.com',
+    siteUrl: s('siteUrl') || getSiteUrl(),
     logo: s('logo'),
     favicon: s('favicon') || '/favicon.ico',
     primaryColor: s('primaryColor') || '#10b981',

@@ -28,10 +28,11 @@ const siteRoot = getSiteUrl();
 
 const rootMetadataBase: Metadata = {
   title: {
-    default: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24 Hizmet",
+    default: 'Günen Temizlik | İstanbul Profesyonel Temizlik Hizmetleri | 7/24',
     template: "%s | Günen Temizlik",
   },
-  description: "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, koltuk yıkama, halı temizliği. 15+ yıl deneyim, 5000+ mutlu müşteri, %100 memnuniyet garantisi. Hemen fiyat alın!",
+  description:
+    "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev, koltuk yıkama, halı temizliği. 15+ yıl deneyim, şeffaf süreç ve ücretsiz keşif. Hemen iletişime geçin.",
   keywords: keywordsForPage("root"),
   authors: [{ name: "Günen Temizlik" }],
   creator: "Günen Temizlik",
@@ -44,7 +45,7 @@ const rootMetadataBase: Metadata = {
     },
   },
   openGraph: {
-    title: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi",
+    title: 'Günen Temizlik | İstanbul Profesyonel Temizlik Hizmetleri',
     description: "15+ yıl deneyimli profesyonel temizlik ekibi. İnşaat sonrası, ofis, ev temizliği, koltuk yıkama. Ücretsiz keşif, uygun fiyatlar!",
     type: "website",
     locale: "tr_TR",
@@ -62,7 +63,7 @@ const rootMetadataBase: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi",
+    title: 'Günen Temizlik | İstanbul Profesyonel Temizlik Hizmetleri',
     description: "Profesyonel temizlik hizmetleri. 7/24 hizmet, ücretsiz keşif!",
     images: [canonicalUrl("/logo.png")],
     creator: "@gunentemizlik",

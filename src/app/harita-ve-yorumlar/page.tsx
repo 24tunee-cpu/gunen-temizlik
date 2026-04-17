@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { SITE_CONTACT } from '@/config/site-contact';
 import SiteLayout from '../site/layout';
+import { canonicalUrl } from '@/lib/seo';
 
 const address = SITE_CONTACT.addressLine;
 // Kullanıcının doğrudan Google işletme linkleri
@@ -37,7 +38,7 @@ export const revalidate = 3600;
 export function generateMetadata(): Metadata {
   const title = 'Google Harita & Yorumlar | Günen Temizlik';
   const description = `${SITE_CONTACT.addressLocality} konumumuzu haritada görün, Google yorumlarını inceleyin.`;
-  const canonical = `https://gunentemizlik.com/harita-ve-yorumlar`;
+  const canonical = canonicalUrl('/harita-ve-yorumlar');
 
   return {
     title,

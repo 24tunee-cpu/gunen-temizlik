@@ -34,6 +34,7 @@ import React, {
   useRef,
 } from 'react';
 import { SITE_CONTACT } from '@/config/site-contact';
+import { getSiteUrl } from '@/lib/seo';
 
 // ============================================
 // TYPES
@@ -104,7 +105,7 @@ export interface SiteSettings {
 const defaultSettings: SiteSettings = {
   siteName: 'Günen Temizlik',
   siteDescription: "İstanbul'un en güvenilir profesyonel temizlik şirketi",
-  siteUrl: 'https://gunentemizlik.com',
+  siteUrl: getSiteUrl(),
   logo: '/logo.png',
   favicon: '/favicon.ico',
   accentColor: '#34d399',
@@ -115,14 +116,14 @@ const defaultSettings: SiteSettings = {
   workingHours: '24 saat açık',
   whatsapp: SITE_CONTACT.whatsappDigits,
 
-  seoTitle: "Günen Temizlik | İstanbul'un En İyi Temizlik Şirketi | 7/24",
+  seoTitle: 'Günen Temizlik | İstanbul Profesyonel Temizlik | 7/24',
   seoDescription:
-    'Profesyonel temizlik hizmetleri. İnşaat sonrası, ofis, ev temizliği, koltuk yıkama. 15+ yıl deneyim, 5000+ mutlu müşteri. Ücretsiz keşif!',
+    'Profesyonel temizlik hizmetleri. İnşaat sonrası, ofis, ev temizliği, koltuk yıkama. 15+ yıl deneyim, şeffaf süreç. Ücretsiz keşif!',
   seoKeywords:
     'istanbul temizlik şirketi, profesyonel temizlik, ofis temizliği, inşaat sonrası temizlik, koltuk yıkama, halı temizliği, ev temizliği',
   ogImage: '/og-image.jpg',
   twitterHandle: '@gunentemizlik',
-  canonicalUrl: 'https://gunentemizlik.com',
+  canonicalUrl: getSiteUrl(),
   language: 'tr-TR',
   region: 'TR',
 
@@ -136,8 +137,7 @@ const defaultSettings: SiteSettings = {
   googleTagManagerId: '',
   facebookPixelId: '',
 
-  robotsTxt:
-    'User-agent: *\nDisallow: /admin/\nDisallow: /api/\nAllow: /\nSitemap: https://gunentemizlik.com/sitemap.xml',
+  robotsTxt: `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nAllow: /\nSitemap: ${getSiteUrl()}/sitemap.xml`,
   sitemapEnabled: true,
   customCss: '',
   customJs: '',

@@ -2,6 +2,7 @@
 
 import { Share2 } from 'lucide-react';
 import { useState } from 'react';
+import { getSiteUrl } from '@/lib/seo';
 
 interface BlogShareButtonProps {
   title: string;
@@ -15,7 +16,7 @@ export function BlogShareButton({ title, slug }: BlogShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    const url = `https://gunentemizlik.com/blog/${slug}`;
+    const url = `${getSiteUrl()}/blog/${slug}`;
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {

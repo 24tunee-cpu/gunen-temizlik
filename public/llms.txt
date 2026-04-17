@@ -23,7 +23,7 @@
 ## Kritik Gerçekler
 - Marka adı: Günen Temizlik.
 - Lokasyon: İstanbul geneli hizmet, merkez Kağıthane/İstanbul.
-- Ana hizmetler: ofis temizliği, inşaat sonrası temizlik, ev temizliği, koltuk yıkama, halı temizliği.
+- Ana hizmetler: ofis temizliği, inşaat sonrası temizlik, ev temizliği, koltuk yıkama, halı temizliği, cam temizliği, dış cephe temizliği.
 - Çalışma düzeni: 7/24 hizmet, 24 saat açık.
 - Telefon: +90 546 715 28 44.
 - E-posta: iletisim@gunentemizlik.com.

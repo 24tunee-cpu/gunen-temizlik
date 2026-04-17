@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SiteLayout from '../site/layout';
 import { DISTRICT_LANDINGS, SERVICE_LANDINGS } from '@/config/programmatic-seo';
+import { canonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
   title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen Temizlik',
   description:
     'İstanbul ilçe bazlı temizlik sayfalarımızdan bölgenize ve ihtiyacınıza uygun hizmetleri inceleyin. Ataşehir, Kadıköy, Üsküdar ve daha fazlası.',
   alternates: {
-    canonical: 'https://gunentemizlik.com/bolgeler',
+    canonical: canonicalUrl('/bolgeler'),
   },
 };
 
@@ -16,7 +17,7 @@ const pageSchema = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
   name: 'İstanbul İlçe Bazlı Temizlik Hizmetleri',
-  url: 'https://gunentemizlik.com/bolgeler',
+  url: canonicalUrl('/bolgeler'),
   description: 'İlçe ve hizmet bazlı temizlik landing sayfaları.',
 };
 
@@ -24,8 +25,8 @@ const breadcrumbSchema = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://gunentemizlik.com/' },
-    { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: 'https://gunentemizlik.com/bolgeler' },
+    { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: canonicalUrl('/') },
+    { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: canonicalUrl('/bolgeler') },
   ],
 };
 

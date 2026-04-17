@@ -102,7 +102,7 @@ const termsPageSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: 'Kullanım Koşulları',
-  url: 'https://gunentemizlik.com/kullanim-kosullari',
+  url: canonicalUrl('/kullanim-kosullari'),
   description:
     'Günen Temizlik hizmetlerinin kullanım koşulları, sorumluluklar ve yasal bilgilendirmeler.',
   inLanguage: 'tr-TR',
@@ -116,13 +116,13 @@ const termsBreadcrumbSchema = {
       '@type': 'ListItem',
       position: 1,
       name: 'Ana Sayfa',
-      item: 'https://gunentemizlik.com/',
+      item: canonicalUrl('/'),
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Kullanım Koşulları',
-      item: 'https://gunentemizlik.com/kullanim-kosullari',
+      item: canonicalUrl('/kullanim-kosullari'),
     },
   ],
 };

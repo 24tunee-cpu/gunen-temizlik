@@ -8,6 +8,7 @@ import {
   formatDistrictSide,
   getDistrictBySlug,
 } from '@/config/programmatic-seo';
+import { canonicalUrl } from '@/lib/seo';
 
 type Props = {
   params: Promise<{ district: string }>;
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
       description,
-      url: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
+      url: canonicalUrl(`/bolgeler/${districtData.slug}`),
       type: 'website',
       locale: 'tr_TR',
       siteName: 'Günen Temizlik',
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
     },
     alternates: {
-      canonical: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
+      canonical: canonicalUrl(`/bolgeler/${districtData.slug}`),
     },
   };
 }
@@ -59,13 +60,13 @@ export default async function DistrictPage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://gunentemizlik.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: 'https://gunentemizlik.com/bolgeler' },
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: canonicalUrl('/') },
+      { '@type': 'ListItem', position: 2, name: 'Bölgeler', item: canonicalUrl('/bolgeler') },
       {
         '@type': 'ListItem',
         position: 3,
         name: districtData.name,
-        item: `https://gunentemizlik.com/bolgeler/${districtData.slug}`,
+        item: canonicalUrl(`/bolgeler/${districtData.slug}`),
       },
     ],
   };

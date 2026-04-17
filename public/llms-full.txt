@@ -58,7 +58,7 @@
 - Alternatif dinamik bölgesel route'lar: `/{district}` ve `/{district}/{service}`.
 
 ## Hizmet Taksonomisi
-- Çekirdek hizmet kümeleri: ofis temizliği, inşaat sonrası temizlik, ev temizliği, koltuk yıkama, halı temizliği.
+- Çekirdek hizmet kümeleri: ofis temizliği, inşaat sonrası temizlik, ev temizliği, koltuk yıkama, halı temizliği, cam temizliği, dış cephe temizliği.
 - Hizmet sunumu, hem genel katalog hem tekil hizmet sayfası modelinde kurgulanır.
 - Yerel SEO kurgusu, ilçe ve hizmet kombinasyonları üzerinden genişletilir.
 

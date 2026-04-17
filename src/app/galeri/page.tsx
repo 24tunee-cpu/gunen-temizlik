@@ -67,11 +67,11 @@ const gallerySchema = {
   "@type": "ImageGallery",
   "name": "Günen Temizlik Galeri",
   "description": "Temizlik çalışmalarımızdan örnekler ve before/after görselleri",
-  "url": "https://gunentemizlik.com/galeri",
+  "url": canonicalUrl('/galeri'),
   "isPartOf": {
     "@type": "WebSite",
     "name": "Günen Temizlik",
-    "url": "https://gunentemizlik.com"
+    "url": canonicalUrl('/')
   },
   "about": {
     "@type": "CleaningService",
