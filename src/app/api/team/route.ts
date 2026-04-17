@@ -24,6 +24,7 @@ import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
 import { requireAdminAuth, sanitizeInput } from '@/lib/security';
 import { getNextAuthJwtSecret } from '@/lib/auth-secret';
+import { TEAM_SEED_DATA } from '@/lib/seed-team';
 
 // ============================================
 // CONFIGURATION
@@ -186,6 +187,25 @@ export async function GET(request: NextRequest) {
         createdAt: true,
       },
     });
+
+    if (!isAdmin && members.length === 0) {
+      const fallbackMembers = TEAM_SEED_DATA.filter((row) => row.isActive)
+        .sort((a, b) => a.order - b.order)
+        .map((row) => ({
+          id: row.seedKey,
+          name: row.name,
+          role: row.role,
+          bio: row.bio,
+          image: row.image,
+          phone: row.phone,
+          email: row.email,
+          linkedin: row.linkedin,
+          isActive: row.isActive,
+          order: row.order,
+          createdAt: new Date(0),
+        }));
+      return NextResponse.json(fallbackMembers, { headers });
+    }
 
     console.log(`Retrieved ${members.length} team members`);
 

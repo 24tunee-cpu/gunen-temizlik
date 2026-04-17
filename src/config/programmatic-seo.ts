@@ -7,6 +7,10 @@ export type DistrictLanding = {
   side?: 'anadolu' | 'avrupa';
   /** Kısa tanıtım cümlesi (mahalle + operasyon odağı) */
   regionBlurb?: string;
+  /** İlçeye özel operasyon ve yerel sinyal notları */
+  localSignals?: string[];
+  /** İlçeye özel derin içerik (özellikle ana lokasyonlarda) */
+  deepDive?: string[];
 };
 
 export type ServiceLanding = {
@@ -149,6 +153,16 @@ export const DISTRICT_LANDINGS: DistrictLanding[] = [
     regionBlurb:
       'Yeni rezidans ve ofis projelerinde inşaat sonrası teslim ve düzenli temizlik hizmeti veriyoruz.',
     neighborhoods: ['Çağlayan', 'Gürsel', 'Seyrantepe', 'Merkez', 'Hamidiye', 'Sultan Selim'],
+    localSignals: [
+      'Kentsel dönüşüm projelerinde teslim öncesi detaylı inşaat sonrası temizlik talepleri yoğunlaşır.',
+      'Rezidans ve ofis geçişlerinde aynı gün keşif + ertesi gün operasyon planı öne çıkar.',
+      'Dar sokak ve yoğun trafik saatlerine göre rota planlaması yapıldığında teslim süreleri kısalır.',
+    ],
+    deepDive: [
+      'Kağıthane, Günen Temizlik operasyonlarının merkezi olduğu için saha planlamasında referans ilçemizdir. Çağlayan, Gürsel ve Seyrantepe hattında özellikle yeni bina teslimleri, tadilat sonrası kullanım açılışları ve ofis katı devirlerinde kısa sürede ekip yönlendirmesi yapabiliyoruz.',
+      'İlçedeki yapı stoğunda hem eski apartmanlar hem de yeni rezidans/ofis projeleri birlikte bulunduğundan hizmet kapsamı projeye göre değişiyor. Bu nedenle iş başlamadan önce alanı; zemin türü, cam yüzeyi, dolap içi toz birikimi, ıslak hacim yoğunluğu ve erişim koşullarına göre başlıklara ayırıp uyguluyoruz.',
+      'Kağıthane’deki mahalle bazlı deneyimimiz sayesinde operasyon sırası daha net ilerler: önce toz ve yüzey güvenliği, ardından detay temizlik, en sonda teslim kontrolü. Bu yaklaşım özellikle taşınma öncesi ve inşaat sonrası işlerde hem süre hem kalite dengesini iyileştirir.',
+    ],
   },
   {
     slug: 'eyupsultan',
@@ -427,6 +441,29 @@ export function getNearbyDistrictSlugs(currentSlug: string, count = 3): string[]
     if (d.slug !== currentSlug) results.push(d.slug);
   }
   return results;
+}
+
+export function getDistrictOperationalSignals(district: DistrictLanding): string[] {
+  if (district.localSignals && district.localSignals.length > 0) {
+    return district.localSignals;
+  }
+  const firstNeighborhood = district.neighborhoods[0] || district.name;
+  const secondNeighborhood = district.neighborhoods[1] || district.name;
+  return [
+    `${district.name} bölgesinde ${firstNeighborhood} ve ${secondNeighborhood} çevresinde yoğun saatlere göre ekip planlaması yapıyoruz.`,
+    `${district.populationNote} nedeniyle kapsamı keşifde netleştirip uygulama sırasını buna göre optimize ediyoruz.`,
+    `${district.name} içinde bina tipi ve erişim koşullarına göre süreç ve ekipman seçimi yapıyoruz.`,
+  ];
+}
+
+export function getDistrictDeepDive(district: DistrictLanding): string[] {
+  if (district.deepDive && district.deepDive.length > 0) {
+    return district.deepDive;
+  }
+  return [
+    `${district.name} için operasyon planı hazırlanırken mahalle yoğunluğu, bina yapısı ve erişim saatleri birlikte değerlendirilir.`,
+    `Bu yaklaşım sayesinde ${district.name} tarafında teklif, planlama ve uygulama adımları daha öngörülebilir şekilde ilerler.`,
+  ];
 }
 
 export function getProgrammaticMetaOverride(

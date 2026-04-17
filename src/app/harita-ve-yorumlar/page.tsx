@@ -58,9 +58,32 @@ export function generateMetadata(): Metadata {
 export default function MapsAndReviewsPage() {
   const telHref = `tel:${SITE_CONTACT.phoneE164}`;
   const whatsappHref = `https://wa.me/${SITE_CONTACT.whatsappDigits}`;
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: SITE_CONTACT.companyName,
+    url: canonicalUrl('/'),
+    image: canonicalUrl('/logo.png'),
+    telephone: SITE_CONTACT.phoneE164,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: SITE_CONTACT.addressLine,
+      addressLocality: SITE_CONTACT.addressLocality,
+      addressRegion: SITE_CONTACT.addressRegion,
+      postalCode: SITE_CONTACT.postalCode,
+      addressCountry: 'TR',
+    },
+    hasMap: mapsOpenHref,
+    sameAs: [mapsOpenHref, reviewHref],
+    areaServed: 'İstanbul',
+  };
 
   return (
     <SiteLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <div className="min-h-screen bg-slate-900 pb-16 pt-28 text-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <header>

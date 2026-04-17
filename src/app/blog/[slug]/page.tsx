@@ -68,12 +68,20 @@ const RELATED_SEO_UTILITY_LINKS = [
   { href: '/rehber', label: 'Temizlik rehberi' },
   { href: '/ara', label: 'Site içi arama' },
 ] as const;
+const MIN_INDEXABLE_WORD_COUNT = 450;
 
 function toAbsoluteAsset(pathOrUrl: string | null | undefined, base: string): string | undefined {
   if (!pathOrUrl?.trim()) return undefined;
   const t = pathOrUrl.trim();
   if (/^https?:\/\//i.test(t)) return t;
   return `${base}${t.startsWith('/') ? t : `/${t}`}`;
+}
+
+function getWordCount(rawHtml: string): number {
+  return rawHtml
+    .replace(/<[^>]*>/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 // ============================================
@@ -102,6 +110,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const metaTitle = resolveBlogMetaTitle(post.title, post.metaTitle);
     const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
+    const contentWordCount = getWordCount(post.content);
+    const isThinContent = contentWordCount < MIN_INDEXABLE_WORD_COUNT;
 
     const ogImage = toAbsoluteAsset(post.image, getSiteUrl());
 
@@ -130,6 +140,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title: metaTitle,
         description: metaDesc,
         images: ogImage ? [ogImage] : undefined,
+      },
+      robots: {
+        index: !isThinContent,
+        follow: true,
       },
     };
   } catch (error) {
@@ -257,7 +271,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   ]);
 
   // Calculate reading time (approximate)
-  const wordCount = post.content.split(/\s+/).length;
+  const wordCount = getWordCount(post.content);
   const readingTime = Math.ceil(wordCount / 200); // 200 words per minute
   const intentLinks = resolveIntentLinks(
     [post.title, post.category, ...(post.tags || [])].join(' ')
@@ -331,6 +345,15 @@ export default async function BlogPostPage({ params }: PageProps) {
               className={`${styles.body} max-w-none text-lg`}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
+
+            {wordCount < MIN_INDEXABLE_WORD_COUNT && (
+              <section className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+                <h2 className="text-base font-semibold text-amber-200">İçerik güncellemesi planlanıyor</h2>
+                <p className="mt-1 text-sm text-amber-100/90">
+                  Bu yazı editoryal kalite standartlarımız doğrultusunda genişletme sürecindedir.
+                </p>
+              </section>
+            )}
 
             {/* Tags */}
             {post.tags.length > 0 && (

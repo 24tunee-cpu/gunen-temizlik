@@ -6,7 +6,9 @@ import {
   DISTRICT_LANDINGS,
   SERVICE_LANDINGS,
   formatDistrictSide,
+  getDistrictDeepDive,
   getDistrictBySlug,
+  getDistrictOperationalSignals,
 } from '@/config/programmatic-seo';
 import { canonicalUrl } from '@/lib/seo';
 
@@ -56,6 +58,8 @@ export default async function DistrictPage({ params }: Props) {
   const { district } = await params;
   const districtData = getDistrictBySlug(district);
   if (!districtData) notFound();
+  const operationalSignals = getDistrictOperationalSignals(districtData);
+  const districtDeepDive = getDistrictDeepDive(districtData);
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -138,6 +142,26 @@ export default async function DistrictPage({ params }: Props) {
                 ))}
               </div>
             </div>
+
+            <section className="mt-8 rounded-xl border border-slate-700 bg-slate-800/40 p-5">
+              <h2 className="text-xl font-semibold text-white">Bölgesel operasyon notları</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-300">
+                {operationalSignals.map((signal) => (
+                  <li key={signal}>{signal}</li>
+                ))}
+              </ul>
+            </section>
+
+            {districtData.slug === 'kagithane' && (
+              <section className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+                <h2 className="text-xl font-semibold text-emerald-200">Kağıthane özel operasyon yaklaşımımız</h2>
+                <div className="mt-3 space-y-3 text-sm leading-6 text-emerald-100/90">
+                  {districtDeepDive.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {SERVICE_LANDINGS.map((service) => (

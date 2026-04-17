@@ -8,8 +8,10 @@ import {
   SERVICE_LANDINGS,
   buildProgrammaticContentVariant,
   formatDistrictSide,
+  getDistrictDeepDive,
   getDistrictBySlug,
   getNearbyDistrictSlugs,
+  getDistrictOperationalSignals,
   getServiceBySlug,
 } from '@/config/programmatic-seo';
 import ProgrammaticCtaExperiment from '@/components/site/ProgrammaticCtaExperiment';
@@ -83,6 +85,8 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
   const canonical = canonicalUrl(`/bolgeler/${districtData.slug}/${serviceData.slug}`);
   const siteRoot = getSiteUrl();
   const contentVariant = buildProgrammaticContentVariant(districtData, serviceData);
+  const operationalSignals = getDistrictOperationalSignals(districtData);
+  const districtDeepDive = getDistrictDeepDive(districtData);
   const nearbyDistricts = getNearbyDistrictSlugs(districtData.slug, 3)
     .map((slug) => getDistrictBySlug(slug))
     .filter((d): d is NonNullable<typeof d> => !!d);
@@ -212,6 +216,26 @@ export default async function ProgrammaticLandingPage({ params }: Props) {
                 ))}
               </ol>
             </section>
+
+            <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
+              <h2 className="text-xl font-semibold">Bölgesel operasyon sinyalleri</h2>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-300">
+                {operationalSignals.map((signal) => (
+                  <li key={signal}>{signal}</li>
+                ))}
+              </ul>
+            </section>
+
+            {districtData.slug === 'kagithane' && (
+              <section className="mt-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6">
+                <h2 className="text-xl font-semibold text-emerald-200">Kağıthane için özel not</h2>
+                <div className="mt-3 space-y-3 text-sm leading-6 text-emerald-100/90">
+                  {districtDeepDive.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/40 p-6">
               <h2 className="text-xl font-semibold">Sık Sorulan Sorular</h2>

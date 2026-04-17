@@ -59,6 +59,89 @@ interface ServiceData {
   updatedAt: Date;
 }
 
+type ServiceContentPack = {
+  idealFor: string[];
+  process: string[];
+  equipment: string[];
+  standards: string[];
+};
+
+const DEFAULT_CONTENT_PACK: ServiceContentPack = {
+  idealFor: [
+    'Taşınma, tadilat veya sezonluk genel toparlama sonrası detaylı temizlik ihtiyacında',
+    'Düzenli bakım planı kurmak isteyen ev ve iş yeri kullanıcılarında',
+    'Hijyen standardını yükseltmek ve kontrol listesi ile ilerlemek gereken senaryolarda',
+  ],
+  process: [
+    'Talep ve alan bilgisi alınır, kapsam netleştirilir.',
+    'Yüzey türüne uygun ürün ve ekipman planı yapılır.',
+    'Uygulama sonrası kalite kontrol adımıyla teslim tamamlanır.',
+  ],
+  equipment: ['HEPA filtreli profesyonel süpürge', 'Mikrofiber yüzey setleri', 'Buhar ve ekstraksiyon ekipmanı'],
+  standards: [
+    'Alan bazlı kontrol listesi ile adım adım uygulama',
+    'Yüzeye uygun ürün seçimi ve güvenli dozaj',
+    'Uygulama sonrası eksik kontrolü ve hızlı geri bildirim',
+  ],
+};
+
+const SERVICE_CONTENT_PACKS: Record<string, ServiceContentPack> = {
+  'ev-temizligi': {
+    idealFor: [
+      'Yoğun iş temposunda düzenli temizlik takvimi oluşturmak isteyen hanelerde',
+      'Taşınma öncesi/sonrası, misafir öncesi veya mevsim geçişi genel temizlikte',
+      'Mutfak-banyo odaklı hijyen kontrolü gereken aile kullanımında',
+    ],
+    process: [
+      'Öncelik alanları (mutfak, banyo, yaşam alanı) belirlenir.',
+      'Toz alma, yüzey temizliği ve zemin uygulaması sıralı yürütülür.',
+      'Nihai kontrol ve kullanıcı notları ile süreç kapatılır.',
+    ],
+    equipment: ['Mikrofiber toz alma seti', 'Yüzey uyumlu pH dengeli ürünler', 'Derz ve köşe detay ekipmanları'],
+    standards: [
+      'Temas yoğun yüzeyler için artırılmış hijyen protokolü',
+      'Kullanıcı hassasiyetine göre ürün seçimi (çocuk/evcil hayvan vb.)',
+      'Tekrarlı randevuda aynı kaliteyi koruyan kontrol şablonu',
+    ],
+  },
+  'ofis-temizligi': {
+    idealFor: [
+      'Mesai akışını bozmadan düzenli hijyen standardı isteyen ofislerde',
+      'Toplantı odası, ortak alan ve mutfak yoğun kullanılan ekiplerde',
+      'Sözleşmeli ve raporlanabilir temizlik modeli arayan kurumsal yapılarda',
+    ],
+    process: [
+      'Mesai saatine göre vardiya planı ve alan önceliği belirlenir.',
+      'Ortak alan, çalışma alanı ve ıslak hacim uygulamaları yürütülür.',
+      'Haftalık/aylık kontrol turu ile standardizasyon sürdürülür.',
+    ],
+    equipment: ['Sessiz çalışma modlu ekipman', 'Cam ve yüzey bakım setleri', 'Kurumsal alan kontrol checklisti'],
+    standards: [
+      'Mesai dışı planlama ile iş sürekliliğini koruma',
+      'Temas noktalarında düzenli hijyen takibi',
+      'Periyodik raporlama ve tekrar planı',
+    ],
+  },
+  'insaat-sonrasi-temizlik': {
+    idealFor: [
+      'Tadilat veya yeni teslim alanlarında ince toz ve kalıntı birikimi olduğunda',
+      'Yaşama/çalışma başlamadan önce güvenli ve detaylı son temizlik gerektiğinde',
+      'Cam, derz, dolap içi ve zemin teslim standardı istenen projelerde',
+    ],
+    process: [
+      'Kaba kalıntı ayrıştırması ve alan güvenlik kontrolü yapılır.',
+      'İnce toz, cam, yüzey ve zemin katmanlı temizlikle tamamlanır.',
+      'Teslim öncesi kontrol turu ile eksikler kapatılır.',
+    ],
+    equipment: ['Yüksek emiş gücüne sahip toz ekipmanı', 'Yüzey dostu inşaat sonrası ürün seti', 'Cam ve derz detay ekipmanları'],
+    standards: [
+      'Yüzey türüne göre hasarsız uygulama prensibi',
+      'Katmanlı temizlik sırası ile toz geri dönüşünü azaltma',
+      'Teslim checklisti ile net kapanış',
+    ],
+  },
+};
+
 function toAbsoluteUrl(pathOrUrl: string | null | undefined): string | undefined {
   if (!pathOrUrl?.trim()) return undefined;
   const input = pathOrUrl.trim();
@@ -210,6 +293,29 @@ export default async function ServiceDetailPage({ params }: PageProps) {
     { name: service.title, url: `/hizmetler/${service.slug}` },
   ]);
   const serviceFaq = serviceFaqFromFeatures(service.features || []);
+  const contentPack = SERVICE_CONTENT_PACKS[service.slug] ?? DEFAULT_CONTENT_PACK;
+  const serviceMeta = getServiceBySlug(service.slug);
+  const relatedBlogs = serviceMeta
+    ? await prisma.blogPost.findMany({
+        where: {
+          published: true,
+          OR: [
+            { tags: { hasSome: serviceMeta.blogTagHints } },
+            { title: { contains: service.title, mode: 'insensitive' } },
+            { excerpt: { contains: service.title, mode: 'insensitive' } },
+          ],
+        },
+        orderBy: [{ updatedAt: 'desc' }, { views: 'desc' }],
+        take: 4,
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          category: true,
+        },
+      })
+    : [];
   const faqSchema = generateFAQSchema(serviceFaq);
   const schemaGraph = serializeSchemaGraph([
     serviceSchema as Record<string, unknown>,
@@ -310,13 +416,54 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               </section>
             )}
 
+            <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                İstanbul'da {service.title} hangi durumlarda tercih edilir?
+              </h2>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700 dark:text-slate-300">
+                {contentPack.idealFor.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {service.title} süreci nasıl ilerliyor?
+              </h2>
+              <ol className="mt-4 list-decimal space-y-2 pl-5 text-slate-700 dark:text-slate-300">
+                {contentPack.process.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </section>
+
+            <section className="mt-12 grid gap-4 md:grid-cols-2" aria-label="Ekipman ve standartlar">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Kullandığımız ekipmanlar</h2>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700 dark:text-slate-300">
+                  {contentPack.equipment.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Uygulama standartlarımız</h2>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700 dark:text-slate-300">
+                  {contentPack.standards.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
             {/* Trust Indicators */}
             <section className="mt-12 grid gap-4 sm:grid-cols-2" aria-label="Güvenceler">
               <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
                 <Shield className="h-6 w-6 text-emerald-500" aria-hidden="true" />
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-white">Memnuniyet Garantisi</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">%100 müşteri memnuniyeti</p>
+                  <p className="font-medium text-slate-900 dark:text-white">Kalite Kontrol Adımı</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Uygulama sonrası eksik kontrol ve hızlı geri bildirim</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
@@ -339,6 +486,30 @@ export default async function ServiceDetailPage({ params }: PageProps) {
                 ))}
               </div>
             </section>
+
+            {relatedBlogs.length > 0 && (
+              <section className="mt-12 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  {service.title} ile ilgili blog rehberleri
+                </h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  Hizmete karar verirken size yardımcı olacak içerikler:
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {relatedBlogs.map((post) => (
+                    <Link
+                      key={post.id}
+                      href={`/blog/${post.slug}`}
+                      className="rounded-lg border border-slate-200 bg-white p-3 transition-colors hover:border-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/40"
+                    >
+                      <p className="text-xs text-emerald-600 dark:text-emerald-300">{post.category}</p>
+                      <p className="mt-1 font-medium text-slate-900 dark:text-white">{post.title}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">{post.excerpt}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* CTA Buttons */}
             <nav
