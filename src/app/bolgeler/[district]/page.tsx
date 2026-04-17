@@ -28,12 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `${districtData.name} bölgesinde ofis temizliği, inşaat sonrası temizlik, koltuk yıkama ve daha fazlası için hızlı teklif alın.`;
   const description =
     descBase.length > 158 ? `${descBase.slice(0, 155).trimEnd()}…` : descBase;
+  const pageTitle = `${districtData.name} Temizlik Hizmetleri | İstanbul | Günen`;
 
   return {
-    title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
+    title: pageTitle,
     description,
     openGraph: {
-      title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
+      title: pageTitle,
       description,
       url: canonicalUrl(`/bolgeler/${districtData.slug}`),
       type: 'website',
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${districtData.name} Temizlik Hizmetleri | Günen Temizlik`,
+      title: pageTitle,
       description,
     },
     alternates: {

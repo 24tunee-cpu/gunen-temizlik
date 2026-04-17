@@ -11,8 +11,9 @@ import {
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
-  title: 'Ücretsiz keşif ve randevu | Günen Temizlik',
-  description: 'Uygun tarih ve saat diliminde ücretsiz keşif talebi oluşturun.',
+  title: 'İstanbul Temizlik Randevusu | Ücretsiz Keşif | Günen',
+  description:
+    'İstanbul genelinde temizlik randevusu oluşturun. Ev, ofis, inşaat sonrası ve koltuk-halı temizliği için uygun tarih seçin, hızlı geri dönüş alın.',
   keywords: keywordsForPage('randevu'),
   alternates: { canonical: canonicalUrl('/randevu') },
   openGraph: {
@@ -39,8 +40,9 @@ export const metadata: Metadata = {
   },
 };
 
-const pageTitle = 'Ücretsiz keşif ve randevu | Günen Temizlik';
-const pageDescription = 'Uygun tarih ve saat diliminde ücretsiz keşif talebi oluşturun.';
+const pageTitle = 'İstanbul Temizlik Randevusu | Ücretsiz Keşif | Günen';
+const pageDescription =
+  'İstanbul genelinde temizlik randevusu oluşturun. Ev, ofis, inşaat sonrası ve koltuk-halı temizliği için hızlı geri dönüş alın.';
 
 const randevuJsonLd = serializeSchemaGraph([
   generateWebPageSchema({

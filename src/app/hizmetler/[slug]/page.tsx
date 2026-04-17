@@ -133,8 +133,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   } catch (error) {
     return {
-      title: 'Hizmet Detayı | Günen Temizlik',
-      description: 'İstanbul profesyonel temizlik hizmetleri.',
+      title: 'Temizlik Hizmet Detayı | İstanbul | Günen',
+      description: 'İstanbul genelinde profesyonel temizlik hizmet detayları ve teklif bilgileri.',
     };
   }
 }

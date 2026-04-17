@@ -29,7 +29,7 @@ import { Sparkles, Shield, Users, Award, Clock, Heart, ArrowRight } from 'lucide
 // ============================================
 
 export const metadata: Metadata = {
-  title: "Hakkımızda | Günen Temizlik - İstanbul",
+  title: 'Hakkımızda | İstanbul Temizlik Ekibi | Günen',
   description:
     "15+ yıllık deneyimle İstanbul'un her bölgesinde profesyonel temizlik hizmetleri sunuyoruz. Güvenilir ekip, şeffaf süreç ve tekrarlayan müşteri memnuniyeti odağı.",
   keywords: keywordsForPage('hakkimizda'),
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     canonical: canonicalUrl('/hakkimizda'),
   },
   openGraph: {
-    title: "Hakkımızda | Günen Temizlik",
+    title: 'Hakkımızda | İstanbul Temizlik Ekibi | Günen',
     description:
       "15+ yıllık deneyim, İstanbul genelinde profesyonel temizlik. Güvenilir ekip ve şeffaf iletişim.",
     url: canonicalUrl('/hakkimizda'),
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Hakkımızda | Günen Temizlik",
+    title: 'Hakkımızda | İstanbul Temizlik Ekibi | Günen',
     description: "15+ yıllık deneyim, İstanbul genelinde profesyonel temizlik.",
     images: [canonicalUrl('/logo.png')],
   },

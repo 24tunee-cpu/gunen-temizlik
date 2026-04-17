@@ -9,9 +9,9 @@ import {
 } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Hangi temizlik ne zaman? | Günen Temizlik rehberi',
+  title: 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman? | Günen',
   description:
-    'İnşaat sonrası, ofis, derinlemesine ve periyodik temizlik için pratik karar rehberi.',
+    'İstanbul için ev, ofis, inşaat sonrası ve periyodik temizlikte doğru hizmeti seçmek için pratik karar rehberi ve uygulama önerileri.',
   alternates: { canonical: canonicalUrl('/rehber') },
   openGraph: {
     title: 'Hangi temizlik ne zaman? | Günen Temizlik rehberi',
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
 };
 
-const rehberTitle = 'Hangi temizlik ne zaman? | Günen Temizlik rehberi';
+const rehberTitle = 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman? | Günen';
 const rehberDescription =
-  'İnşaat sonrası, ofis, derinlemesine ve periyodik temizlik için pratik karar rehberi.';
+  'İstanbul için ev, ofis, inşaat sonrası ve periyodik temizlikte doğru hizmeti seçmek için pratik karar rehberi.';
 
 const rehberJsonLd = serializeSchemaGraph([
   generateWebPageSchema({

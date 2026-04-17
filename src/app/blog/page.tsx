@@ -55,13 +55,13 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     .join(' - ');
 
   const title = suffix
-    ? `Blog | Günen Temizlik - ${suffix}`
-    : 'Blog | Günen Temizlik - Temizlik İpuçları ve Bilgiler';
+    ? `${suffix} | İstanbul Temizlik Blogu | Günen`
+    : 'İstanbul Temizlik Blogu | İpuçları ve Rehberler | Günen';
   const description = tag
     ? `${tag} etiketi için profesyonel temizlik makaleleri ve pratik öneriler.`
     : q
       ? `"${q}" araması için blog sonuçları ve uzman içerikler.`
-      : 'Profesyonel temizlik hakkında faydalı bilgiler, ipuçları ve güncel makaleler. Ev temizliği, ofis temizliği ve hijyen hakkında uzman tavsiyeleri.';
+      : 'İstanbul için ev temizliği, ofis temizliği, inşaat sonrası temizlik ve hijyen süreçleri hakkında güncel ipuçları ve uzman içerikleri.';
 
   const query = new URLSearchParams();
   if (page > 1) query.set('page', String(page));

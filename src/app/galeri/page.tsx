@@ -28,15 +28,17 @@ import { keywordsForPage } from '@/lib/seo-keywords';
 // ============================================
 
 export const metadata: Metadata = {
-  title: 'Galeri | Günen Temizlik - İstanbul',
-  description: 'Temizlik çalışmalarımızdan örnekler, before/after görselleri. İnşaat sonrası, ofis, ev temizliği projelerimizi inceleyin.',
+  title: 'Temizlik Öncesi/Sonrası Galeri | İstanbul | Günen',
+  description:
+    'İstanbul genelindeki temizlik uygulamalarımızdan önce/sonra görselleri inceleyin. Ev, ofis ve inşaat sonrası projelerden örnekler.',
   keywords: keywordsForPage('galeri'),
   alternates: {
     canonical: canonicalUrl('/galeri'),
   },
   openGraph: {
-    title: 'Galeri | Günen Temizlik',
-    description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri. Profesyonel hizmet kalitemizi keşfedin.',
+    title: 'Temizlik Öncesi/Sonrası Galeri | Günen',
+    description:
+      'İstanbul genelindeki temizlik uygulamalarımızdan önce/sonra görsellerini inceleyerek hizmet kalitesini değerlendirin.',
     url: canonicalUrl('/galeri'),
     type: 'website',
     locale: 'tr_TR',
@@ -52,8 +54,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Galeri | Günen Temizlik',
-    description: 'Temizlik çalışmalarımızdan örnekler ve before/after görselleri.',
+    title: 'Temizlik Öncesi/Sonrası Galeri | Günen',
+    description: 'İstanbul temizlik projelerinden önce/sonra görsellerini inceleyin.',
     images: [canonicalUrl('/logo.png')],
   },
 };

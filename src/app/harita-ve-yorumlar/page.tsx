@@ -36,8 +36,8 @@ const directionsHref = withUtm(
 export const revalidate = 3600;
 
 export function generateMetadata(): Metadata {
-  const title = 'Google Harita & Yorumlar | Günen Temizlik';
-  const description = `${SITE_CONTACT.addressLocality} konumumuzu haritada görün, Google yorumlarını inceleyin.`;
+  const title = 'Google Harita ve Müşteri Yorumları | İstanbul | Günen';
+  const description = `${SITE_CONTACT.addressLocality} konumumuzu haritada görüntüleyin, gerçek müşteri yorumlarını inceleyin ve doğrudan yol tarifi alın.`;
   const canonical = canonicalUrl('/harita-ve-yorumlar');
 
   return {

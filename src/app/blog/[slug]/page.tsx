@@ -134,8 +134,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   } catch (error) {
     return {
-      title: 'Blog Yazısı | Günen Temizlik',
-      description: 'Profesyonel temizlik hakkında faydalı bilgiler.',
+      title: 'Temizlik Rehberi Yazısı | İstanbul Blog | Günen',
+      description: 'İstanbul temizlik süreçleri ve hijyen uygulamaları hakkında güncel blog içeriği.',
     };
   }
 }

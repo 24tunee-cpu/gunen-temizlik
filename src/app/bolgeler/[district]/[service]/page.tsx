@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
   const title =
     (override?.isActive && override?.title?.trim()) ||
-    `${districtData.name} ${serviceData.name} | Günen Temizlik`;
+    `${districtData.name} ${serviceData.name} | İstanbul | Günen`;
   const description =
     (override?.isActive && override?.description?.trim()) ||
     `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
@@ -65,6 +65,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       locale: 'tr_TR',
       siteName: 'Günen Temizlik',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   };
 }

@@ -29,17 +29,17 @@ import { HelpCircle } from 'lucide-react';
 // ============================================
 
 export const metadata: Metadata = {
-  title: 'Sıkça Sorulan Sorular | Günen Temizlik - İstanbul',
+  title: 'Temizlik SSS | İstanbul Fiyat ve Hizmet Süreci | Günen',
   description:
-    'İstanbul profesyonel temizlik: fiyatlandırma, ofis ve ev temizliği, inşaat sonrası, koltuk yıkama, randevu ve bölgeler hakkında yanıtlar. Günen Temizlik SSS.',
+    'İstanbul temizlik hizmetlerinde fiyat, süreç, randevu, ilçe kapsamı ve hizmet detayları hakkında en sık sorulan sorulara net yanıtlar.',
   keywords: keywordsForPage('sss'),
   alternates: {
     canonical: canonicalUrl('/sss'),
   },
   openGraph: {
-    title: 'Sıkça Sorulan Sorular | Günen Temizlik',
+    title: 'Temizlik SSS | Günen Temizlik',
     description:
-      'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
+      'İstanbul temizlik fiyatı, hizmet kapsamı, randevu ve ilçe bazlı hizmet akışı hakkında kısa ve net yanıtlar.',
     url: canonicalUrl('/sss'),
     type: 'website',
     locale: 'tr_TR',
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sıkça Sorulan Sorular | Günen Temizlik',
+    title: 'Temizlik SSS | Günen Temizlik',
     description:
-      'İstanbul temizlik fiyatı, bölgeler, inşaat sonrası, ofis ve ev temizliği, koltuk yıkama ve randevu — kısa ve net yanıtlar.',
+      'İstanbul temizlik fiyatı, hizmet kapsamı, randevu ve ilçe bazlı hizmet akışı hakkında kısa ve net yanıtlar.',
     images: [canonicalUrl('/logo.png')],
   },
 };

@@ -5,11 +5,35 @@ import { DISTRICT_LANDINGS, SERVICE_LANDINGS } from '@/config/programmatic-seo';
 import { canonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen Temizlik',
+  title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
   description:
-    'İstanbul ilçe bazlı temizlik sayfalarımızdan bölgenize ve ihtiyacınıza uygun hizmetleri inceleyin. Ataşehir, Kadıköy, Üsküdar ve daha fazlası.',
+    'İstanbul ilçelerine özel temizlik hizmet sayfalarından bölgenize en uygun ev, ofis, inşaat sonrası ve diğer hizmetleri tek tek inceleyin.',
   alternates: {
     canonical: canonicalUrl('/bolgeler'),
+  },
+  openGraph: {
+    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
+    description:
+      'İstanbul ilçelerine özel ev, ofis, inşaat sonrası ve koltuk-halı temizlik sayfalarını karşılaştırın, hızlı teklif alın.',
+    url: canonicalUrl('/bolgeler'),
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Günen Temizlik',
+    images: [
+      {
+        url: canonicalUrl('/logo.png'),
+        width: 1200,
+        height: 630,
+        alt: 'Günen Temizlik - İstanbul bölge hizmetleri',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
+    description:
+      'İstanbul ilçelerine özel temizlik sayfalarında hizmet kapsamını karşılaştırın ve randevu oluşturun.',
+    images: [canonicalUrl('/logo.png')],
   },
 };
 

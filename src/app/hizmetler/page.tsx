@@ -5,17 +5,17 @@ import { canonicalUrl } from '@/lib/seo';
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
-  title: 'Hizmetlerimiz | Günen Temizlik - İstanbul',
+  title: 'İstanbul Temizlik Hizmetleri | Ev, Ofis, İnşaat Sonrası | Günen',
   description:
-    'İstanbul genelinde profesyonel ofis temizliği, inşaat sonrası temizlik, koltuk yıkama, halı temizliği ve detaylı hijyen hizmetlerimizi keşfedin.',
+    'İstanbul genelinde ev temizliği, ofis temizliği, inşaat sonrası temizlik, koltuk-halı yıkama ve dış cephe dahil profesyonel hizmetleri inceleyin.',
   keywords: keywordsForPage('hizmetler'),
   alternates: {
     canonical: canonicalUrl('/hizmetler'),
   },
   openGraph: {
-    title: 'Hizmetlerimiz | Günen Temizlik',
+    title: 'İstanbul Temizlik Hizmetleri | Günen',
     description:
-      'İstanbul için profesyonel temizlik çözümleri: ofis, inşaat sonrası, koltuk ve halı temizliği.',
+      'İstanbul genelinde ev, ofis, inşaat sonrası, koltuk-halı ve dış cephe temizlik çözümlerini karşılaştırın.',
     url: canonicalUrl('/hizmetler'),
     type: 'website',
     locale: 'tr_TR',
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hizmetlerimiz | Günen Temizlik',
+    title: 'İstanbul Temizlik Hizmetleri | Günen',
     description:
-      'İstanbul için profesyonel temizlik çözümleri: ofis, inşaat sonrası, koltuk ve halı temizliği.',
+      'İstanbul genelinde ev, ofis, inşaat sonrası, koltuk-halı ve dış cephe temizlik çözümlerini karşılaştırın.',
     images: [canonicalUrl('/logo.png')],
   },
 };
