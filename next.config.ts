@@ -16,12 +16,12 @@ import type { NextConfig } from "next";
 /** Content Security Policy (CSP) */
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://apiv4.dextergpt.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data: https: blob: https://gunentemizlik.com https://*.gunentemizlik.com https://images.unsplash.com;
   media-src 'self';
-  connect-src 'self' https://vitals.vercel-insights.com https://www.google-analytics.com;
+  connect-src 'self' https://vitals.vercel-insights.com https://www.google-analytics.com https://apiv4.dextergpt.com;
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';
