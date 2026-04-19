@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
       : 'Günen Temizlik müşteri yorumları ve İstanbul temizlik referansları. Profesyonel temizlik hizmeti geri bildirimleri.';
 
   return {
-    title: 'Müşteri Yorumları ve Referanslar | İstanbul | Günen',
+    title: 'Müşteri Yorumları ve Referanslar | İstanbul',
     description,
     keywords: [
       'günen temizlik yorumları',
@@ -48,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: canonicalUrl('/referanslar'),
     },
     openGraph: {
-      title: 'Müşteri Yorumları ve Referanslar | Günen',
+      title: 'Müşteri Yorumları ve Referanslar | İstanbul',
       description,
       url: canonicalUrl('/referanslar'),
       type: 'website',
@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Müşteri Yorumları ve Referanslar | Günen',
+      title: 'Müşteri Yorumları ve Referanslar | İstanbul',
       description,
       images: [canonicalUrl('/logo.png')],
     },

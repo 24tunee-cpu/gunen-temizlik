@@ -5,14 +5,14 @@ import { DISTRICT_LANDINGS, SERVICE_LANDINGS } from '@/config/programmatic-seo';
 import { canonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
+  title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri',
   description:
     'İstanbul ilçelerine özel temizlik hizmet sayfalarından bölgenize en uygun ev, ofis, inşaat sonrası ve diğer hizmetleri tek tek inceleyin.',
   alternates: {
     canonical: canonicalUrl('/bolgeler'),
   },
   openGraph: {
-    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
+    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri',
     description:
       'İstanbul ilçelerine özel ev, ofis, inşaat sonrası ve koltuk-halı temizlik sayfalarını karşılaştırın, hızlı teklif alın.',
     url: canonicalUrl('/bolgeler'),
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri | Günen',
+    title: 'İstanbul İlçe Bazlı Temizlik Hizmetleri',
     description:
       'İstanbul ilçelerine özel temizlik sayfalarında hizmet kapsamını karşılaştırın ve randevu oluşturun.',
     images: [canonicalUrl('/logo.png')],

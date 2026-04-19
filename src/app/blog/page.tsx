@@ -55,8 +55,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     .join(' - ');
 
   const title = suffix
-    ? `${suffix} | İstanbul Temizlik Blogu | Günen`
-    : 'İstanbul Temizlik Blogu | İpuçları ve Rehberler | Günen';
+    ? `${suffix} | İstanbul Temizlik Blogu`
+    : 'İstanbul Temizlik Blogu | İpuçları ve Rehberler';
   const description = tag
     ? `${tag} etiketi için profesyonel temizlik makaleleri ve pratik öneriler.`
     : q

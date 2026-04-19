@@ -5,7 +5,7 @@ import { canonicalUrl } from '@/lib/seo';
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
-  title: 'İstanbul Temizlik Hizmetleri | Ev, Ofis, İnşaat Sonrası | Günen',
+  title: 'İstanbul Temizlik Hizmetleri | Ev, Ofis, İnşaat Sonrası',
   description:
     'İstanbul genelinde ev temizliği, ofis temizliği, inşaat sonrası temizlik, koltuk-halı yıkama ve dış cephe dahil profesyonel hizmetleri inceleyin.',
   keywords: keywordsForPage('hizmetler'),

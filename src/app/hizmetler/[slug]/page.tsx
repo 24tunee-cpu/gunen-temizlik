@@ -150,6 +150,19 @@ function toAbsoluteUrl(pathOrUrl: string | null | undefined): string | undefined
   return `${base}${input.startsWith('/') ? input : `/${input}`}`;
 }
 
+function clampTitle(input: string, max = 60): string {
+  const value = input.trim();
+  if (value.length <= max) return value;
+  return `${value.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+function normalizeMetaTitle(input: string): string {
+  return input
+    .replace(/(\s*\|\s*G[uü]nen Temizlik\s*)+$/iu, '')
+    .replace(/(\s*\|\s*G[uü]nen\s*)+$/iu, '')
+    .trim();
+}
+
 // ============================================
 // METADATA GENERATION
 // ============================================
@@ -169,12 +182,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!service || !service.isActive) {
       return {
-        title: 'Hizmet Bulunamadı | Günen Temizlik',
+        title: 'Hizmet Bulunamadı',
         description: 'Aradığınız hizmet bulunamadı.'
       };
     }
 
-    const title = service.metaTitle?.trim() || `${service.title} | Günen Temizlik - İstanbul`;
+    const rawTitle = normalizeMetaTitle(service.metaTitle?.trim() || `${service.title} İstanbul`);
+    const title = clampTitle(rawTitle, 60);
     const description = service.metaDesc || service.shortDesc;
     const canonical = canonicalUrl(`/hizmetler/${service.slug}`);
     const imageUrl = toAbsoluteUrl(service.image) ?? canonicalUrl('/logo.png');
@@ -216,7 +230,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   } catch (error) {
     return {
-      title: 'Temizlik Hizmet Detayı | İstanbul | Günen',
+      title: 'Temizlik Hizmet Detayı | İstanbul',
       description: 'İstanbul genelinde profesyonel temizlik hizmet detayları ve teklif bilgileri.',
     };
   }

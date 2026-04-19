@@ -29,7 +29,7 @@ import { HelpCircle } from 'lucide-react';
 // ============================================
 
 export const metadata: Metadata = {
-  title: 'Temizlik SSS | İstanbul Fiyat ve Hizmet Süreci | Günen',
+  title: 'Temizlik SSS | İstanbul Fiyat ve Hizmet Süreci',
   description:
     'İstanbul temizlik hizmetlerinde fiyat, süreç, randevu, ilçe kapsamı ve hizmet detayları hakkında en sık sorulan sorulara net yanıtlar.',
   keywords: keywordsForPage('sss'),

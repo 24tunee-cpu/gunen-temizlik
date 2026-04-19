@@ -3,7 +3,7 @@
  * Özel meta yoksa başlık + marka ve özetten güvenli uzunlukta türetilir.
  */
 
-const TITLE_MAX = 60;
+const TITLE_MAX = 58;
 const DESC_MAX = 155;
 const TITLE_SUFFIX = ' | Günen Temizlik Blog';
 
@@ -11,6 +11,12 @@ function truncateChars(s: string, max: number): string {
   const t = s.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+function normalizeTitleBrand(input: string): string {
+  return input
+    .replace(/(\s*\|\s*G[uü]nen Temizlik(?: Blog)?\s*)+$/iu, '')
+    .trim();
 }
 
 /**
@@ -22,9 +28,9 @@ export function resolveBlogMetaTitle(
   storedMeta: string | null | undefined
 ): string {
   const custom = storedMeta?.trim();
-  if (custom) return truncateChars(custom, 70);
+  if (custom) return truncateChars(normalizeTitleBrand(custom), 60);
 
-  const base = title.trim();
+  const base = normalizeTitleBrand(title.trim());
   const suffix = TITLE_SUFFIX;
   if (base.length + suffix.length <= TITLE_MAX) return base + suffix;
 

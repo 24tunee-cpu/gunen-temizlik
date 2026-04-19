@@ -9,7 +9,7 @@ import {
 } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman? | Günen',
+  title: 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman?',
   description:
     'İstanbul için ev, ofis, inşaat sonrası ve periyodik temizlikte doğru hizmeti seçmek için pratik karar rehberi ve uygulama önerileri.',
   alternates: { canonical: canonicalUrl('/rehber') },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
 };
 
-const rehberTitle = 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman? | Günen';
+const rehberTitle = 'İstanbul Temizlik Rehberi | Hangi Hizmet Ne Zaman?';
 const rehberDescription =
   'İstanbul için ev, ofis, inşaat sonrası ve periyodik temizlikte doğru hizmeti seçmek için pratik karar rehberi.';
 

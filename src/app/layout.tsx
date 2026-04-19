@@ -33,8 +33,8 @@ const siteRoot = getSiteUrl();
 
 const rootMetadataBase: Metadata = {
   title: {
-    default: 'Günen Temizlik | İstanbul Profesyonel Temizlik Hizmetleri | 7/24',
-    template: "%s | Günen Temizlik",
+    default: 'Günen Temizlik | İstanbul Temizlik Hizmetleri',
+    template: "%s",
   },
   description:
     "İstanbul'un önde gelen profesyonel temizlik şirketi. İnşaat sonrası, ofis, ev, koltuk yıkama, halı temizliği. 15+ yıl deneyim, şeffaf süreç ve ücretsiz keşif. Hemen iletişime geçin.",

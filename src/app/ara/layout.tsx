@@ -7,7 +7,7 @@ import {
   serializeSchemaGraph,
 } from '@/lib/seo';
 
-const araTitle = 'Site İçi Arama | İstanbul Temizlik İçerikleri | Günen';
+const araTitle = 'Site İçi Arama | İstanbul Temizlik İçerikleri';
 const araDescription = 'Blog, hizmetler, SSS ve bölge sayfalarında hızlı arama yapın.';
 
 export const metadata: Metadata = {

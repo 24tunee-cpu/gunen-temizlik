@@ -31,7 +31,7 @@ Düzenli ev temizliği paketleri (haftalık, iki haftada bir veya aylık) ile yo
     priceRange: '400 TL – 1.800 TL (metrekareye göre)',
     order: 1,
     isActive: true,
-    metaTitle: 'Ev Temizliği İstanbul | Profesyonel Ev Temizlik Şirketi | Günen',
+    metaTitle: 'Ev Temizliği İstanbul | Profesyonel Ev Temizlik Şirketi',
     metaDesc:
       'İstanbul’da profesyonel ev temizliği. Derinlemesine mutfak, banyo ve genel temizlik; düzenli paketler, uygun fiyat. Hemen randevu alın.',
   },
@@ -57,7 +57,7 @@ Günlük yüzey temizliği, haftalık detay çalışması veya aylık derin temi
     priceRange: '350 TL – 3.500 TL (alan ve sıklığa göre)',
     order: 2,
     isActive: true,
-    metaTitle: 'Ofis Temizliği İstanbul | Kurumsal İş Yeri Temizliği | Günen',
+    metaTitle: 'Ofis Temizliği İstanbul | Kurumsal İş Yeri Temizliği',
     metaDesc:
       'İstanbul ofis temizliği ve kurumsal iş yeri hijyeni. Esnek günlük/haftalık planlar, profesyonel ekip. Teklif için iletişime geçin.',
   },
@@ -83,7 +83,7 @@ Profesyonel makinelerle derinlemesine yıkama, emiş gücü yüksek vakumlama ve
     priceRange: '180 TL – 650 TL (parça ve kumaşa göre)',
     order: 3,
     isActive: true,
-    metaTitle: 'Koltuk Yıkama İstanbul | Kanepe ve Döşeme Temizliği | Günen',
+    metaTitle: 'Koltuk Yıkama İstanbul | Kanepe ve Döşeme Temizliği',
     metaDesc:
       'Profesyonel koltuk yıkama ve kanepe temizliği İstanbul’da. Leke çıkarma, koku giderme, yerinde hizmet. Hemen fiyat alın.',
   },
@@ -109,7 +109,7 @@ Derinlemesine yıkama ile halı ömrünü uzatırken iç mekan hava kalitesini i
     priceRange: '120 TL – 1.200 TL (m² ve halı tipine göre)',
     order: 4,
     isActive: true,
-    metaTitle: 'Halı Temizliği İstanbul | Profesyonel Halı Yıkama | Günen Temizlik',
+    metaTitle: 'Halı Temizliği İstanbul | Profesyonel Halı Yıkama',
     metaDesc:
       'İstanbul halı temizliği ve halı yıkama. El dokuma ve makine halısına özel yöntemler, leke ve alerjen giderme. Ücretsiz bilgi için arayın.',
   },
@@ -161,7 +161,7 @@ Endüstriyel süpürgeler, yüzey uyumlu kimyasallar ve detay fırçaları ile f
     priceRange: '250 TL – 2.500 TL (yükseklik ve alana göre)',
     order: 6,
     isActive: true,
-    metaTitle: 'Cam Temizliği İstanbul | Dış Cephe ve Ofis Cam Silme | Günen',
+    metaTitle: 'Cam Temizliği İstanbul | Dış Cephe ve Ofis Cam Silme',
     metaDesc:
       'İstanbul cam temizliği: iç/dış cephe, vitrin ve yüksek cam. Profesyonel ekip, güvenli erişim, düzenli paketler. Teklif alın.',
   },
@@ -187,7 +187,7 @@ Düzenli dış cephe cam temizliği paketleriyle işletmenizin vitrin görünür
     priceRange: '350 TL – 3.500 TL (erişim ve metrekareye göre)',
     order: 7,
     isActive: true,
-    metaTitle: 'Dış Cephe Temizliği | İstanbul | Günen Temizlik',
+    metaTitle: 'Dış Cephe Temizliği | İstanbul',
     metaDesc:
       'İstanbul dış cephe temizliği ve dış cephe cam silme hizmeti. Güvenli erişim, su izi/yağmur izi giderme ve düzenli bakım planları. Teklif al.',
   },

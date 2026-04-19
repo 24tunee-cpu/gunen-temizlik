@@ -11,7 +11,7 @@ import {
 import { keywordsForPage } from '@/lib/seo-keywords';
 
 export const metadata: Metadata = {
-  title: 'İstanbul Temizlik Randevusu | Ücretsiz Keşif | Günen',
+  title: 'İstanbul Temizlik Randevusu | Ücretsiz Keşif',
   description:
     'İstanbul genelinde temizlik randevusu oluşturun. Ev, ofis, inşaat sonrası ve koltuk-halı temizliği için uygun tarih seçin, hızlı geri dönüş alın.',
   keywords: keywordsForPage('randevu'),
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
 };
 
-const pageTitle = 'İstanbul Temizlik Randevusu | Ücretsiz Keşif | Günen';
+const pageTitle = 'İstanbul Temizlik Randevusu | Ücretsiz Keşif';
 const pageDescription =
   'İstanbul genelinde temizlik randevusu oluşturun. Ev, ofis, inşaat sonrası ve koltuk-halı temizliği için hızlı geri dönüş alın.';
 

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { canonicalUrl } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Ekibimiz | İstanbul Temizlik Uzmanları | Günen',
+  title: 'Ekibimiz | İstanbul Temizlik Uzmanları',
   description:
     'İstanbul genelinde hizmet veren Günen Temizlik ekibini tanıyın. Ev, ofis ve inşaat sonrası temizlikte görev alan uzman kadro bilgileri.',
   alternates: {

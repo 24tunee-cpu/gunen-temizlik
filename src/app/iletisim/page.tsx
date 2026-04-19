@@ -29,14 +29,14 @@ import { keywordsForPage } from '@/lib/seo-keywords';
 // ============================================
 
 export const metadata: Metadata = {
-  title: 'İletişim | İstanbul Temizlik Teklif Hattı | Günen',
+  title: 'İletişim | İstanbul Temizlik Teklif Hattı',
   description: `İstanbul genelinde temizlik teklifi ve randevu için hemen ulaşın: ${SITE_CONTACT.phoneDisplay}. Ev, ofis, inşaat sonrası ve koltuk-halı temizliği için hızlı geri dönüş alın.`,
   keywords: keywordsForPage('iletisim'),
   alternates: {
     canonical: canonicalUrl('/iletisim'),
   },
   openGraph: {
-    title: 'İletişim | İstanbul Temizlik Teklif Hattı | Günen',
+    title: 'İletişim | İstanbul Temizlik Teklif Hattı',
     description: 'İstanbul genelinde temizlik teklifi, randevu ve keşif talepleri için hızlı iletişim kanalları.',
     url: canonicalUrl('/iletisim'),
     type: 'website',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'İletişim | İstanbul Temizlik Teklif Hattı | Günen',
+    title: 'İletişim | İstanbul Temizlik Teklif Hattı',
     description: 'İstanbul genelinde temizlik teklifi, randevu ve keşif talepleri için hızlı iletişim kanalları.',
     images: [canonicalUrl('/logo.png')],
   },

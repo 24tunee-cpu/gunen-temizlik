@@ -23,14 +23,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { district } = await params;
   const districtData = getDistrictBySlug(district);
-  if (!districtData) return { title: 'Bölge Bulunamadı | Günen Temizlik' };
+  if (!districtData) return { title: 'Bölge Bulunamadı' };
 
   const descBase =
     districtData.regionBlurb ||
     `${districtData.name} bölgesinde ofis temizliği, inşaat sonrası temizlik, koltuk yıkama ve daha fazlası için hızlı teklif alın.`;
   const description =
     descBase.length > 158 ? `${descBase.slice(0, 155).trimEnd()}…` : descBase;
-  const pageTitle = `${districtData.name} Temizlik Hizmetleri | İstanbul | Günen`;
+  const pageTitle = `${districtData.name} Temizlik Hizmetleri | İstanbul`;
 
   return {
     title: pageTitle,

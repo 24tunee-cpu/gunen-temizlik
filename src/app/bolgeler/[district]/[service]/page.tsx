@@ -24,6 +24,18 @@ type Props = {
 
 export const revalidate = 3600;
 
+function clampMetaDescription(input: string, max = 160): string {
+  const value = input.trim();
+  if (value.length <= max) return value;
+  return `${value.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+function clampMetaTitle(input: string, max = 60): string {
+  const value = input.trim();
+  if (value.length <= max) return value;
+  return `${value.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
 export function generateStaticParams() {
   return DISTRICT_LANDINGS.flatMap((district) =>
     SERVICE_LANDINGS.map((service) => ({
@@ -39,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const serviceData = getServiceBySlug(service);
 
   if (!districtData || !serviceData) {
-    return { title: 'Sayfa Bulunamadı | Günen Temizlik' };
+    return { title: 'Sayfa Bulunamadı' };
   }
 
   const key = `${districtData.slug}/${serviceData.slug}`;
@@ -47,12 +59,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     where: { key },
     select: { title: true, description: true, isActive: true },
   });
-  const title =
+  const rawTitle =
     (override?.isActive && override?.title?.trim()) ||
-    `${districtData.name} ${serviceData.name} | İstanbul | Günen`;
-  const description =
+    `${districtData.name} ${serviceData.name} | İstanbul`;
+  const title = clampMetaTitle(rawTitle, 60);
+  const rawDescription =
     (override?.isActive && override?.description?.trim()) ||
     `${districtData.name} bölgesinde ${serviceData.name.toLowerCase()} hizmeti için hızlı teklif alın. ${serviceData.shortPitch}`;
+  const description = clampMetaDescription(rawDescription, 160);
   const canonical = canonicalUrl(`/bolgeler/${districtData.slug}/${serviceData.slug}`);
 
   return {
