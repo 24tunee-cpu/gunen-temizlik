@@ -14,6 +14,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "./providers";
 import { getSiteIconHref } from "@/lib/site-branding";
 import { canonicalUrl, getSiteUrl } from "@/lib/seo";
@@ -154,6 +156,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <Providers gaMeasurementId={GA_MEASUREMENT_ID}>
           {children}
         </Providers>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
