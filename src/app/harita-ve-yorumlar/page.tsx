@@ -95,13 +95,15 @@ export default function MapsAndReviewsPage() {
           </header>
 
           <section className="mt-8 overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/30">
-            <div className="aspect-[16/10] w-full">
+            <div className="w-full overflow-hidden">
               <iframe
-                title="Günen Temizlik Google Harita"
-                src={mapsEmbedSrc}
-                className="h-full w-full border-0"
+                src="https://www.google.com/maps/d/u/0/embed?mid=1LgUhtWIqBuSKRCDwhmXVVEISTrfrSPg&ehbc=2E312F"
+                width="100%"
+                height="480"
+                className="border-0"
+                allowFullScreen
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                title="Günen Temizlik Google My Maps"
               />
             </div>
           </section>
