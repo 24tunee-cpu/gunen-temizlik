@@ -87,10 +87,16 @@ export default function MapsAndReviewsPage() {
       <div className="min-h-screen bg-slate-900 pb-16 pt-28 text-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <header>
-            <h1 className="text-3xl font-bold sm:text-4xl">Google Harita & Yorumlar</h1>
-            <p className="mt-4 max-w-3xl text-slate-300">
-              Kağıthane konumumuzu haritada görün. Son günlerde gelen yorumları okuyun ve dilerseniz
-              Google üzerinde yorum bırakın.
+            <h1 className="text-3xl font-bold sm:text-4xl">İstanbul Temizlik Hizmet Bölgelerimiz - Kağıthane Harita ve Yorumlar</h1>
+            <p className="mt-4 max-w-3xl text-slate-300 leading-relaxed">
+              Günen Temizlik olarak Kağıthane ve İstanbul genelinde profesyonel temizlik hizmetleri sunuyoruz.
+              Ev temizliği, ofis temizliği, inşaat sonrası temizlik ve derzul temizliği alanlarında uzman ekibimizle
+              hizmetinizdeyiz. Yerel temizlik firması olarak müşteri memnuniyetini ön planda tutuyor,
+              güvenilir ve kaliteli hizmet anlayışımızla her projede en iyi sonuçları elde etmeyi hedefliyoruz.
+              Kağıthane temizlik şirketleri arasında öne çıkan firmamız, 7/24 hizmet vermektedir.
+              Haritadan Kağıthane ofis konumumuzu görüntüleyebilir, müşteri yorumlarını okuyarak
+              hakkımızda detaylı bilgi edinebilir ve deneyimlerinizi Google üzerinden paylaşabilirsiniz.
+              İstanbul temizlik hizmetleri için hemen iletişime geçin, ücretsiz keşif ve fiyat teklifi alın.
             </p>
           </header>
 
