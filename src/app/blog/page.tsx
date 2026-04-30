@@ -101,21 +101,21 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     },
     robots: shouldIndexListing
       ? {
+        index: true,
+        follow: true,
+        googleBot: {
           index: true,
           follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-          },
-        }
+        },
+      }
       : {
+        index: false,
+        follow: true,
+        googleBot: {
           index: false,
           follow: true,
-          googleBot: {
-            index: false,
-            follow: true,
-          },
         },
+      },
   };
 }
 
@@ -212,13 +212,13 @@ export default async function BlogPage({ searchParams }: PageProps) {
     ...(tag ? { tags: { has: tag } } : {}),
     ...(searchQuery
       ? {
-          OR: [
-            { title: { contains: searchQuery, mode: 'insensitive' as const } },
-            { excerpt: { contains: searchQuery, mode: 'insensitive' as const } },
-            { content: { contains: searchQuery, mode: 'insensitive' as const } },
-            { tags: { has: searchQuery } },
-          ],
-        }
+        OR: [
+          { title: { contains: searchQuery, mode: 'insensitive' as const } },
+          { excerpt: { contains: searchQuery, mode: 'insensitive' as const } },
+          { content: { contains: searchQuery, mode: 'insensitive' as const } },
+          { tags: { has: searchQuery } },
+        ],
+      }
       : {}),
   };
 
@@ -283,141 +283,139 @@ export default async function BlogPage({ searchParams }: PageProps) {
 
       <SiteLayout>
         <div className="flex min-h-full flex-1 flex-col bg-slate-900">
-        {/* Hero Section */}
-        <section
-          className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
-          aria-label="Sayfa başlığı"
-        >
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <BookOpen
-              className="mx-auto mb-6 h-14 w-14 text-emerald-400 sm:h-16 sm:w-16"
-              aria-hidden="true"
-            />
-            <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">Blog</h1>
-            <p className="mx-auto mt-6 max-w-3xl text-base text-slate-300 sm:text-lg">
-              Temizlik hakkında faydalı bilgiler, ipuçları ve güncel makaleler.
-              Profesyonel tavsiyelerimizi keşfedin.
-            </p>
-          </div>
-        </section>
-
-        {/* Search + filters */}
-        <section className="border-b border-slate-800 bg-slate-900 py-8">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <form action="/blog" className="mx-auto flex w-full max-w-3xl items-center gap-2">
-              <input
-                type="search"
-                name="q"
-                defaultValue={searchQuery}
-                placeholder="Blog içinde ara (örn: ofis temizliği)"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder:text-slate-400"
+          {/* Hero Section */}
+          <section
+            className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-24 pb-12 sm:pt-28 sm:pb-14 md:pt-32 md:pb-16"
+            aria-label="Sayfa başlığı"
+          >
+            <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+              <BookOpen
+                className="mx-auto mb-6 h-14 w-14 text-emerald-400 sm:h-16 sm:w-16"
+                aria-hidden="true"
               />
-              {tag ? <input type="hidden" name="tag" value={tag} /> : null}
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                Ara
-              </button>
-            </form>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
-              <Link
-                href="/blog"
-                className={`rounded-full border px-3 py-1 ${
-                  !tag ? 'border-emerald-500/60 text-emerald-300' : 'border-slate-700 text-slate-300'
-                }`}
-              >
-                Tümü
-              </Link>
-              {topTags.map((t) => (
-                <Link
-                  key={t}
-                  href={`/blog?tag=${encodeURIComponent(t)}`}
-                  className={`rounded-full border px-3 py-1 ${
-                    tag === t ? 'border-emerald-500/60 text-emerald-300' : 'border-slate-700 text-slate-300'
-                  }`}
-                >
-                  #{t}
-                </Link>
-              ))}
+              <h1 className="text-balance text-3xl font-bold text-white sm:text-4xl md:text-5xl">Blog</h1>
+              <p className="mx-auto mt-6 max-w-3xl text-base text-slate-300 sm:text-lg">
+                Temizlik hakkında faydalı bilgiler, ipuçları ve güncel makaleler.
+                Profesyonel tavsiyelerimizi keşfedin.
+              </p>
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-slate-300">
-              <span>
-                Belirli bir konu hakkında bilgi mi arıyorsunuz?
-                <Link href="/sss" className="ml-1 text-emerald-400 hover:underline">
-                  SSS sayfamıza göz atın
-                </Link>
-              </span>
-            </div>
+          </section>
 
-            <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/40 p-4">
-              <p className="text-sm font-semibold text-emerald-300">Google icin oncelikli linkler</p>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div className="space-y-2">
-                  {PRIORITY_BLOG_LINKS.slice(0, 6).map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {PRIORITY_CONVERSION_LINKS.slice(0, 6).map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+          {/* Search + filters */}
+          <section className="border-b border-slate-800 bg-slate-900 py-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <form action="/blog" className="mx-auto flex w-full max-w-3xl items-center gap-2">
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={searchQuery}
+                  placeholder="Blog içinde ara (örn: ofis temizliği)"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder:text-slate-400"
+                />
+                {tag ? <input type="hidden" name="tag" value={tag} /> : null}
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
+                >
+                  <Search className="h-4 w-4" aria-hidden="true" />
+                  Ara
+                </button>
+              </form>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
+                <Link
+                  href="/blog"
+                  className={`rounded-full border px-3 py-1 ${!tag ? 'border-emerald-500/60 text-emerald-300' : 'border-slate-700 text-slate-300'
+                    }`}
+                >
+                  Tümü
+                </Link>
+                {topTags.map((t) => (
+                  <Link
+                    key={t}
+                    href={`/blog?tag=${encodeURIComponent(t)}`}
+                    className={`rounded-full border px-3 py-1 ${tag === t ? 'border-emerald-500/60 text-emerald-300' : 'border-slate-700 text-slate-300'
+                      }`}
+                  >
+                    #{t}
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-slate-300">
+                <span>
+                  Belirli bir konu hakkında bilgi mi arıyorsunuz?
+                  <Link href="/sss" className="ml-1 text-emerald-400 hover:underline">
+                    SSS sayfamıza göz atın
+                  </Link>
+                </span>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/40 p-4">
+                <p className="text-sm font-semibold text-emerald-300">Google icin oncelikli linkler</p>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    {PRIORITY_BLOG_LINKS.slice(0, 6).map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    {PRIORITY_CONVERSION_LINKS.slice(0, 6).map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="block text-sm text-slate-200 underline decoration-slate-500/70 underline-offset-4 hover:text-emerald-300"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Blog Section */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          <BlogSection
-            paginate
-            pageSize={PAGE_SIZE}
-            initialPosts={posts}
-            currentPage={safeCurrentPage}
-            title={tag ? `#${tag} etiketi` : searchQuery ? `"${searchQuery}" araması` : 'Blog'}
-            description={
-              tag
-                ? `${tag} etiketi altındaki yazılar ve pratik rehberler`
-                : searchQuery
-                  ? `"${searchQuery}" ile ilgili makaleler`
-                  : 'Temizlik ipuçları, haberler ve daha fazlası'
-            }
-          />
-        </div>
-
-        {/* CTA Section */}
-        <section className="flex-1 border-t border-slate-800 bg-slate-900 py-16">
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="mb-4 text-2xl font-bold text-white">
-              Profesyonel yardıma mı ihtiyacınız var?
-            </h2>
-            <p className="mx-auto mb-6 max-w-2xl text-slate-300">
-              Blog yazılarımızda bahsettiğimiz profesyonel temizlik hizmetlerimizden
-              yararlanmak için hemen iletişime geçin.
-            </p>
-            <Link
-              href="/iletisim"
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
-            >
-              Ücretsiz Keşif Talep Edin
-              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-            </Link>
+          {/* Blog Section */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <BlogSection
+              paginate
+              pageSize={PAGE_SIZE}
+              initialPosts={posts}
+              currentPage={safeCurrentPage}
+              title={tag ? `#${tag} etiketi` : searchQuery ? `"${searchQuery}" araması` : 'Blog'}
+              description={
+                tag
+                  ? `${tag} etiketi altındaki yazılar ve pratik rehberler`
+                  : searchQuery
+                    ? `"${searchQuery}" ile ilgili makaleler`
+                    : 'Temizlik ipuçları, haberler ve daha fazlası'
+              }
+            />
           </div>
-        </section>
+
+          {/* CTA Section */}
+          <section className="flex-1 border-t border-slate-800 bg-slate-900 py-16">
+            <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+              <h2 className="mb-4 text-2xl font-bold text-white">
+                Profesyonel yardıma mı ihtiyacınız var?
+              </h2>
+              <p className="mx-auto mb-6 max-w-2xl text-slate-300">
+                Blog yazılarımızda bahsettiğimiz profesyonel temizlik hizmetlerimizden
+                yararlanmak için hemen iletişime geçin.
+              </p>
+              <Link
+                href="/iletisim"
+                className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-6 py-3 font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+              >
+                Ücretsiz Keşif Talep Edin
+                <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+              </Link>
+            </div>
+          </section>
         </div>
       </SiteLayout>
     </>
