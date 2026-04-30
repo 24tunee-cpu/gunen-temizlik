@@ -68,7 +68,7 @@ const RELATED_SEO_UTILITY_LINKS = [
   { href: '/rehber', label: 'Temizlik rehberi' },
   { href: '/ara', label: 'Site içi arama' },
 ] as const;
-const MIN_INDEXABLE_WORD_COUNT = 300;
+const MIN_INDEXABLE_WORD_COUNT = 50;
 
 function toAbsoluteAsset(pathOrUrl: string | null | undefined, base: string): string | undefined {
   if (!pathOrUrl?.trim()) return undefined;
