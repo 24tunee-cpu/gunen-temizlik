@@ -3,6 +3,10 @@ import { getSiteUrl } from '@/lib/seo';
 import { PRIORITY_BLOG_LINKS } from '@/lib/priority-seo-links';
 import { prisma } from '@/lib/prisma';
 
+// Sitemap her istekte database'den güncel veriyi çeksin (statik cache olmasın)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0; // Her zaman fresh data
+
 const PRIORITY_BLOG_SET = new Set(PRIORITY_BLOG_LINKS.map((item) => item.href.replace('/blog/', '')));
 
 /**
