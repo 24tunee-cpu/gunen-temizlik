@@ -77,17 +77,8 @@ export async function GET() {
       const author = escapeXml(post.author || 'Günen Temizlik');
       const category = escapeXml(post.category);
 
+      // Görseller kaldırıldı - Google botları daha hızlı tarama yapsın
       let enclosure = '';
-      if (post.image) {
-        // Determine mime type from extension (basic detection)
-        const ext = post.image.split('.').pop()?.toLowerCase() || '';
-        let mimeType = 'image/jpeg';
-        if (ext === 'png') mimeType = 'image/png';
-        else if (ext === 'gif') mimeType = 'image/gif';
-        else if (ext === 'webp') mimeType = 'image/webp';
-
-        enclosure = `    <enclosure url="${escapeXml(post.image)}" type="${mimeType}" />\n`;
-      }
 
       return `  <item>
     <title>${title}</title>
@@ -135,7 +126,7 @@ ${items}
     });
   } catch (error) {
     console.error('RSS Feed Error:', error);
-    
+
     // Return error RSS with proper XML
     const errorRss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
