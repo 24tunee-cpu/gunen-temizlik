@@ -15,6 +15,19 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow,
+        crawlDelay: 1, // 1 saniye bekle - server'ı yormaz
+      },
+      {
+        // Google için özel ayar - daha hızlı ama kontrollü
+        userAgent: 'Googlebot',
+        allow: '/',
+        crawlDelay: 0.5, // 500ms - Google için optimize
+      },
+      {
+        // Diğer major botlar
+        userAgent: ['Bingbot', 'Slurp', 'DuckDuckBot'],
+        allow: '/',
+        crawlDelay: 1,
       },
       {
         // LLM crawler'lar için kritik referans dosyalarına açık erişim sinyali
@@ -34,6 +47,7 @@ export default function robots(): MetadataRoute.Robots {
           '/bolgeler',
         ],
         disallow,
+        crawlDelay: 2, // LLM botlar için daha yavaş
       },
     ],
     sitemap: [`${base}/sitemap.xml`, `${base}/blog/sitemap.xml`],

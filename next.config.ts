@@ -80,7 +80,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 31536000, // 1 yıl cache - Google botları için hız
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
@@ -300,6 +300,10 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-icons',
       'framer-motion',
     ],
+    // Core Web Vitals optimizasyonu
+    optimizeCss: true,
+    // Bundle size optimizasyonu
+    optimizeServerReact: true,
   },
 
   // ============================================
