@@ -299,12 +299,18 @@ const nextConfig: NextConfig = {
       'lucide-react',
       '@radix-ui/react-icons',
       'framer-motion',
+      'date-fns',
+      'clsx',
+      'tailwind-merge'
     ],
     // Core Web Vitals optimizasyonu
     optimizeCss: true,
     // Bundle size optimizasyonu
     optimizeServerReact: true,
   },
+
+  // Server components optimizasyonu
+  serverExternalPackages: ['sharp', 'canvas'],
 
   // ============================================
   // TURBOPACK CONFIG

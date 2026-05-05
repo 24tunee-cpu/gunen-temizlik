@@ -16,6 +16,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CoreWebVitalsOptimizer } from "@/lib/core-web-vitals";
 import { Providers } from "./providers";
 import { getSiteIconHref } from "@/lib/site-branding";
 import { canonicalUrl, getSiteUrl } from "@/lib/seo";
@@ -167,6 +168,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         </Providers>
         <Analytics />
         <SpeedInsights />
+        <CoreWebVitalsOptimizer />
       </body>
     </html>
   );

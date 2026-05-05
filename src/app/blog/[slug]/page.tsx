@@ -46,6 +46,12 @@ import {
   generateTopicClusterBreadcrumb
 } from '@/lib/topic-cluster-links';
 import { enhanceContent, calculateContentUpgradeScore } from '@/lib/content-upgrade';
+import {
+  MobileFloatingActionBar,
+  MobileQuickActions,
+  MobileStickyHeader,
+  MobileContactCard
+} from '@/lib/mobile-optimizations';
 
 // ============================================
 // TYPES
@@ -522,6 +528,13 @@ export default async function BlogPostPage({ params }: PageProps) {
                     </Link>
                   ))}
                 </div>
+
+                {/* Mobile Quick Actions - Mobil kullanıcılar için */}
+                <MobileQuickActions
+                  phone="0532 123 45 67"
+                  whatsappPhone="0532 123 45 67"
+                  className="mt-6"
+                />
               </section>
 
               {/* Topic Cluster Links - Production'da aktif */}
@@ -599,6 +612,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </article>
           </main>
+
+          {/* Mobile Optimizations */}
+          <MobileFloatingActionBar phone="0532 123 45 67" />
+          <MobileStickyHeader
+            phone="0532 123 45 67"
+            whatsappPhone="0532 123 45 67"
+          />
         </div>
       </SiteLayout>
     </>
