@@ -1,6 +1,7 @@
 /**
  * Blog yazıları için meta başlık ve açıklama (SEO).
  * Özel meta yoksa başlık + marka ve özetten güvenli uzunlukta türetilir.
+ * CTR optimizasyonu ile clickbait + profesyonel yaklaşım.
  */
 
 const TITLE_MAX = 58;
@@ -52,4 +53,44 @@ export function resolveBlogMetaDesc(
 
   const plain = excerpt.replace(/\s+/g, ' ').trim();
   return truncateChars(plain, DESC_MAX);
+}
+
+// ============================================
+// CTR OPTIMIZASYON FONKSİYONLARI
+// ============================================
+
+import { generateCTROptimizedBlogMeta } from './ctr-optimized-meta';
+
+/**
+ * CTR optimize edilmiş blog meta başlığı
+ * Mevcut sistemi korurken CTR artışı sağlar
+ */
+export function resolveCTROptimizedBlogTitle(
+  title: string,
+  storedMeta: string | null | undefined,
+  category: string,
+  content: string
+): string {
+  const custom = storedMeta?.trim();
+  if (custom) return truncateChars(normalizeTitleBrand(custom), 60);
+
+  const optimized = generateCTROptimizedBlogMeta(title, '', category, content, custom);
+  return truncateChars(normalizeTitleBrand(optimized.title), 60);
+}
+
+/**
+ * CTR optimize edilmiş blog meta açıklaması
+ * Mevcut sistemi korurken CTR artışı sağlar
+ */
+export function resolveCTROptimizedBlogDesc(
+  excerpt: string,
+  storedMeta: string | null | undefined,
+  title: string,
+  category: string
+): string {
+  const custom = storedMeta?.trim();
+  if (custom) return truncateChars(custom, 160);
+
+  const optimized = generateCTROptimizedBlogMeta(title, excerpt, category, excerpt, null, custom);
+  return truncateChars(optimized.description, DESC_MAX);
 }

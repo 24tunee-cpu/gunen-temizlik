@@ -24,7 +24,12 @@ import { formatDate } from '@/lib/utils';
 import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { BlogShareButton } from '@/components/site/BlogShareButton';
-import { resolveBlogMetaDesc, resolveBlogMetaTitle } from '@/lib/blog-meta';
+import {
+  resolveBlogMetaDesc,
+  resolveBlogMetaTitle,
+  resolveCTROptimizedBlogTitle,
+  resolveCTROptimizedBlogDesc
+} from '@/lib/blog-meta';
 import styles from './blog-content.module.css';
 import { resolveIntentLinks } from '@/lib/keyword-intent-routing';
 import { keywordsForPage } from '@/lib/seo-keywords';
@@ -34,6 +39,7 @@ import {
   getSiteUrl,
   serializeSchemaGraph,
 } from '@/lib/seo';
+import { createEnhancedArticleSchema } from '@/lib/enhanced-schema';
 
 // ============================================
 // TYPES
@@ -108,8 +114,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       };
     }
 
-    const metaTitle = resolveBlogMetaTitle(post.title, post.metaTitle);
-    const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
+    // CTR optimizasyonu - Mevcut sistem korunarak
+    const useCTROptimization = process.env.NODE_ENV === 'production';
+
+    const metaTitle = useCTROptimization
+      ? resolveCTROptimizedBlogTitle(post.title, post.metaTitle, post.category, post.content)
+      : resolveBlogMetaTitle(post.title, post.metaTitle);
+
+    const metaDesc = useCTROptimization
+      ? resolveCTROptimizedBlogDesc(post.excerpt, post.metaDesc, post.title, post.category)
+      : resolveBlogMetaDesc(post.excerpt, post.metaDesc);
     const contentWordCount = getWordCount(post.content);
     const isThinContent = contentWordCount < MIN_INDEXABLE_WORD_COUNT;
 
@@ -164,6 +178,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * @returns JSON-LD object
  */
 function generateArticleSchema(post: BlogPostData) {
+  // Enhanced Schema - Production'da aktif, development'da mevcut sistem korunur
+  const useEnhancedSchema = process.env.NODE_ENV === 'production';
+
+  if (useEnhancedSchema) {
+    // Enhanced schema with rich snippets
+    return createEnhancedArticleSchema(
+      {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        author: post.author,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        category: post.category,
+        tags: post.tags,
+        image: toAbsoluteAsset(post.image, getSiteUrl())
+      },
+      getSiteUrl(),
+      'Günen Temizlik'
+    );
+  }
+
+  // Mevcut sistem (development ve fallback için)
   const metaDesc = resolveBlogMetaDesc(post.excerpt, post.metaDesc);
   const wordCount = post.content.split(/\s+/).filter(Boolean).length;
   const cover = toAbsoluteAsset(post.image, getSiteUrl());
