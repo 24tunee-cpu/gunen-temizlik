@@ -40,6 +40,12 @@ import {
   serializeSchemaGraph,
 } from '@/lib/seo';
 import { createEnhancedArticleSchema } from '@/lib/enhanced-schema';
+import {
+  generateTopicClusterLinks,
+  addInternalLinksToContent,
+  generateTopicClusterBreadcrumb
+} from '@/lib/topic-cluster-links';
+import { enhanceContent, calculateContentUpgradeScore } from '@/lib/content-upgrade';
 
 // ============================================
 // TYPES
@@ -268,7 +274,10 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const relatedPosts = await prisma.blogPost.findMany({
+  // Topic cluster ile zenginleştirilmiş related posts
+  const useTopicCluster = process.env.NODE_ENV === 'production';
+
+  let relatedPosts = await prisma.blogPost.findMany({
     where: {
       published: true,
       slug: { not: post.slug },
@@ -287,6 +296,52 @@ export default async function BlogPostPage({ params }: PageProps) {
       category: true,
     },
   });
+
+  // Topic cluster linkleri oluştur (production'da aktif)
+  let topicClusterLinks: any[] = [];
+  if (useTopicCluster) {
+    try {
+      topicClusterLinks = await generateTopicClusterLinks(
+        post.slug,
+        post.title,
+        post.content,
+        post.category
+      );
+    } catch (error) {
+      console.warn('Topic cluster links generation failed:', error);
+    }
+  }
+
+  // Content upgrade (production'da aktif)
+  let enhancedPostContent = post.content;
+  let contentUpgradeInfo: any = null;
+
+  if (useTopicCluster) {
+    try {
+      const enhanced = enhanceContent(
+        post.title,
+        post.content,
+        post.category,
+        {
+          addVideoSection: true,
+          addBeforeAfter: true,
+          addFAQ: true,
+          addHowTo: true,
+          addStatistics: true,
+          targetWordCount: 1500
+        }
+      );
+
+      enhancedPostContent = enhanced.content;
+      contentUpgradeInfo = {
+        wordCount: enhanced.wordCount,
+        addedSections: enhanced.addedSections,
+        upgradeScore: enhanced.upgradeScore
+      };
+    } catch (error) {
+      console.warn('Content upgrade failed:', error);
+    }
+  }
 
   // Update view counter (fire and forget)
   prisma.blogPost.update({
@@ -380,10 +435,32 @@ export default async function BlogPostPage({ params }: PageProps) {
             <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
               <div
                 className={`${styles.body} max-w-none text-lg`}
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{
+                  __html: useTopicCluster && topicClusterLinks.length > 0
+                    ? addInternalLinksToContent(enhancedPostContent, topicClusterLinks)
+                    : enhancedPostContent
+                }}
               />
 
-              {wordCount < MIN_INDEXABLE_WORD_COUNT && (
+              {/* Content Upgrade Info - Production'da aktif */}
+              {useTopicCluster && contentUpgradeInfo && (
+                <section className="mt-8 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                  <h2 className="text-base font-semibold text-emerald-200">✨ İçerik Zenginleştirildi</h2>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-sm text-emerald-100/90">
+                      <strong>Kelime Sayısı:</strong> {contentUpgradeInfo.wordCount} (Hedef: 1500+)
+                    </p>
+                    <p className="text-sm text-emerald-100/90">
+                      <strong>Eklenen Bölümler:</strong> {contentUpgradeInfo.addedSections.join(', ')}
+                    </p>
+                    <p className="text-sm text-emerald-100/90">
+                      <strong>Kalite Skoru:</strong> {contentUpgradeInfo.upgradeScore}/100
+                    </p>
+                  </div>
+                </section>
+              )}
+
+              {!useTopicCluster && wordCount < MIN_INDEXABLE_WORD_COUNT && (
                 <section className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
                   <h2 className="text-base font-semibold text-amber-200">İçerik güncellemesi planlanıyor</h2>
                   <p className="mt-1 text-sm text-amber-100/90">
@@ -446,6 +523,44 @@ export default async function BlogPostPage({ params }: PageProps) {
                   ))}
                 </div>
               </section>
+
+              {/* Topic Cluster Links - Production'da aktif */}
+              {useTopicCluster && topicClusterLinks.length > 0 && (
+                <section className="mt-10 rounded-xl border border-emerald-700/30 bg-emerald-900/20 p-5">
+                  <h2 className="text-lg font-semibold text-white">🔗 İlgili İçerikler</h2>
+                  <p className="mt-2 text-sm text-slate-300">
+                    Bu konuyla ilgili diğer hizmetlerimiz ve yazılarımız:
+                  </p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {topicClusterLinks.slice(0, 6).map((link, index) => (
+                      <Link
+                        key={`${link.href}-${index}`}
+                        href={link.href}
+                        className="rounded-lg border border-emerald-600/30 bg-emerald-950/40 p-3 hover:border-emerald-500/50 hover:bg-emerald-950/60 transition-colors"
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-emerald-400 text-sm">
+                            {link.type === 'blog' && '📝'}
+                            {link.type === 'service' && '🛠️'}
+                            {link.type === 'district' && '📍'}
+                            {link.type === 'utility' && '⚡'}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {link.title}
+                            </p>
+                            {link.description && (
+                              <p className="mt-1 text-xs text-slate-400 line-clamp-2">
+                                {link.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {relatedPosts.length > 0 && (
                 <section className="mt-10 rounded-xl border border-slate-700 bg-slate-800/30 p-5">
