@@ -397,6 +397,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         : 'Günen Temizlik';
     }
 
+    // Update richBlocks if provided
+    if (data.richBlocks !== undefined) {
+      updateData.richBlocks = data.richBlocks;
+    }
+
     // Update published status if provided
     if (data.published !== undefined) {
       updateData.published = typeof data.published === 'boolean' ? data.published : false;

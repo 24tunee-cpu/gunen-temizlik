@@ -324,12 +324,13 @@ export async function POST(request: NextRequest) {
         scheduledPublishAt:
           typeof data.scheduledPublishAt === 'string' && data.scheduledPublishAt
             ? (() => {
-                const d = new Date(data.scheduledPublishAt);
-                return Number.isNaN(d.getTime()) ? null : d;
-              })()
+              const d = new Date(data.scheduledPublishAt);
+              return Number.isNaN(d.getTime()) ? null : d;
+            })()
             : null,
         metaTitle: resolveBlogMetaTitle(title, metaTitleRaw).slice(0, MAX_LENGTHS.metaTitle),
         metaDesc: resolveBlogMetaDesc(excerpt, metaDescRaw).slice(0, MAX_LENGTHS.metaDesc),
+        richBlocks: data.richBlocks || undefined,
       },
     });
 

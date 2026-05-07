@@ -102,6 +102,8 @@ model BlogPost {
   views                Int       @default(0)
   metaTitle            String?
   metaDesc             String?
+  /// Zengin içerik blokları (Before/After, Video, FAQ, vb.) - JSON formatında
+  richBlocks           Json?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

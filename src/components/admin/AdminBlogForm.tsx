@@ -20,6 +20,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { generateSlug, toDatetimeLocalValue, fromDatetimeLocalValue } from '@/lib/utils';
 import { toast } from '@/store/toastStore';
+import { RichContentBlocks, type RichContentBlock, generateRichContentHTML } from './RichContentBlocks';
 
 type FormState = {
   title: string;
@@ -34,6 +35,8 @@ type FormState = {
   metaDesc: string;
   /** `datetime-local` input değeri; boş = zamanlama yok */
   scheduledPublishAt: string;
+  /** Zengin içerik blokları (Before/After, Video, FAQ, vb.) */
+  richBlocks: RichContentBlock[];
 };
 
 const emptyForm: FormState = {
@@ -48,6 +51,7 @@ const emptyForm: FormState = {
   metaTitle: '',
   metaDesc: '',
   scheduledPublishAt: '',
+  richBlocks: [],
 };
 
 function SectionCard({
@@ -133,6 +137,7 @@ export function AdminBlogForm({
           scheduledPublishAt: toDatetimeLocalValue(
             post.scheduledPublishAt != null ? String(post.scheduledPublishAt) : ''
           ),
+          richBlocks: post.richBlocks || [],
         });
         setTags(Array.isArray(post.tags) ? post.tags : []);
         setLoadState('ready');
@@ -181,6 +186,10 @@ export function AdminBlogForm({
 
     setSubmitting(true);
     try {
+      // Rich blokları content'e ekle
+      const richContentHTML = generateRichContentHTML(formData.richBlocks);
+      const fullContent = formData.content.trim() + (richContentHTML ? '\n\n' + richContentHTML : '');
+
       if (mode === 'create') {
         const scheduledIso = fromDatetimeLocalValue(formData.scheduledPublishAt);
         const res = await fetch('/api/blog', {
@@ -189,10 +198,12 @@ export function AdminBlogForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...formData,
+            content: fullContent,
             slug,
             category: formData.category.trim() || 'Genel',
             tags,
             scheduledPublishAt: scheduledIso,
+            richBlocks: formData.richBlocks,
           }),
         });
         if (!res.ok) {
@@ -216,10 +227,12 @@ export function AdminBlogForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          content: fullContent,
           slug,
           category: formData.category.trim() || 'Genel',
           tags,
           scheduledPublishAt: scheduledIso,
+          richBlocks: formData.richBlocks,
         }),
       });
       if (!res.ok) {
@@ -444,6 +457,15 @@ export function AdminBlogForm({
               />
               <p className="text-xs text-slate-400">{formData.content.length} karakter</p>
             </div>
+
+            {/* Zengin İçerik Blokları */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+              <RichContentBlocks
+                blocks={formData.richBlocks}
+                onChange={(newBlocks) => setFormData({ ...formData, richBlocks: newBlocks })}
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Etiketler</label>
               <div className="flex flex-col gap-2 sm:flex-row">

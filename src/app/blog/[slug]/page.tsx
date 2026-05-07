@@ -137,8 +137,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? resolveCTROptimizedBlogDesc(post.excerpt, post.metaDesc, post.title, post.category)
       : resolveBlogMetaDesc(post.excerpt, post.metaDesc);
     const contentWordCount = getWordCount(post.content);
-    const isThinContent = contentWordCount < MIN_INDEXABLE_WORD_COUNT;
-
     const ogImage = toAbsoluteAsset(post.image, getSiteUrl());
 
     return {
@@ -168,7 +166,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: ogImage ? [ogImage] : undefined,
       },
       robots: {
-        index: !isThinContent,
+        index: true,
         follow: true,
       },
     };
